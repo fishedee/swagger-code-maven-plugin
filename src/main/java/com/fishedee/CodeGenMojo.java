@@ -23,7 +23,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-@Mojo(name="typescript")
+@Mojo(name="typesciprt")
 public class CodeGenMojo
     extends AbstractMojo
 {

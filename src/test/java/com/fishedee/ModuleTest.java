@@ -9,6 +9,7 @@ import java.io.InputStream;
 
 public class ModuleTest {
 
+    /*
     public SwaggerJson testGetter(){
 
         String swaggerUrl = "http://localhost:8080/v2/api-docs";
@@ -38,11 +39,11 @@ public class ModuleTest {
         }
     }
 
-    @Test
     public void testGenerator(){
         TypescriptGenerator generator = GlobalBean.getTypescriptGenerator();
         SwaggerJson swaggerJson = this.testGetter();
         String result = generator.generate(swaggerJson);
         System.out.println(result.toString());
     }
+    */
 }
