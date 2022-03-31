@@ -6,14 +6,11 @@ import freemarker.template.TemplateException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-import javax.xml.ws.Response;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -84,33 +81,50 @@ public class TypescriptGenerator {
         name = name.replaceAll("«|»","");
         return name;
     }
-    private String getTypeDescription(SwaggerJson.Property property){
-        if( property.getType() == SwaggerJson.PropertyTypeEnum.integer ||
-                property.getType() == SwaggerJson.PropertyTypeEnum.number ){
-            return "number";
-        }else if( property.getType() == SwaggerJson.PropertyTypeEnum.string){
-            return "string";
-        }else if( property.getType() == SwaggerJson.PropertyTypeEnum.array ){
-            String ref = property.getItems().getRef();
-            String prefix = "#/definitions/";
-            if( ref.startsWith(prefix)){
-                return "Type"+this.stripGeneric(ref.substring(prefix.length()))+"[]";
+    private String getSchemaDescription(SwaggerJson.Schema schema){
+        if( schema.getType() == SwaggerJson.PropertyTypeEnum.INTEGER ||
+                schema.getType() == SwaggerJson.PropertyTypeEnum.NUMBER){
+            if( schema.getFormat() == SwaggerJson.PropertyFormatEnum.BIG_DECIMAL){
+                return "BigDecimal";
             }else{
-                throw  new BusinessException("未知的arrayItem类型"+ref);
+                return "number";
             }
+        }else if( schema.getType() == SwaggerJson.PropertyTypeEnum.STRING){
+            if( schema.getFormat() == SwaggerJson.PropertyFormatEnum.DATE_TIME){
+                return "DateTime";
+            }else{
+                return "string";
+            }
+        }else if( schema.getType() == SwaggerJson.PropertyTypeEnum.ARRAY){
+            //list类型
+            return this.getSchemaDescription(schema.getItems())+"[]";
+        }else if( schema.getRef() != null ) {
+            String ref = schema.getRef();
+            String prefix = "#/components/schemas/";
+            if (ref.startsWith(prefix)) {
+                return "Type" + this.stripGeneric(ref.substring(prefix.length()));
+            } else {
+                throw new BusinessException("未知的ref类型" + ref);
+            }
+        }else if( schema.getType() == SwaggerJson.PropertyTypeEnum.OBJECT){
+            //map类型
+            String valueType = this.getSchemaDescription(schema.getAdditionalProperties());
+            return "{\n" +
+                    "[key in string]:"+valueType+"\n"+
+                    "}";
         }else{
-            throw new BusinessException("未定义的属性"+property.getType());
+            throw new BusinessException("未定义的属性"+schema.getType());
         }
     }
     private List<Type> convertType(SwaggerJson input){
-       return input.getDefinitions().entrySet().stream().map(single->{
+       return input.getComponents().getSchemas().entrySet().stream().map(single->{
             String definitionName = single.getKey();
             SwaggerJson.Definition definition = single.getValue();
             List<Field> fieldList = definition.getProperties().entrySet().stream().map(single2->{
-                SwaggerJson.Property property = single2.getValue();
+                SwaggerJson.Schema schema = single2.getValue();
                 Field field = new Field();
                 field.setName(single2.getKey());
-                field.setType(this.getTypeDescription(property));
+                field.setType(this.getSchemaDescription(schema));
                 return field;
             }).collect(Collectors.toList());
 
@@ -142,19 +156,16 @@ public class TypescriptGenerator {
         if( okResponse == null ){
             throw new BusinessException("找不到200返回下的Response");
         }
-        SwaggerJson.Schema schema = okResponse.getSchema();
-        if( schema == null ){
+        SwaggerJson.Schema schema[] = new SwaggerJson.Schema[]{null};
+        okResponse.getContent().values().stream().forEach((single)->{
+             schema[0] = single.getSchema();
+        });
+        if( schema[0] == null ){
             return "void";
-        }
-        String prefix = "#/definitions/";
-        String ref = schema.getRef();
-        if( ref == null ){
-            return "void";
-        }else if( ref.startsWith(prefix)){
-            return "Type"+this.stripGeneric(ref.substring(prefix.length()));
         }else{
-            throw new BusinessException("未知的ResponseType"+ref);
+            return this.getSchemaDescription(schema[0]);
         }
+
     }
     private List<Api> convertApi(SwaggerJson input){
         List<Api> allApiList = new ArrayList<>();

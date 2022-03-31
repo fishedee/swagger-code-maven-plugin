@@ -10,15 +10,17 @@ import java.io.InputStream;
 public class ModuleTest {
 
     /*
-    public SwaggerJson testGetter(){
-
-        String swaggerUrl = "http://localhost:8080/v2/api-docs";
+    private SwaggerJson getOpenAPI(){
+        String swaggerUrl = "http://localhost:7878/v3/api-docs";
         SwaggerJsonGetter swaggerJsonGetter = GlobalBean.getSwaggerJsonGetter();
         SwaggerJson result = swaggerJsonGetter.get(swaggerUrl);
-        System.out.println(result.toString());
         return result;
     }
 
+    public void testGetter(){
+        SwaggerJson json = getOpenAPI();
+        System.out.println(json.toString());
+    }
 
     public void loadProperties1()
     {
@@ -39,11 +41,12 @@ public class ModuleTest {
         }
     }
 
+    @Test
     public void testGenerator(){
         TypescriptGenerator generator = GlobalBean.getTypescriptGenerator();
-        SwaggerJson swaggerJson = this.testGetter();
+        SwaggerJson swaggerJson = this.getOpenAPI();
         String result = generator.generate(swaggerJson);
         System.out.println(result.toString());
     }
-    */
+     */
 }
