@@ -1,2 +1,105 @@
 # swaggerCode-maven-plugin
-generate code by swagger json
+
+使用Swagger提供的OpenAPI接口生成客户端代码，Maven插件
+
+## 特性
+
+* 暂时只支持TypeScript
+* 同时支持生成类型描述和接口描述
+
+## 例子
+
+```typescript
+import myRequest from '@/util/request';
+
+type BigDecimal = string;
+
+type DateTime = string;
+
+type TypeAccountDocument = {
+        createTime:DateTime;
+        hasRollback:string;
+        id:number;
+        items:TypeItem[];
+        modifyTime:DateTime;
+        operatorId:number;
+        operatorName:string;
+        refId:string;
+        refType:string;
+        refTypeName:string;
+        remark:string;
+        rollbackDocumentId:number;
+}
+
+type TypeAccountSubject = {
+    assistType:string;
+    balance:BigDecimal;
+    children:TypeAccountSubject[];
+    childrenNextId:number;
+    createTime:DateTime;
+    id:number;
+    isReconciliation:string;
+    modifyTime:DateTime;
+    name:string;
+    nextChildrenId:number;
+    parentId:number;
+    quickType:string;
+    remark:string;
+    type:string;
+}
+
+const ApiAccountAccountDocumentGet = async (data:any)=>{
+    return await myRequest({
+        method:"GET",
+        url:"/api/account/accountDocument/get",
+        data:data,
+    }) as TypeAccountDocument;
+}
+const ApiAccountAccountSubjectGet = async (data:any)=>{
+    return await myRequest({
+        method:"GET",
+        url:"/api/account/accountSubject/get",
+        data:data,
+    }) as TypeAccountSubject;
+}
+export {
+    TypeAccountDocument,
+    TypeAccountSubject,
+    ApiAccountAccountDocumentGet,
+    ApiAccountAccountSubjectGet
+}
+```
+
+生成的代码大概如上
+
+## 安装
+
+先查看[这里](https://blog.fishedee.com/2021/05/29/SpringBoot%E7%9A%84%E7%BB%8F%E9%AA%8C%E6%B1%87%E6%80%BB/#22-swagger)为SpringBoot添加Swagger的OpenAPI生成
+
+```bash
+git clone git@github.com:fishedee/swagger-code-maven-plugin.git
+cd swagger-code-maven-plugin
+mvn install
+```
+
+下载并安装此插件
+
+```xml
+<plugin>
+    <groupId>com.fishedee</groupId>
+    <artifactId>swagger-code-maven-plugin</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <configuration>
+      <outputFile>../static/src/api/index.tsx</outputFile>
+      <swaggerUrl>http://localhost:7878/v3/api-docs</swaggerUrl>
+    </configuration>
+</plugin>
+```
+
+在自己的SpringBoot项目中的pom.xml加入以上的插件
+
+```bash
+mvn swagger-code:typescript
+```
+
+在命令行执行以上代码即可
