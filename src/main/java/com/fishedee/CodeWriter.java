@@ -19,6 +19,17 @@ public class CodeWriter {
             }
         }catch(IOException e){
             throw new CrashException("写入不了文件"+outputFileName,e);
+        }finally {
+            if( stringReader != null ){
+                stringReader.close();
+            }
+            if( fileWriter != null ){
+                try{
+                    fileWriter.close();
+                }catch(IOException e){
+                    throw new CrashException("无法关闭文件",e);
+                }
+            }
         }
     }
 }
