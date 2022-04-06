@@ -40,7 +40,7 @@ public class TypescriptSelectGenerator {
 
     private String getEnumSelectName(EnumDTO.EnumInfo enumInfo){
         String fullName = enumInfo.getEncloseName()+enumInfo.getName();
-        return "WidgetSelectEnum"+this.firstUpper(fullName);
+        return "Enum"+this.firstUpper(fullName);
     }
 
 
