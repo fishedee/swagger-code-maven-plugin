@@ -15,8 +15,6 @@ public class GlobalBean {
 
     private static Configuration configuration;
 
-    private static TypescriptGenerator typescriptGenerator;
-
     public synchronized static SwaggerJsonGetter getSwaggerJsonGetter(){
         if( swaggerJsonGetter != null ){
             return swaggerJsonGetter;
@@ -57,13 +55,29 @@ public class GlobalBean {
         return configuration;
     }
 
-    public synchronized  static TypescriptGenerator getTypescriptGenerator(){
-        if( typescriptGenerator != null ){
-            return typescriptGenerator;
-        }
-        typescriptGenerator = new TypescriptGenerator();
+    public synchronized  static TypescriptGenerator createTypescriptGenerator(){
+        TypescriptGenerator typescriptGenerator = new TypescriptGenerator();
         typescriptGenerator.setConfiguration(getFreeMarkerConfiguration());
         return typescriptGenerator;
+    }
+
+    public synchronized  static TypescriptSelectGenerator createTypescriptSelectGenerator(){
+        TypescriptSelectGenerator typescriptGenerator = new TypescriptSelectGenerator();
+        typescriptGenerator.setConfiguration(getFreeMarkerConfiguration());
+        return typescriptGenerator;
+    }
+
+
+    private static EnumGetter enumGetter;
+
+    public synchronized  static EnumGetter getEnumGetter(){
+        if(enumGetter != null){
+            return enumGetter;
+        }
+        enumGetter = new EnumGetter();
+        enumGetter.setObjectMapper(getObjectMapper());
+        enumGetter.setOkHttpClient(getOkHttpClient());
+        return enumGetter;
     }
 
     private static CodeWriter codeWriter;

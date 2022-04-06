@@ -4,6 +4,14 @@ type BigDecimal = string;
 
 type DateTime = string;
 
+<#list enumTypeList as singleEnumType>
+<#list singleEnumType.constants>
+    type ${singleEnumType.name} = <#items as constant> '${constant}' <#sep>|</#sep></#items>
+    <#else>
+    type ${singleEnumType.name} = ''
+</#list>
+</#list>
+
 <#list typeList as singleType>
 type ${singleType.name} = {
     <#list singleType.fieldList as field>

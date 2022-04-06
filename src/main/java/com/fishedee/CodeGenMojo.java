@@ -23,6 +23,9 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Mojo(name="typescript")
 public class CodeGenMojo
     extends AbstractMojo
@@ -47,17 +50,43 @@ public class CodeGenMojo
     )
     private String swaggerUrl;
 
+    @Parameter(
+            property = "enumUrl"
+    )
+    private String enumUrl;
+
+
+    @Parameter(
+            property = "enumOutputFile"
+    )
+    private String enumOutputFile;
+
     public void execute()
         throws MojoExecutionException
     {
         Log log = getLog();
 
         SwaggerJsonGetter swaggerJsonGetter = GlobalBean.getSwaggerJsonGetter();
-        TypescriptGenerator typescriptGenerator = GlobalBean.getTypescriptGenerator();
+        EnumGetter enumGetter = GlobalBean.getEnumGetter();
+        TypescriptGenerator typescriptGenerator = GlobalBean.createTypescriptGenerator();
+        TypescriptSelectGenerator typescriptSelectGenerator = GlobalBean.createTypescriptSelectGenerator();
         CodeWriter codeWriter = GlobalBean.getCodeWriter();
 
+        List<EnumDTO.EnumInfo> enumInfoList = new ArrayList<>();
         SwaggerJson result = swaggerJsonGetter.get(swaggerUrl);
-        String code = typescriptGenerator.generate(result);
+        if( this.enumUrl != null && this.enumUrl.trim().length() != 0 ){
+            EnumDTO enumDTO = enumGetter.get(this.enumUrl);
+            if( enumDTO.getCode() != 0 ){
+                throw new BusinessException("获取枚举失败:"+enumDTO.getMsg());
+            }
+            enumInfoList = enumDTO.getData();
+        }
+        String code = typescriptGenerator.generate(enumInfoList,result);
         codeWriter.write(this.outputFile,code);
+
+        if( this.enumOutputFile != null && this.outputFile.trim().length() != 0 ){
+            String code2 = typescriptSelectGenerator.generate(enumInfoList);
+            codeWriter.write(this.enumOutputFile,code2);
+        }
     }
 }

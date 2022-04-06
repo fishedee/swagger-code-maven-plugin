@@ -88,6 +88,10 @@ public class SwaggerJson {
         private String ref;
 
         //可能为空
+        @JsonProperty("enum")
+        private List<String> enumList;
+
+        //可能为空
         private Schema items;
 
         //可能为空

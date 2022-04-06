@@ -17,6 +17,13 @@ public class ModuleTest {
         return result;
     }
 
+    private SwaggerJson getEnumAPI(){
+        String swaggerUrl = "http://localhost:7878/enum/api-docs";
+        SwaggerJsonGetter swaggerJsonGetter = GlobalBean.getSwaggerJsonGetter();
+        SwaggerJson result = swaggerJsonGetter.get(swaggerUrl);
+        return result;
+    }
+
     public void testGetter(){
         SwaggerJson json = getOpenAPI();
         System.out.println(json.toString());

@@ -6,6 +6,7 @@
 
 * 暂时只支持TypeScript
 * 同时支持生成类型描述和接口描述
+* 支持枚举变量的自动合并
 
 ## 例子
 
@@ -92,6 +93,8 @@ mvn install
     <configuration>
       <outputFile>../static/src/api/index.tsx</outputFile>
       <swaggerUrl>http://localhost:7878/v3/api-docs</swaggerUrl>
+        <enumOutputFile>../static/src/api/enum.tsx</enumOutputFile>
+        <enumUrl>http://localhost:7878/enum/getAll</enumUrl>
     </configuration>
 </plugin>
 ```

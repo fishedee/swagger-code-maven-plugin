@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -68,7 +69,18 @@ public class TypescriptGenerator {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
+    public static class EnumType{
+        private String name;
+
+        private List<String> constants;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class DTO{
+        private List<EnumType> enumTypeList = new ArrayList<>();
+
         private List<Type> typeList = new ArrayList<Type>();
 
         private List<Api> apiList = new ArrayList<Api>();
@@ -92,7 +104,14 @@ public class TypescriptGenerator {
         }else if( schema.getType() == SwaggerJson.PropertyTypeEnum.STRING){
             if( schema.getFormat() == SwaggerJson.PropertyFormatEnum.DATE_TIME){
                 return "DateTime";
-            }else{
+            }else if( schema.getEnumList() != null ){
+                String enumKey =  this.joinStr(schema.getEnumList());
+                String enumTypeName = this.enumMapType.get(enumKey);
+                if( enumTypeName == null ){
+                    throw new BusinessException("找不到枚举体["+enumKey+"]");
+                }
+                return enumTypeName;
+            }else {
                 return "string";
             }
         }else if( schema.getType() == SwaggerJson.PropertyTypeEnum.ARRAY){
@@ -188,7 +207,7 @@ public class TypescriptGenerator {
         return allApiList;
     }
 
-    private List<String> getExport(List<Type> typeList,List<Api> apiList){
+    private List<String> getExport(List<Type> typeList,List<Api> apiList,List<EnumDTO.EnumInfo> enumInfoList){
         List<String> result = new ArrayList<>();
         typeList.forEach(single->{
             result.add(single.getName());
@@ -196,17 +215,63 @@ public class TypescriptGenerator {
         apiList.forEach(single->{
             result.add(single.getName());
         });
+        enumInfoList.forEach(single->{
+            result.add(this.getEnumTypeName(single));
+        });
         return result;
     }
 
-    public String generate(SwaggerJson input){
+    private String getEnumTypeName(EnumDTO.EnumInfo enumInfo){
+        String fullName = enumInfo.getEncloseName()+enumInfo.getName();
+        return "TypeEnum"+this.firstUpper(fullName);
+    }
+
+    private String joinStr(List<String> listStr){
+        List<String> newList = listStr.stream().sorted().collect(Collectors.toList());
+        StringBuilder builder = new StringBuilder();
+        for( int i = 0 ;i != newList.size();i++){
+            if( i != 0 ){
+                builder.append("#");
+            }
+            builder.append(newList.get(i));
+        }
+        return builder.toString();
+    }
+
+    private List<String> getEnumConstants(EnumDTO.EnumInfo enumInfo){
+        List<String> result = new ArrayList<>();
+        enumInfo.constantList.forEach((single)->{
+            result.add(single.getValue());
+        });
+        return result;
+    }
+
+    public Map<String,String> convertToEnumMap(List<EnumDTO.EnumInfo> enumInfoList ){
+        return enumInfoList.stream().collect(Collectors.toMap(ref->{
+            List<String> enumConstants = this.getEnumConstants(ref);
+            return this.joinStr(enumConstants);
+        },ref->{
+            return this.getEnumTypeName(ref);
+        }));
+    }
+
+    private Map<String,String> enumMapType = new HashMap<>();
+
+    public String generate(List<EnumDTO.EnumInfo> enumInfoList,SwaggerJson input){
+        this.enumMapType = this.convertToEnumMap(enumInfoList);
         List<Type> typeList = this.convertType(input);
         List<Api> apiList = this.convertApi(input);
-        List<String> exportList = this.getExport(typeList,apiList);
+        List<String> exportList = this.getExport(typeList,apiList,enumInfoList);
 
         DTO result = new DTO();
         result.setTypeList(typeList);
         result.setApiList(apiList);
+        result.setEnumTypeList(enumInfoList.stream().map(single->{
+            EnumType enumType = new EnumType();
+            enumType.setName(this.getEnumTypeName(single));
+            enumType.setConstants(this.getEnumConstants(single));
+            return enumType;
+        }).collect(Collectors.toList()));
         result.setExportList(exportList);
 
         return this.executeTemplate("typescript.ftl",result);
