@@ -1,5 +1,8 @@
 # swaggerCode-maven-plugin
 
+![Release](https://jitpack.io/v/fishedee/swagger-code-maven-plugin.svg)
+(https://jitpack.io/#fishedee/swagger-code-maven-plugin)
+
 使用Swagger提供的OpenAPI接口生成客户端代码，Maven插件
 
 ## 特性
@@ -86,10 +89,17 @@ mvn install
 下载并安装此插件
 
 ```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+
 <plugin>
     <groupId>com.fishedee</groupId>
     <artifactId>swagger-code-maven-plugin</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1</version>
     <configuration>
       <outputFile>../static/src/api/index.tsx</outputFile>
       <swaggerUrl>http://localhost:7878/v3/api-docs</swaggerUrl>
