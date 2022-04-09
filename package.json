@@ -1,0 +1,15 @@
+{
+  "name": "swagger-code-maven-plugin",
+  "version": "1.0.0",
+  "description": "Java的ID生成器",
+  "main": "index.js",
+  "scripts": {
+    "deploy":"mvn clean && gh-pages -d . -b jitpack",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "gh-pages": "^3.2.3"
+  }
+}
