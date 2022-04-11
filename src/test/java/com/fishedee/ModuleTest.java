@@ -9,7 +9,6 @@ import java.io.InputStream;
 
 public class ModuleTest {
 
-    /*
     private SwaggerJson getOpenAPI(){
         String swaggerUrl = "http://localhost:7878/v3/api-docs";
         SwaggerJsonGetter swaggerJsonGetter = GlobalBean.getSwaggerJsonGetter();
@@ -17,10 +16,10 @@ public class ModuleTest {
         return result;
     }
 
-    private SwaggerJson getEnumAPI(){
-        String swaggerUrl = "http://localhost:7878/enum/api-docs";
-        SwaggerJsonGetter swaggerJsonGetter = GlobalBean.getSwaggerJsonGetter();
-        SwaggerJson result = swaggerJsonGetter.get(swaggerUrl);
+    private EnumDTO getEnumAPI(){
+        String enumUrl = "http://localhost:7878/enum/getAll";
+        EnumGetter enumGetter = GlobalBean.getEnumGetter();
+        EnumDTO result = enumGetter.get(enumUrl);
         return result;
     }
 
@@ -50,10 +49,10 @@ public class ModuleTest {
 
     @Test
     public void testGenerator(){
-        TypescriptGenerator generator = GlobalBean.getTypescriptGenerator();
         SwaggerJson swaggerJson = this.getOpenAPI();
-        String result = generator.generate(swaggerJson);
-        System.out.println(result.toString());
+        EnumDTO enumDTO = this.getEnumAPI();
+        TypescriptGenerator typescriptGenerator = GlobalBean.createTypescriptGenerator();
+        String code = typescriptGenerator.generate(enumDTO.getData(),swaggerJson);
+        System.out.println(code);
     }
-     */
 }
