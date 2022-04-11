@@ -102,7 +102,9 @@ public class TypescriptGenerator {
                 return "number";
             }
         }else if( schema.getType() == SwaggerJson.PropertyTypeEnum.STRING){
-            if( schema.getFormat() == SwaggerJson.PropertyFormatEnum.DATE_TIME){
+            if( schema.getFormat() == SwaggerJson.PropertyFormatEnum.BYTE){
+                return "number";
+            }else if( schema.getFormat() == SwaggerJson.PropertyFormatEnum.DATE_TIME){
                 return "DateTime";
             }else if( schema.getEnumList() != null ){
                 String enumKey =  this.joinStr(schema.getEnumList());

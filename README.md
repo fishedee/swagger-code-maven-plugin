@@ -89,20 +89,20 @@ mvn install
 下载并安装此插件
 
 ```xml
-<repositories>
-    <repository>
+<pluginRepositories>
+    <pluginRepository>
         <id>jitpack.io</id>
         <url>https://jitpack.io</url>
-    </repository>
-</repositories>
+    </pluginRepository>
+</pluginRepositories>
 
 <plugin>
-    <groupId>com.fishedee</groupId>
+    <groupId>com.github.fishedee</groupId>
     <artifactId>swagger-code-maven-plugin</artifactId>
     <version>1.1</version>
     <configuration>
-      <outputFile>../static/src/api/index.tsx</outputFile>
-      <swaggerUrl>http://localhost:7878/v3/api-docs</swaggerUrl>
+        <outputFile>../static/src/api/index.tsx</outputFile>
+        <swaggerUrl>http://localhost:7878/v3/api-docs</swaggerUrl>
         <enumOutputFile>../static/src/api/enum.tsx</enumOutputFile>
         <enumUrl>http://localhost:7878/enum/getAll</enumUrl>
     </configuration>
