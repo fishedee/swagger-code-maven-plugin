@@ -129,10 +129,15 @@ public class TypescriptGenerator {
             }
         }else if( schema.getType() == SwaggerJson.PropertyTypeEnum.OBJECT){
             //map类型
-            String valueType = this.getSchemaDescription(schema.getAdditionalProperties());
-            return "{\n" +
-                    "[key in string]:"+valueType+"\n"+
-                    "}";
+            SwaggerJson.Schema childSchema = schema.getAdditionalProperties();
+            if( childSchema != null ){
+                String valueType = this.getSchemaDescription(childSchema);
+                return "{\n" +
+                        "[key in string]:"+valueType+"\n"+
+                        "}";
+            }else{
+                return "any";
+            }
         }else{
             throw new BusinessException("未定义的属性"+schema.getType());
         }

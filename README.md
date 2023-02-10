@@ -99,7 +99,7 @@ mvn install
 <plugin>
     <groupId>com.github.fishedee</groupId>
     <artifactId>swagger-code-maven-plugin</artifactId>
-    <version>1.3</version>
+    <version>1.4</version>
     <configuration>
         <outputFile>../static/src/api/index.tsx</outputFile>
         <swaggerUrl>http://localhost:7878/v3/api-docs</swaggerUrl>
@@ -116,3 +116,25 @@ mvn swagger-code:typescript
 ```
 
 在命令行执行以上代码即可
+
+## 注意点
+
+
+```
+public class ColumnConstraint extends BaseEntityType {
+
+    //不要定义为Item的类型，容易与其他类名冲突
+    public static class ColumnConstraintItem extends BaseEntityType{
+        @Id
+        private String id;
+
+    }
+
+    @Id
+    private String id;
+
+    private List<ColumnConstraintItem> columnConstraintItems = new ArrayList<>();
+}
+```
+
+swagger在生成实体名称的时候，相当愚蠢，直接用类名作为Component的名字，不考虑嵌套类和包名的情况。如果多个类都使用Item的类名，那么他们的字段就会冲突，生成的数据就不准确

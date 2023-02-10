@@ -10,14 +10,14 @@ import java.io.InputStream;
 public class ModuleTest {
 
     private SwaggerJson getOpenAPI(){
-        String swaggerUrl = "http://localhost:7878/v3/api-docs";
+        String swaggerUrl = "http://localhost:8110/v3/api-docs";
         SwaggerJsonGetter swaggerJsonGetter = GlobalBean.getSwaggerJsonGetter();
         SwaggerJson result = swaggerJsonGetter.get(swaggerUrl);
         return result;
     }
 
     private EnumDTO getEnumAPI(){
-        String enumUrl = "http://localhost:7878/enum/getAll";
+        String enumUrl = "http://localhost:8110/enum/getAll";
         EnumGetter enumGetter = GlobalBean.getEnumGetter();
         EnumDTO result = enumGetter.get(enumUrl);
         return result;
