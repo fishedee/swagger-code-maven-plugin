@@ -6,6 +6,8 @@ import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
 import okhttp3.OkHttpClient;
 
+import java.util.concurrent.TimeUnit;
+
 public class GlobalBean {
     private static ObjectMapper objectMapper;
 
@@ -29,7 +31,11 @@ public class GlobalBean {
         if( okHttpClient != null ){
             return okHttpClient;
         }
-        okHttpClient = new OkHttpClient();
+        okHttpClient = new OkHttpClient.Builder()
+                .connectTimeout(20, TimeUnit.SECONDS)
+                .writeTimeout(30,TimeUnit.SECONDS)
+                .readTimeout(30,TimeUnit.SECONDS)
+                .build();
         return okHttpClient;
     }
 
