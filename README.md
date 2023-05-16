@@ -99,7 +99,7 @@ mvn install
 <plugin>
     <groupId>com.github.fishedee</groupId>
     <artifactId>swagger-code-maven-plugin</artifactId>
-    <version>1.5</version>
+    <version>1.6</version>
     <configuration>
         <outputFile>../static/src/api/index.tsx</outputFile>
         <swaggerUrl>http://localhost:7878/v3/api-docs</swaggerUrl>
