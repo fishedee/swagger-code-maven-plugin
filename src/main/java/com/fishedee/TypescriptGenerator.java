@@ -98,6 +98,8 @@ public class TypescriptGenerator {
                 schema.getType() == SwaggerJson.PropertyTypeEnum.NUMBER){
             if( schema.getFormat() == SwaggerJson.PropertyFormatEnum.BIG_DECIMAL){
                 return "BigDecimal";
+            }else if(schema.getFormat() == SwaggerJson.PropertyFormatEnum.DOUBLE){
+                return "number";
             }else{
                 return "number";
             }

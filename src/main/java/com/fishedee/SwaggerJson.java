@@ -61,6 +61,7 @@ public class SwaggerJson {
         INT32("int32"),
         INT64("int64"),
         BYTE("byte"),
+        DOUBLE("double"),
         BIG_DECIMAL("bigdecimal"),
         DATE_TIME("date-time");
 
