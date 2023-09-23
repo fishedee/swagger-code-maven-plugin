@@ -94,7 +94,9 @@ public class TypescriptGenerator {
         return name;
     }
     private String getSchemaDescription(SwaggerJson.Schema schema){
-        if( schema.getType() == SwaggerJson.PropertyTypeEnum.INTEGER ||
+        if( schema.getType() == SwaggerJson.PropertyTypeEnum.BOOLEAN){
+            return "boolean";
+        }else if( schema.getType() == SwaggerJson.PropertyTypeEnum.INTEGER ||
                 schema.getType() == SwaggerJson.PropertyTypeEnum.NUMBER){
             if( schema.getFormat() == SwaggerJson.PropertyFormatEnum.BIG_DECIMAL){
                 return "BigDecimal";
