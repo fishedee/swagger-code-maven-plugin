@@ -44,6 +44,7 @@ public class SwaggerJson {
         INTEGER("integer"),
         NUMBER("number"),
         STRING("string"),
+        BOOLEAN("boolean"),
         OBJECT("object");
 
         private String name;
