@@ -1,4 +1,4 @@
-import myRequest from '@/util/request';
+import myRequest from '${importPath}';
 
 type BigDecimal = string;
 
