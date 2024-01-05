@@ -99,9 +99,10 @@ mvn install
 <plugin>
     <groupId>com.github.fishedee</groupId>
     <artifactId>swagger-code-maven-plugin</artifactId>
-    <version>1.6</version>
+    <version>1.8</version>
     <configuration>
         <outputFile>../static/src/api/index.tsx</outputFile>
+        <outputFileImportPath>@/util/request</outputFileImportPath>
         <swaggerUrl>http://localhost:7878/v3/api-docs</swaggerUrl>
         <enumOutputFile>../static/src/api/enum.tsx</enumOutputFile>
         <enumUrl>http://localhost:7878/enum/getAll</enumUrl>

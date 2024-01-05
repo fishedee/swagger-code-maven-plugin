@@ -45,6 +45,12 @@ public class CodeGenMojo
     private String outputFile;
 
     @Parameter(
+            property = "outputFileImportPath",
+            defaultValue = "@/util/request"
+    )
+    private String outputFileImportPath;
+
+    @Parameter(
             property = "swaggerUrl",
             defaultValue = "http://localhost:8080/v2/api-docs"
     )
@@ -81,7 +87,7 @@ public class CodeGenMojo
             }
             enumInfoList = enumDTO.getData();
         }
-        String code = typescriptGenerator.generate(enumInfoList,result);
+        String code = typescriptGenerator.generate(outputFileImportPath,enumInfoList,result);
         codeWriter.write(this.outputFile,code);
 
         if( this.enumOutputFile != null && this.outputFile.trim().length() != 0 ){

@@ -79,6 +79,8 @@ public class TypescriptGenerator {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class DTO{
+        private String importPath = "";
+
         private List<EnumType> enumTypeList = new ArrayList<>();
 
         private List<Type> typeList = new ArrayList<Type>();
@@ -268,13 +270,14 @@ public class TypescriptGenerator {
 
     private Map<String,String> enumMapType = new HashMap<>();
 
-    public String generate(List<EnumDTO.EnumInfo> enumInfoList,SwaggerJson input){
+    public String generate(String importPath,List<EnumDTO.EnumInfo> enumInfoList,SwaggerJson input){
         this.enumMapType = this.convertToEnumMap(enumInfoList);
         List<Type> typeList = this.convertType(input);
         List<Api> apiList = this.convertApi(input);
         List<String> exportList = this.getExport(typeList,apiList,enumInfoList);
 
         DTO result = new DTO();
+        result.setImportPath(importPath);
         result.setTypeList(typeList);
         result.setApiList(apiList);
         result.setEnumTypeList(enumInfoList.stream().map(single->{

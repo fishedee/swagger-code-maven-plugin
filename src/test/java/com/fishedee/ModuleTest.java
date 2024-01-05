@@ -52,7 +52,7 @@ public class ModuleTest {
         SwaggerJson swaggerJson = this.getOpenAPI();
         EnumDTO enumDTO = this.getEnumAPI();
         TypescriptGenerator typescriptGenerator = GlobalBean.createTypescriptGenerator();
-        String code = typescriptGenerator.generate(enumDTO.getData(),swaggerJson);
+        String code = typescriptGenerator.generate("cc",enumDTO.getData(),swaggerJson);
         System.out.println(code);
     }
 }
