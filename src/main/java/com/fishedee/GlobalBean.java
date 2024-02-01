@@ -2,6 +2,7 @@ package com.fishedee;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fishedee.target.TypescriptGenerator;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
 import okhttp3.OkHttpClient;
@@ -61,19 +62,6 @@ public class GlobalBean {
         return configuration;
     }
 
-    public synchronized  static TypescriptGenerator createTypescriptGenerator(){
-        TypescriptGenerator typescriptGenerator = new TypescriptGenerator();
-        typescriptGenerator.setConfiguration(getFreeMarkerConfiguration());
-        return typescriptGenerator;
-    }
-
-    public synchronized  static TypescriptSelectGenerator createTypescriptSelectGenerator(){
-        TypescriptSelectGenerator typescriptGenerator = new TypescriptSelectGenerator();
-        typescriptGenerator.setConfiguration(getFreeMarkerConfiguration());
-        return typescriptGenerator;
-    }
-
-
     private static EnumGetter enumGetter;
 
     public synchronized  static EnumGetter getEnumGetter(){
@@ -94,5 +82,19 @@ public class GlobalBean {
         }
         codeWriter = new CodeWriter();
         return codeWriter;
+    }
+
+    private static CodeGenGeneratorFactory codeGenGeneratorFactory;
+
+    public synchronized  static CodeGenGeneratorFactory getCodeGenGeneratorFactory(){
+        if( codeGenGeneratorFactory != null ){
+            return codeGenGeneratorFactory;
+        }
+        codeGenGeneratorFactory = new CodeGenGeneratorFactory();
+
+        //初始化typescript生成器
+        codeGenGeneratorFactory.addGenerator(CodeGenType.TYPESCRIPT,new TypescriptGenerator());
+
+        return codeGenGeneratorFactory;
     }
 }

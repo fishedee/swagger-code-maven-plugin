@@ -1,10 +1,9 @@
 package com.fishedee;
 
-import jdk.nashorn.internal.objects.Global;
+import com.fishedee.target.CodeGenGeneratorParams;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 public class ModuleTest {
@@ -34,7 +33,7 @@ public class ModuleTest {
         InputStream input = null;
         try
         {
-            input = GlobalBean.class.getResourceAsStream("/freeMarker/typescript.ftl");
+            input = GlobalBean.class.getResourceAsStream("/freeMarker/typescriptApi.ftl");
             byte[] buffer = new byte[1024];
             int length = 0;
             while( (length = input.read(buffer)) != -1){
@@ -51,8 +50,11 @@ public class ModuleTest {
     public void testGenerator(){
         SwaggerJson swaggerJson = this.getOpenAPI();
         EnumDTO enumDTO = this.getEnumAPI();
-        TypescriptGenerator typescriptGenerator = GlobalBean.createTypescriptGenerator();
-        String code = typescriptGenerator.generate("cc",enumDTO.getData(),swaggerJson);
+        CodeGenGeneratorFactory factory = GlobalBean.getCodeGenGeneratorFactory();
+        String code = factory.getGenerator(CodeGenType.TYPESCRIPT).generateApi(new CodeGenGeneratorParams()
+                .setApiImportPath("cc")
+                .setSwaggerApi(swaggerJson)
+                .setEnumList(enumDTO.getData()));
         System.out.println(code);
     }
 }

@@ -16,6 +16,8 @@ package com.fishedee;
  * limitations under the License.
  */
 
+import com.fishedee.target.CodeGenGenerator;
+import com.fishedee.target.CodeGenGeneratorParams;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -26,7 +28,7 @@ import org.apache.maven.project.MavenProject;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mojo(name="typescript")
+@Mojo(name="codegen")
 public class CodeGenMojo
     extends AbstractMojo
 {
@@ -39,16 +41,9 @@ public class CodeGenMojo
     private MavenProject mavenProject;
 
     @Parameter(
-            property = "outputFile",
-            defaultValue = "swagger-code"
+            property = "outputTargets"
     )
-    private String outputFile;
-
-    @Parameter(
-            property = "outputFileImportPath",
-            defaultValue = "@/util/request"
-    )
-    private String outputFileImportPath;
+    private List<CodeGenTarget> outputTargets;
 
     @Parameter(
             property = "swaggerUrl",
@@ -61,38 +56,49 @@ public class CodeGenMojo
     )
     private String enumUrl;
 
-
-    @Parameter(
-            property = "enumOutputFile"
-    )
-    private String enumOutputFile;
-
     public void execute()
         throws MojoExecutionException
     {
         Log log = getLog();
-
         SwaggerJsonGetter swaggerJsonGetter = GlobalBean.getSwaggerJsonGetter();
         EnumGetter enumGetter = GlobalBean.getEnumGetter();
-        TypescriptGenerator typescriptGenerator = GlobalBean.createTypescriptGenerator();
-        TypescriptSelectGenerator typescriptSelectGenerator = GlobalBean.createTypescriptSelectGenerator();
-        CodeWriter codeWriter = GlobalBean.getCodeWriter();
+        CodeGenGeneratorFactory codeGenGeneratorFactory = GlobalBean.getCodeGenGeneratorFactory();
 
-        List<EnumDTO.EnumInfo> enumInfoList = new ArrayList<>();
-        SwaggerJson result = swaggerJsonGetter.get(swaggerUrl);
+        //获取swagger和enum
+        final List<EnumDTO.EnumInfo> enumInfoList = new ArrayList<>();
+        SwaggerJson swaggerApi = swaggerJsonGetter.get(swaggerUrl);
         if( this.enumUrl != null && this.enumUrl.trim().length() != 0 ){
             EnumDTO enumDTO = enumGetter.get(this.enumUrl);
             if( enumDTO.getCode() != 0 ){
                 throw new BusinessException("获取枚举失败:"+enumDTO.getMsg());
             }
-            enumInfoList = enumDTO.getData();
+            enumInfoList.addAll(enumDTO.getData());
         }
-        String code = typescriptGenerator.generate(outputFileImportPath,enumInfoList,result);
-        codeWriter.write(this.outputFile,code);
 
-        if( this.enumOutputFile != null && this.outputFile.trim().length() != 0 ){
-            String code2 = typescriptSelectGenerator.generate(enumInfoList);
-            codeWriter.write(this.enumOutputFile,code2);
+        //生成数据
+        outputTargets.forEach(outputTarget->{
+           CodeGenGenerator codeGenGenerator = codeGenGeneratorFactory.getGenerator(outputTarget.getType());
+           this.generateTarget(codeGenGenerator,outputTarget,swaggerApi,enumInfoList);
+        });
+    }
+
+    private void generateTarget(CodeGenGenerator generator, CodeGenTarget codeGenTarget, SwaggerJson swaggerApi,List<EnumDTO.EnumInfo> enumInfoList){
+        CodeWriter codeWriter = GlobalBean.getCodeWriter();
+        CodeGenGeneratorParams params = new CodeGenGeneratorParams()
+                .setApiImportPath(codeGenTarget.getApiImportPath())
+                .setSwaggerApi(swaggerApi)
+                .setEnumImportPath(codeGenTarget.getEnumImportPath())
+                .setEnumList(enumInfoList);
+        String apiOutputFile = codeGenTarget.getApiOutputFile();
+        if( apiOutputFile != null && apiOutputFile.trim().length() != 0 ){
+            String code = generator.generateApi(params);
+            codeWriter.write(codeGenTarget.getApiOutputFile(),code);
+        }
+
+        String enumOutputFile = codeGenTarget.getEnumOutputFile();
+        if( enumOutputFile != null && enumOutputFile.trim().length() != 0 ){
+            String code2 = generator.generateEnum(params);
+            codeWriter.write(enumOutputFile,code2);
         }
     }
 }
