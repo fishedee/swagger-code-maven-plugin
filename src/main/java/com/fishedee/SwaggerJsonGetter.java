@@ -33,4 +33,13 @@ public class SwaggerJsonGetter {
             throw new CrashException("网络错误",e);
         }
     }
+
+    public SwaggerJson parseData(byte[] responseData) {
+        try{
+            SwaggerJson swaggerJson = objectMapper.readValue(responseData, SwaggerJson.class);
+            return swaggerJson;
+        }catch(IOException e){
+            throw new CrashException("网络错误",e);
+        }
+    }
 }
