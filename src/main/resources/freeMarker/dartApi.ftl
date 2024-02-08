@@ -1,5 +1,14 @@
 import '${importPath}';
 
+/*
+* 设计目标
+* 1. 支持后端Api升级以后，前端需要往后兼容新后端Api。包括，支持没有预定义的Enum，支持没有预定义的字段保存和透传
+* 2. 最大化兼容不同格式的后端格式，例如以string来传递int，double或者bool字段
+* 3. 数据不仅用来后端传递数据，也是前端表单的数据模型。所以，每个字段都需要允许为null，以保存用户暂时未填写的表单项
+* 4. 前端表单的数据模型，需要为强类型的，避免在编写业务逻辑代码中使用不存在的字段，传入不匹配的类型。
+* 5. 前端表单的数据模型，需要获取模型的field所有可能性，以保证在编译时进行校验field是否存在。
+*/
+
 abstract interface class IData {
   Object? operator [](String name);
   void operator []=(String name, Object? value);
@@ -300,6 +309,7 @@ class ${singlEnum.name} extends IDataEnum implements IDataDynamic{
     return toDynamic(this)!;
   }
 }
+
 </#list>
 
 <#list typeList as singleType>
@@ -310,24 +320,24 @@ class F${singleType.name} extends IDataField {
   const F${singleType.name}(super.key);
 }
 
-class ${singleType.name} extends IDataBasic implements IDataDynamic {
-  static final FieldReflectInfo<${singleType.name}> _fields = {
-    <#list singleType.fieldList as field>
-      "${field.name}": (
-        getter: (data) => data._${field.name},
-        setter: (data, value) => data._${field.name} = value as ${field.type}?,
-        toDynamic: (data) {
-          final formatter = ${field.formatter};
-          return formatter(data._${field.name});
-        },
-        fromDynamic: (data, value) {
-          final parser = ${field.parser};
-          data._${field.name} = parser(value);
-        }
-      ),
-    </#list>
-  };
+final FieldReflectInfo<${singleType.name}> _${singleType.name}_fields = {
+<#list singleType.fieldList as field>
+  "${field.name}": (
+    getter: (data) => data._${field.name},
+    setter: (data, value) => data._${field.name} = value as ${field.type}?,
+    toDynamic: (data) {
+      final formatter = ${field.formatter};
+      return formatter(data._${field.name});
+    },
+    fromDynamic: (data, value) {
+      final parser = ${field.parser};
+      data._${field.name} = parser(value);
+    }
+  ),
+</#list>
+};
 
+class ${singleType.name} extends IDataBasic implements IDataDynamic {
   ${singleType.name}({
   <#list singleType.fieldList as field>
     ${field.type}? ${field.name}<#sep>,</#sep>
@@ -341,7 +351,7 @@ class ${singleType.name} extends IDataBasic implements IDataDynamic {
     } else if (dy is Map<String, dynamic>) {
       final data = ${singleType.name}();
       dy.forEach((key, dynamicValue) {
-        final fieldInfo = _fields[key];
+        final fieldInfo = _${singleType.name}_fields[key];
         if (fieldInfo == null) {
           data.setExternalField(key, dynamicValue);
           return;
@@ -363,7 +373,7 @@ class ${singleType.name} extends IDataBasic implements IDataDynamic {
         result[key] = value;
       }
     });
-    _fields.forEach((key, fieldInfo) {
+    _${singleType.name}_fields.forEach((key, fieldInfo) {
       final dynamicValue = fieldInfo.toDynamic(data);
       if (dynamicValue != null) {
         result[key] = dynamicValue;
@@ -384,7 +394,7 @@ class ${singleType.name} extends IDataBasic implements IDataDynamic {
 
   @override
   Object? operator [](String name) {
-    var fieldInfo = _fields[name];
+    var fieldInfo = _${singleType.name}_fields[name];
     if (fieldInfo == null) {
       return super[name];
     }
@@ -393,7 +403,7 @@ class ${singleType.name} extends IDataBasic implements IDataDynamic {
 
   @override
   void operator []=(String name, Object? value) {
-    var fieldInfo = _fields[name];
+    var fieldInfo = _${singleType.name}_fields[name];
     if (fieldInfo == null) {
       super[name] = value;
       return;
@@ -422,6 +432,7 @@ class ${singleType.name} extends IDataBasic implements IDataDynamic {
 
   </#list>
 }
+
 </#list>
 
 
@@ -459,16 +470,21 @@ Object? DynamicEncode(Object? info) {
 
 <#list apiList as singleApi>
 Future<<#if singleApi.responseType == 'void'>void<#else>${singleApi.responseType}?</#if>> ${singleApi.name}([Object? data]) async{
+  <#if singleApi.responseType == 'void'>
+  await myRequest(
+    method: "${singleApi.method}",
+    url: "${singleApi.url}",
+    data: DynamicEncode(data),
+  );
+  <#else>
   Object? result = await myRequest(
     method: "${singleApi.method}",
     url: "${singleApi.url}",
     data: DynamicEncode(data),
   );
-  <#if singleApi.responseType == 'void'>
-  return;
-  <#else>
   final parser = ${singleApi.responseParser};
   return parser(result);
   </#if>
 }
+
 </#list>

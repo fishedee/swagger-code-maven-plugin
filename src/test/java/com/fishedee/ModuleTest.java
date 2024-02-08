@@ -78,7 +78,7 @@ public class ModuleTest {
         EnumDTO enumDTO = this.getLocalEnumAPI();
         CodeGenGeneratorFactory factory = GlobalBean.getCodeGenGeneratorFactory();
         String code = factory.getGenerator(CodeGenType.DART).generateApi(new CodeGenGeneratorParams()
-                .setApiImportPath("cc")
+                .setApiImportPath("package:trade_app/util/request.dart")
                 .setSwaggerApi(swaggerJson)
                 .setEnumList(enumDTO.getData()));
         FileUtils.write(new File("api.dart"),code,"UTF-8");

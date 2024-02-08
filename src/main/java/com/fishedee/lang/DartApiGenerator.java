@@ -156,7 +156,14 @@ public class DartApiGenerator {
             .setFormatter("ObjectHelper.toDynamic")
             .setParser("ObjectHelper.fromDynamic");
 
-    private FieldInfo getSchemaDescription(SwaggerJson.Schema schema){
+    private String getIndent(int depth){
+        StringBuilder result = new StringBuilder();
+        for( int i = 0 ; i < depth+1;i++){
+            result.append("  ");
+        }
+        return result.toString();
+    }
+    private FieldInfo getSchemaDescription(SwaggerJson.Schema schema,int depth){
         if( schema.getType() == SwaggerJson.PropertyTypeEnum.BOOLEAN){
             return boolField;
         }else if( schema.getType() == SwaggerJson.PropertyTypeEnum.INTEGER ||
@@ -188,16 +195,17 @@ public class DartApiGenerator {
             }
         }else if( schema.getType() == SwaggerJson.PropertyTypeEnum.ARRAY){
             //list类型
-            FieldInfo subFieldInfo = this.getSchemaDescription(schema.getItems());
+            FieldInfo subFieldInfo = this.getSchemaDescription(schema.getItems(),depth+1);
+            String indent = getIndent(depth);
             String type = "List<"+subFieldInfo.type+">";
             String formatter = "ListHelper.wrapToDynamic<"+subFieldInfo.type+">((single){\n"+
-                    "final handler = "+subFieldInfo.formatter+";\n"+
-                    "return handler(single)!;\n"+
-                    "})";
+                    indent+"  final handler = "+subFieldInfo.formatter+";\n"+
+                    indent+"  return handler(single)!;\n"+
+                    indent+"})";
             String parser = "ListHelper.wrapFromDynamic<"+subFieldInfo.type+">((single){\n"+
-                    "final handler = "+subFieldInfo.parser+";\n"+
-                    "return handler(single)!;\n"+
-                    "})";
+                    indent+"  final handler = "+subFieldInfo.parser+";\n"+
+                    indent+"  return handler(single)!;\n"+
+                    indent+"})";
             return new FieldInfo()
                     .setType(type)
                     .setFormatter(formatter)
@@ -218,16 +226,17 @@ public class DartApiGenerator {
             //map类型
             SwaggerJson.Schema childSchema = schema.getAdditionalProperties();
             if( childSchema != null ){
-                FieldInfo subFieldInfo = this.getSchemaDescription(childSchema);
+                FieldInfo subFieldInfo = this.getSchemaDescription(childSchema,depth+1);
+                String indent = getIndent(depth);
                 String type = "Map<String,"+subFieldInfo.type+">";
                 String formatter = "MapHelper.wrapToDynamic<"+subFieldInfo.type+">((single){\n"+
-                        "final handler = "+subFieldInfo.formatter+";\n"+
-                        "return handler(single)!;\n"+
-                        "})";
+                        indent + "  final handler = "+subFieldInfo.formatter+";\n"+
+                        indent + "  return handler(single)!;\n"+
+                        indent + "})";
                 String parser = "MapHelper.wrapFromDynamic<"+subFieldInfo.type+">((single){\n"+
-                        "final handler = "+subFieldInfo.parser+";\n"+
-                        "return handler(single)!;\n"+
-                        "})";
+                        indent + "  final handler = "+subFieldInfo.parser+";\n"+
+                        indent + "  return handler(single)!;\n"+
+                        indent + "})";
                 return new FieldInfo()
                         .setType(type)
                         .setFormatter(formatter)
@@ -245,7 +254,7 @@ public class DartApiGenerator {
             SwaggerJson.Definition definition = single.getValue();
             List<Field> fieldList = definition.getProperties().entrySet().stream().map(single2->{
                 SwaggerJson.Schema schema = single2.getValue();
-                FieldInfo fieldInfo = this.getSchemaDescription(schema);
+                FieldInfo fieldInfo = this.getSchemaDescription(schema,2);
                 Field field = new Field();
                 field.setName(single2.getKey());
                 field.setUpperName(this.firstUpper(single2.getKey()));
@@ -290,7 +299,7 @@ public class DartApiGenerator {
         if( schema[0] == null ){
             return voidField;
         }else{
-            return this.getSchemaDescription(schema[0]);
+            return this.getSchemaDescription(schema[0],0);
         }
 
     }

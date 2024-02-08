@@ -25,7 +25,9 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Mojo(name="codegen")
@@ -64,6 +66,10 @@ public class CodeGenMojo
         EnumGetter enumGetter = GlobalBean.getEnumGetter();
         CodeGenGeneratorFactory codeGenGeneratorFactory = GlobalBean.getCodeGenGeneratorFactory();
 
+        log.info(String.format("codegen %d targets ...",outputTargets.size()));
+
+        Date time1 = new Date();
+        log.info(String.format("fetch api begin ..."));
         //获取swagger和enum
         final List<EnumDTO.EnumInfo> enumInfoList = new ArrayList<>();
         SwaggerJson swaggerApi = swaggerJsonGetter.get(swaggerUrl);
@@ -74,12 +80,18 @@ public class CodeGenMojo
             }
             enumInfoList.addAll(enumDTO.getData());
         }
+        Date time2 = new Date();
+        log.info(String.format("fetch api success ... %s", Duration.between(time1.toInstant(),time2.toInstant())));
 
+        log.info(String.format("generate api begin ..."));
         //生成数据
         outputTargets.forEach(outputTarget->{
            CodeGenGenerator codeGenGenerator = codeGenGeneratorFactory.getGenerator(outputTarget.getType());
            this.generateTarget(codeGenGenerator,outputTarget,swaggerApi,enumInfoList);
         });
+
+        Date time3 = new Date();
+        log.info(String.format("generate api success ... %s",Duration.between(time2.toInstant(),time3.toInstant())));
     }
 
     private void generateTarget(CodeGenGenerator generator, CodeGenTarget codeGenTarget, SwaggerJson swaggerApi,List<EnumDTO.EnumInfo> enumInfoList){
