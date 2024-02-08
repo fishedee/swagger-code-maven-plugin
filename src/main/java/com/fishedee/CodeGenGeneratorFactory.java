@@ -1,6 +1,6 @@
 package com.fishedee;
 
-import com.fishedee.target.CodeGenGenerator;
+import com.fishedee.lang.CodeGenGenerator;
 
 import java.util.HashMap;
 import java.util.Map;

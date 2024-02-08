@@ -16,8 +16,8 @@ package com.fishedee;
  * limitations under the License.
  */
 
-import com.fishedee.target.CodeGenGenerator;
-import com.fishedee.target.CodeGenGeneratorParams;
+import com.fishedee.lang.CodeGenGenerator;
+import com.fishedee.lang.CodeGenGeneratorParams;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;

@@ -1,6 +1,6 @@
 package com.fishedee;
 
-import com.fishedee.target.CodeGenGeneratorParams;
+import com.fishedee.lang.CodeGenGeneratorParams;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;

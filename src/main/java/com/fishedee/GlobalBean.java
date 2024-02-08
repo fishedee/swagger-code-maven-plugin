@@ -2,7 +2,7 @@ package com.fishedee;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fishedee.target.TypescriptGenerator;
+import com.fishedee.lang.TypescriptGenerator;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
 import okhttp3.OkHttpClient;
