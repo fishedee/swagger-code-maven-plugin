@@ -33,4 +33,13 @@ public class EnumGetter {
             throw new CrashException("网络错误",e);
         }
     }
+
+    public EnumDTO parseData(byte[] responseData){
+        try {
+            EnumDTO enumDTO = objectMapper.readValue(responseData,EnumDTO.class);
+            return enumDTO;
+        }catch(IOException e){
+            throw new CrashException("网络错误",e);
+        }
+    }
 }

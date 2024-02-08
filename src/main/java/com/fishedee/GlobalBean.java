@@ -2,6 +2,7 @@ package com.fishedee;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fishedee.lang.DartGenerator;
 import com.fishedee.lang.TypescriptGenerator;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
@@ -92,8 +93,9 @@ public class GlobalBean {
         }
         codeGenGeneratorFactory = new CodeGenGeneratorFactory();
 
-        //初始化typescript生成器
+        //初始化各个lang的生成器
         codeGenGeneratorFactory.addGenerator(CodeGenType.TYPESCRIPT,new TypescriptGenerator());
+        codeGenGeneratorFactory.addGenerator(CodeGenType.DART,new DartGenerator());
 
         return codeGenGeneratorFactory;
     }

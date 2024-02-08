@@ -23,7 +23,7 @@ public class CodeGenGeneratorFactory {
 
     public void addGenerator(CodeGenType name,CodeGenGenerator codeGenGenerator){
         CodeGenGenerator generator = this.codegenGeneratorMap.get(name);
-        if( generator == null ){
+        if( generator != null ){
             String msg = String.format("重复的代码生成器：[%s]",name);
             throw new BusinessException(msg);
         }
