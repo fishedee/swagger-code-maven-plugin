@@ -10,6 +10,7 @@ import freemarker.template.TemplateException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -113,41 +114,103 @@ public class DartApiGenerator {
         name = name.replaceAll("«|»","");
         return name;
     }
-    private String getSchemaDescription(SwaggerJson.Schema schema){
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Accessors(chain = true)
+    public static class FieldInfo{
+        private String type;
+
+        private String formatter;
+
+        private String parser;
+    }
+
+    private static FieldInfo voidField = new FieldInfo()
+            .setType("void")
+            .setFormatter("")
+            .setParser("");
+    private static FieldInfo boolField = new FieldInfo()
+                    .setType("bool")
+                    .setFormatter("BoolHelper.toDynamic")
+                    .setParser("BoolHelper.fromDynamic");
+
+    private static FieldInfo intField = new FieldInfo()
+            .setType("int")
+            .setFormatter("IntHelper.toDynamic")
+            .setParser("IntHelper.fromDynamic");
+
+    private static FieldInfo doubleField = new FieldInfo()
+            .setType("double")
+            .setFormatter("DoubleHelper.toDynamic")
+            .setParser("DoubleHelper.fromDynamic");
+
+    private static FieldInfo stringField = new FieldInfo()
+            .setType("String")
+            .setFormatter("StringHelper.toDynamic")
+            .setParser("StringHelper.fromDynamic");
+
+    private static FieldInfo objectField = new FieldInfo()
+            .setType("Object")
+            .setFormatter("ObjectHelper.toDynamic")
+            .setParser("ObjectHelper.fromDynamic");
+
+    private FieldInfo getSchemaDescription(SwaggerJson.Schema schema){
         if( schema.getType() == SwaggerJson.PropertyTypeEnum.BOOLEAN){
-            return "bool";
+            return boolField;
         }else if( schema.getType() == SwaggerJson.PropertyTypeEnum.INTEGER ||
                 schema.getType() == SwaggerJson.PropertyTypeEnum.NUMBER){
             if( schema.getFormat() == SwaggerJson.PropertyFormatEnum.BIG_DECIMAL){
-                return "String";
+                return stringField;
             }else if(schema.getFormat() == SwaggerJson.PropertyFormatEnum.DOUBLE){
-                return "double";
+                return doubleField;
             }else{
-                return "int";
+                return intField;
             }
         }else if( schema.getType() == SwaggerJson.PropertyTypeEnum.STRING){
             if( schema.getFormat() == SwaggerJson.PropertyFormatEnum.BYTE){
-                return "int";
+                return intField;
             }else if( schema.getFormat() == SwaggerJson.PropertyFormatEnum.DATE_TIME){
-                return "String";
+                return stringField;
             }else if( schema.getEnumList() != null ){
                 String enumKey =  this.joinStr(schema.getEnumList());
                 String enumTypeName = this.enumMapType.get(enumKey);
                 if( enumTypeName == null ){
                     throw new BusinessException("找不到枚举体["+enumKey+"]");
                 }
-                return enumTypeName;
+                return new FieldInfo()
+                        .setType(enumTypeName)
+                        .setFormatter(enumTypeName+".toDynamic")
+                        .setParser(enumTypeName+".fromDynamic");
             }else {
-                return "String";
+                return stringField;
             }
         }else if( schema.getType() == SwaggerJson.PropertyTypeEnum.ARRAY){
             //list类型
-            return "List<"+this.getSchemaDescription(schema.getItems())+">";
+            FieldInfo subFieldInfo = this.getSchemaDescription(schema.getItems());
+            String type = "List<"+subFieldInfo.type+">";
+            String formatter = "ListHelper.wrapToDynamic<"+subFieldInfo.type+">((single){\n"+
+                    "final handler = "+subFieldInfo.formatter+";\n"+
+                    "return handler(single)!;\n"+
+                    "})";
+            String parser = "ListHelper.wrapFromDynamic<"+subFieldInfo.type+">((single){\n"+
+                    "final handler = "+subFieldInfo.parser+";\n"+
+                    "return handler(single)!;\n"+
+                    "})";
+            return new FieldInfo()
+                    .setType(type)
+                    .setFormatter(formatter)
+                    .setParser(parser);
         }else if( schema.getRef() != null ) {
             String ref = schema.getRef();
             String prefix = "#/components/schemas/";
             if (ref.startsWith(prefix)) {
-                return "Type" + this.stripGeneric(ref.substring(prefix.length()));
+                String classTypeName = "Type" + this.stripGeneric(ref.substring(prefix.length()));
+                return new FieldInfo()
+                        .setType(classTypeName)
+                        .setFormatter(classTypeName+".toDynamic")
+                        .setParser(classTypeName+".fromDynamic");
             } else {
                 throw new BusinessException("未知的ref类型" + ref);
             }
@@ -155,10 +218,22 @@ public class DartApiGenerator {
             //map类型
             SwaggerJson.Schema childSchema = schema.getAdditionalProperties();
             if( childSchema != null ){
-                String valueType = this.getSchemaDescription(childSchema);
-                return "Map<String,"+valueType+">";
+                FieldInfo subFieldInfo = this.getSchemaDescription(childSchema);
+                String type = "Map<String,"+subFieldInfo.type+">";
+                String formatter = "MapHelper.wrapToDynamic<"+subFieldInfo.type+">((single){\n"+
+                        "final handler = "+subFieldInfo.formatter+";\n"+
+                        "return handler(single)!;\n"+
+                        "})";
+                String parser = "MapHelper.wrapFromDynamic<"+subFieldInfo.type+">((single){\n"+
+                        "final handler = "+subFieldInfo.parser+";\n"+
+                        "return handler(single)!;\n"+
+                        "})";
+                return new FieldInfo()
+                        .setType(type)
+                        .setFormatter(formatter)
+                        .setParser(parser);
             }else{
-                return "Object";
+                return objectField;
             }
         }else{
             throw new BusinessException("未定义的属性"+schema.getType());
@@ -170,10 +245,13 @@ public class DartApiGenerator {
             SwaggerJson.Definition definition = single.getValue();
             List<Field> fieldList = definition.getProperties().entrySet().stream().map(single2->{
                 SwaggerJson.Schema schema = single2.getValue();
+                FieldInfo fieldInfo = this.getSchemaDescription(schema);
                 Field field = new Field();
                 field.setName(single2.getKey());
                 field.setUpperName(this.firstUpper(single2.getKey()));
-                field.setType(this.getSchemaDescription(schema));
+                field.setType(fieldInfo.getType());
+                field.setFormatter(fieldInfo.getFormatter());
+                field.setParser(fieldInfo.getParser());
                 return field;
             }).collect(Collectors.toList());
 
@@ -200,7 +278,7 @@ public class DartApiGenerator {
         return result.toString();
     }
 
-    private String getResponseType(Map<String, SwaggerJson.Response> responseMap ){
+    private FieldInfo getResponseType(Map<String, SwaggerJson.Response> responseMap ){
         SwaggerJson.Response okResponse = responseMap.get("200");
         if( okResponse == null ){
             throw new BusinessException("找不到200返回下的Response");
@@ -210,7 +288,7 @@ public class DartApiGenerator {
             schema[0] = single.getSchema();
         });
         if( schema[0] == null ){
-            return "void";
+            return voidField;
         }else{
             return this.getSchemaDescription(schema[0]);
         }
@@ -224,10 +302,12 @@ public class DartApiGenerator {
 
             List<Api> apiList = pathMap.entrySet().stream().map(single2->{
                 Api result = new Api();
+                FieldInfo responseType = this.getResponseType(single2.getValue().getResponses());
                 result.setName(this.getApiName(path));
                 result.setMethod(single2.getKey().toUpperCase());
                 result.setUrl(path);
-                result.setResponseType(this.getResponseType(single2.getValue().getResponses()));
+                result.setResponseType(responseType.getType());
+                result.setResponseParser(responseType.getParser());
                 return result;
             }).collect(Collectors.toList());
 

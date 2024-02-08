@@ -99,7 +99,7 @@ class ObjectHelper {
     throw FormatException('can not parse to Object: [$data]');
   }
 
-  static Object? toDynamic(String? data) {
+  static Object? toDynamic(Object? data) {
     return data;
   }
 }
@@ -263,14 +263,14 @@ class IDataEnum {
 <#list enumList as singlEnum>
 class ${singlEnum.name} extends IDataEnum implements IDataDynamic{
 <#list singlEnum.constantList as constant>
-  static const ${constant.value} = ${singlEnum.name}('${constant.value}','${constant.label}')
+  static const ${constant.value} = ${singlEnum.name}('${constant.value}','${constant.label}');
 
 </#list>
   static const values = {
     <#list singlEnum.constantList as constant>
      '${constant.value}':${constant.value},
     </#list>
-  }
+  };
 
   const ${singlEnum.name}(super.value,super.label);
 
@@ -299,7 +299,7 @@ class ${singlEnum.name} extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
-};
+}
 </#list>
 
 <#list typeList as singleType>
@@ -311,7 +311,7 @@ class F${singleType.name} extends IDataField {
 }
 
 class ${singleType.name} extends IDataBasic implements IDataDynamic {
-  static final FieldReflectInfo<User> _fields = {
+  static final FieldReflectInfo<${singleType.name}> _fields = {
     <#list singleType.fieldList as field>
       "${field.name}": (
         getter: (data) => data._${field.name},
@@ -458,13 +458,17 @@ Object? DynamicEncode(Object? info) {
 }
 
 <#list apiList as singleApi>
-Future<${singleApi.responseType}?> ${singleApi.name}([Object? data]) async{
+Future<<#if singleApi.responseType == 'void'>void<#else>${singleApi.responseType}?</#if>> ${singleApi.name}([Object? data]) async{
   Object? result = await myRequest(
     method: "${singleApi.method}",
     url: "${singleApi.url}",
     data: DynamicEncode(data),
   );
+  <#if singleApi.responseType == 'void'>
+  return;
+  <#else>
   final parser = ${singleApi.responseParser};
   return parser(result);
+  </#if>
 }
 </#list>
