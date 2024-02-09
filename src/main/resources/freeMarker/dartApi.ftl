@@ -323,15 +323,15 @@ class F${singleType.name} extends IDataField {
 final FieldReflectInfo<${singleType.name}> _${singleType.name}_fields = {
 <#list singleType.fieldList as field>
   "${field.name}": (
-    getter: (data) => data._${field.name},
-    setter: (data, value) => data._${field.name} = value as ${field.type}?,
+    getter: (data) => data.${field.name},
+    setter: (data, value) => data.${field.name} = value as ${field.type}?,
     toDynamic: (data) {
       final formatter = ${field.formatter};
-      return formatter(data._${field.name});
+      return formatter(data.${field.name});
     },
     fromDynamic: (data, value) {
       final parser = ${field.parser};
-      data._${field.name} = parser(value);
+      data.${field.name} = parser(value);
     }
   ),
 </#list>
@@ -340,10 +340,9 @@ final FieldReflectInfo<${singleType.name}> _${singleType.name}_fields = {
 class ${singleType.name} extends IDataBasic implements IDataDynamic {
   ${singleType.name}({
   <#list singleType.fieldList as field>
-    ${field.type}? ${field.name}<#sep>,</#sep>
+    this.${field.name}<#sep>,</#sep>
   </#list>
-  }):<#list singleType.fieldList as field>
-    _${field.name} = ${field.name}<#sep>,</#sep></#list>;
+  });
 
   static ${singleType.name}? fromDynamic(Object? dy) {
     if (dy == null) {
@@ -412,23 +411,7 @@ class ${singleType.name} extends IDataBasic implements IDataDynamic {
   }
 
   <#list singleType.fieldList as field>
-  ${field.type}? _${field.name};
-
-  ${field.type} get ${field.name}{
-    return _${field.name}!;
-  }
-
-  ${field.type}? get${field.upperName}(){
-    return _${field.name};
-  }
-
-  set ${field.name}(${field.type} data){
-    _${field.name} = data;
-  }
-
-  void set${field.upperName}(${field.type}? data){
-    _${field.name} = data;
-  }
+  ${field.type}? ${field.name};
 
   </#list>
 }
