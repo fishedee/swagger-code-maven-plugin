@@ -16,6 +16,7 @@ abstract interface class IData {
 
 abstract interface class IDataDynamic {
   Object encodeDynamic();
+  Object copy();
 }
 
 class BoolHelper {
@@ -37,6 +38,10 @@ class BoolHelper {
   static Object? toDynamic(bool? data) {
     return data;
   }
+
+  static bool? deepCopy(bool? data) {
+    return data;
+  }
 }
 
 class IntHelper {
@@ -54,6 +59,10 @@ class IntHelper {
   }
 
   static Object? toDynamic(int? data) {
+    return data;
+  }
+
+  static int? deepCopy(int? data) {
     return data;
   }
 }
@@ -75,6 +84,10 @@ class DoubleHelper {
   static Object? toDynamic(double? data) {
     return data;
   }
+
+  static double? deepCopy(double? data) {
+    return data;
+  }
 }
 
 class StringHelper {
@@ -93,6 +106,10 @@ class StringHelper {
   static Object? toDynamic(String? data) {
     return data;
   }
+
+  static String? deepCopy(String? data) {
+    return data;
+  }
 }
 
 class ObjectHelper {
@@ -109,6 +126,10 @@ class ObjectHelper {
   }
 
   static Object? toDynamic(Object? data) {
+    return data;
+  }
+
+  static Object? deepCopy(Object? data) {
     return data;
   }
 }
@@ -133,6 +154,16 @@ class ListHelper {
         return null;
       }
       return data.map((single) => toDynamicItem(single)).toList();
+    };
+  }
+
+  static List<T>? Function(List<T>? data) wrapDeepCopy<T>(
+      T Function(T data) deepCopyItem) {
+    return (List<T>? data) {
+      if (data == null) {
+        return null;
+      }
+      return data.map((single) => deepCopyItem(single)).toList();
     };
   }
 
@@ -182,6 +213,20 @@ class MapHelper {
     };
   }
 
+  static Map<String, T>? Function(Map<String, T>? data) wrapDeepCopy<T>(
+      T Function(T data) deepCopyItem) {
+    return (Map<String, T>? data) {
+      if (data == null) {
+        return null;
+      }
+      final result = <String, T>{};
+      data.forEach((key, value) {
+        result[key] = deepCopyItem(value);
+      });
+      return result;
+    };
+  }
+
   static bool equals<T, U>(Map<T, U>? a, Map<T, U>? b) {
     if (a == null) return b == null;
     if (b == null || a.length != b.length) return false;
@@ -201,13 +246,15 @@ typedef GetterHandler<T> = Object? Function(T data);
 typedef SetterHandler<T> = void Function(T data, Object? value);
 typedef ToDynamicHandler<T> = Object? Function(T data);
 typedef FromDynamicHandler<T> = void Function(T data, Object? value);
+typedef DeepCopyHandler<T> = void Function(T newData, T oldData);
 typedef FieldReflectInfo<T> = Map<
     String,
     ({
       GetterHandler<T> getter,
       SetterHandler<T> setter,
       ToDynamicHandler<T> toDynamic,
-      FromDynamicHandler<T> fromDynamic
+      FromDynamicHandler<T> fromDynamic,
+      DeepCopyHandler<T> deepCopy,
     })>;
 
 abstract class IDataBasic implements IData {
@@ -217,6 +264,18 @@ abstract class IDataBasic implements IData {
 
   Map<String, Object?> getExternalFields() {
     return _externalFields;
+  }
+
+  Map<String, Object?> _copyExternalFields() {
+    final result = <String, Object?>{};
+    _externalFields.forEach((key, value) {
+      if (value is IDataDynamic) {
+        result[key] = value.copy();
+      } else {
+        result[key] = value;
+      }
+    });
+    return result;
   }
 
   Object? getExternalField(String name) {
@@ -308,6 +367,15 @@ class ${singlEnum.name} extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static ${singlEnum.name}? deepCopy(${singlEnum.name}? data) {
+    return data;
+  }
+
+  @override
+  ${singlEnum.name} copy() {
+    return deepCopy(this)!;
+  }
 }
 
 </#list>
@@ -332,7 +400,11 @@ final FieldReflectInfo<${singleType.name}> _${singleType.name}_fields = {
     fromDynamic: (data, value) {
       final parser = ${field.parser};
       data.${field.name} = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ${field.copyer};
+      newData.${field.name} = copyer(oldData.${field.name});
+    },
   ),
 </#list>
 };
@@ -386,6 +458,24 @@ class ${singleType.name} extends IDataBasic implements IDataDynamic {
     return toDynamic(this)!;
   }
 
+  static ${singleType.name}? deepCopy(${singleType.name}? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = ${singleType.name}();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _${singleType.name}_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  ${singleType.name} copy() {
+    return deepCopy(this)!;
+  }
+
   @override
   String toString() {
     return encodeDynamic().toString();
@@ -418,6 +508,37 @@ class ${singleType.name} extends IDataBasic implements IDataDynamic {
 
 </#list>
 
+T DeepCopy<T>(T info) {
+  if (info == null) {
+    return info;
+  } else if (info is IDataDynamic) {
+    return info.copy() as T;
+  } else if (info is bool) {
+    return BoolHelper.deepCopy(info) as T;
+  } else if (info is int) {
+    return IntHelper.deepCopy(info) as T;
+  } else if (info is double) {
+    return DoubleHelper.deepCopy(info) as T;
+  } else if (info is String) {
+    return StringHelper.deepCopy(info) as T;
+  } else if (info is List) {
+    return info.map((single) => DeepCopy(single)).toList() as T;
+  } else if (info is Map) {
+    final data = {};
+    info.forEach((key, value) {
+      data[DeepCopy(key)] = DeepCopy(value);
+    });
+    return data as T;
+  } else if (info is Set) {
+    final data = <dynamic>{};
+    for (final value in info) {
+      data.add(value);
+    }
+    return data as T;
+  } else {
+    throw FormatException('can not deepCopy dynamic: ${r'${info.runtimeType}'}');
+  }
+}
 
 Object? DynamicEncode(Object? info) {
   if (info == null) {
