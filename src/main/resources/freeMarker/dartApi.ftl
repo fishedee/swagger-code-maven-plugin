@@ -301,6 +301,23 @@ class IDataField {
   final String key;
 
   const IDataField(this.key);
+
+  @override
+  int get hashCode {
+    return key.hashCode;
+  }
+
+  @override
+  bool operator ==(Object? other) {
+    return other is IDataField &&
+        runtimeType == other.runtimeType &&
+        key == other.key;
+  }
+
+  @override
+  String toString() {
+    return '$runtimeType($key)';
+  }
 }
 
 class IDataEnum {
