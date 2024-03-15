@@ -53,6 +53,8 @@ public class DartApiGenerator {
         private String formatter = "";
 
         private String parser = "";
+
+        private String copyer = "";
     }
 
     @Data
@@ -125,36 +127,44 @@ public class DartApiGenerator {
         private String formatter;
 
         private String parser;
+
+        private String copyer;
     }
 
     private static FieldInfo voidField = new FieldInfo()
             .setType("void")
             .setFormatter("")
-            .setParser("");
+            .setParser("")
+            .setCopyer("");
     private static FieldInfo boolField = new FieldInfo()
                     .setType("bool")
                     .setFormatter("BoolHelper.toDynamic")
-                    .setParser("BoolHelper.fromDynamic");
+                    .setParser("BoolHelper.fromDynamic")
+                    .setCopyer("BoolHelper.deepCopy");
 
     private static FieldInfo intField = new FieldInfo()
             .setType("int")
             .setFormatter("IntHelper.toDynamic")
-            .setParser("IntHelper.fromDynamic");
+            .setParser("IntHelper.fromDynamic")
+            .setCopyer("IntHelper.deepCopy");
 
     private static FieldInfo doubleField = new FieldInfo()
             .setType("double")
             .setFormatter("DoubleHelper.toDynamic")
-            .setParser("DoubleHelper.fromDynamic");
+            .setParser("DoubleHelper.fromDynamic")
+            .setCopyer("DoubleHelper.deepCopy");
 
     private static FieldInfo stringField = new FieldInfo()
             .setType("String")
             .setFormatter("StringHelper.toDynamic")
-            .setParser("StringHelper.fromDynamic");
+            .setParser("StringHelper.fromDynamic")
+            .setCopyer("StringHelper.deepCopy");
 
     private static FieldInfo objectField = new FieldInfo()
             .setType("Object")
             .setFormatter("ObjectHelper.toDynamic")
-            .setParser("ObjectHelper.fromDynamic");
+            .setParser("ObjectHelper.fromDynamic")
+            .setCopyer("ObjectHelper.deepCopy");
 
     private String getIndent(int depth){
         StringBuilder result = new StringBuilder();
@@ -189,7 +199,8 @@ public class DartApiGenerator {
                 return new FieldInfo()
                         .setType(enumTypeName)
                         .setFormatter(enumTypeName+".toDynamic")
-                        .setParser(enumTypeName+".fromDynamic");
+                        .setParser(enumTypeName+".fromDynamic")
+                        .setCopyer(enumTypeName+".deepCopy");
             }else {
                 return stringField;
             }
@@ -206,10 +217,15 @@ public class DartApiGenerator {
                     indent+"  final handler = "+subFieldInfo.parser+";\n"+
                     indent+"  return handler(single)!;\n"+
                     indent+"})";
+            String copyer = "ListHelper.wrapDeepCopy<"+subFieldInfo.type+">((single){\n"+
+                    indent+"  final handler = "+subFieldInfo.copyer+";\n"+
+                    indent+"  return handler(single)!;\n"+
+                    indent+"})";
             return new FieldInfo()
                     .setType(type)
                     .setFormatter(formatter)
-                    .setParser(parser);
+                    .setParser(parser)
+                    .setCopyer(copyer);
         }else if( schema.getRef() != null ) {
             String ref = schema.getRef();
             String prefix = "#/components/schemas/";
@@ -218,7 +234,8 @@ public class DartApiGenerator {
                 return new FieldInfo()
                         .setType(classTypeName)
                         .setFormatter(classTypeName+".toDynamic")
-                        .setParser(classTypeName+".fromDynamic");
+                        .setParser(classTypeName+".fromDynamic")
+                        .setCopyer(classTypeName+".deepCopy");
             } else {
                 throw new BusinessException("未知的ref类型" + ref);
             }
@@ -237,10 +254,15 @@ public class DartApiGenerator {
                         indent + "  final handler = "+subFieldInfo.parser+";\n"+
                         indent + "  return handler(single)!;\n"+
                         indent + "})";
+                String copyer = "MapHelper.wrapDeepCopy<"+subFieldInfo.type+">((single){\n"+
+                        indent + "  final handler = "+subFieldInfo.copyer+";\n"+
+                        indent + "  return handler(single)!;\n"+
+                        indent + "})";
                 return new FieldInfo()
                         .setType(type)
                         .setFormatter(formatter)
-                        .setParser(parser);
+                        .setParser(parser)
+                        .setCopyer(copyer);
             }else{
                 return objectField;
             }
@@ -261,6 +283,7 @@ public class DartApiGenerator {
                 field.setType(fieldInfo.getType());
                 field.setFormatter(fieldInfo.getFormatter());
                 field.setParser(fieldInfo.getParser());
+                field.setCopyer(fieldInfo.getCopyer());
                 return field;
             }).collect(Collectors.toList());
 

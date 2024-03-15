@@ -727,7 +727,7 @@ mvn install
 <plugin>
     <groupId>com.github.fishedee</groupId>
     <artifactId>swagger-code-maven-plugin</artifactId>
-    <version>2.0</version>
+    <version>2.2</version>
     <configuration>
         <swaggerUrl>http://localhost:8110/v3/api-docs</swaggerUrl>
         <enumUrl>http://localhost:8110/enum/getAll</enumUrl>

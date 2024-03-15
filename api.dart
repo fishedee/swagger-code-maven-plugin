@@ -16,6 +16,7 @@ abstract interface class IData {
 
 abstract interface class IDataDynamic {
   Object encodeDynamic();
+  Object copy();
 }
 
 class BoolHelper {
@@ -37,6 +38,10 @@ class BoolHelper {
   static Object? toDynamic(bool? data) {
     return data;
   }
+
+  static bool? deepCopy(bool? data) {
+    return data;
+  }
 }
 
 class IntHelper {
@@ -54,6 +59,10 @@ class IntHelper {
   }
 
   static Object? toDynamic(int? data) {
+    return data;
+  }
+
+  static int? deepCopy(int? data) {
     return data;
   }
 }
@@ -75,6 +84,10 @@ class DoubleHelper {
   static Object? toDynamic(double? data) {
     return data;
   }
+
+  static double? deepCopy(double? data) {
+    return data;
+  }
 }
 
 class StringHelper {
@@ -93,6 +106,10 @@ class StringHelper {
   static Object? toDynamic(String? data) {
     return data;
   }
+
+  static String? deepCopy(String? data) {
+    return data;
+  }
 }
 
 class ObjectHelper {
@@ -109,6 +126,10 @@ class ObjectHelper {
   }
 
   static Object? toDynamic(Object? data) {
+    return data;
+  }
+
+  static Object? deepCopy(Object? data) {
     return data;
   }
 }
@@ -133,6 +154,16 @@ class ListHelper {
         return null;
       }
       return data.map((single) => toDynamicItem(single)).toList();
+    };
+  }
+
+  static List<T>? Function(List<T>? data) wrapDeepCopy<T>(
+      T Function(T data) deepCopyItem) {
+    return (List<T>? data) {
+      if (data == null) {
+        return null;
+      }
+      return data.map((single) => deepCopyItem(single)).toList();
     };
   }
 
@@ -182,6 +213,20 @@ class MapHelper {
     };
   }
 
+  static Map<String, T>? Function(Map<String, T>? data) wrapDeepCopy<T>(
+      T Function(T data) deepCopyItem) {
+    return (Map<String, T>? data) {
+      if (data == null) {
+        return null;
+      }
+      final result = <String, T>{};
+      data.forEach((key, value) {
+        result[key] = deepCopyItem(value);
+      });
+      return result;
+    };
+  }
+
   static bool equals<T, U>(Map<T, U>? a, Map<T, U>? b) {
     if (a == null) return b == null;
     if (b == null || a.length != b.length) return false;
@@ -201,13 +246,15 @@ typedef GetterHandler<T> = Object? Function(T data);
 typedef SetterHandler<T> = void Function(T data, Object? value);
 typedef ToDynamicHandler<T> = Object? Function(T data);
 typedef FromDynamicHandler<T> = void Function(T data, Object? value);
+typedef DeepCopyHandler<T> = void Function(T newData, T oldData);
 typedef FieldReflectInfo<T> = Map<
     String,
     ({
       GetterHandler<T> getter,
       SetterHandler<T> setter,
       ToDynamicHandler<T> toDynamic,
-      FromDynamicHandler<T> fromDynamic
+      FromDynamicHandler<T> fromDynamic,
+      DeepCopyHandler<T> deepCopy,
     })>;
 
 abstract class IDataBasic implements IData {
@@ -217,6 +264,18 @@ abstract class IDataBasic implements IData {
 
   Map<String, Object?> getExternalFields() {
     return _externalFields;
+  }
+
+  Map<String, Object?> _copyExternalFields() {
+    final result = <String, Object?>{};
+    _externalFields.forEach((key, value) {
+      if (value is IDataDynamic) {
+        result[key] = value.copy();
+      } else {
+        result[key] = value;
+      }
+    });
+    return result;
   }
 
   Object? getExternalField(String name) {
@@ -306,6 +365,15 @@ class TypeEnumExcelHeaderType extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumExcelHeaderType? deepCopy(TypeEnumExcelHeaderType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumExcelHeaderType copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumTenantStatePO extends IDataEnum implements IDataDynamic{
@@ -348,6 +416,15 @@ class TypeEnumTenantStatePO extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumTenantStatePO? deepCopy(TypeEnumTenantStatePO? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumTenantStatePO copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumBackendTaskType extends IDataEnum implements IDataDynamic{
@@ -383,6 +460,15 @@ class TypeEnumBackendTaskType extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumBackendTaskType? deepCopy(TypeEnumBackendTaskType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumBackendTaskType copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -426,6 +512,15 @@ class TypeEnumFilterItemRegularType extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumFilterItemRegularType? deepCopy(TypeEnumFilterItemRegularType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumFilterItemRegularType copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumResourceDuplicateNameStrategy extends IDataEnum implements IDataDynamic{
@@ -468,6 +563,15 @@ class TypeEnumResourceDuplicateNameStrategy extends IDataEnum implements IDataDy
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumResourceDuplicateNameStrategy? deepCopy(TypeEnumResourceDuplicateNameStrategy? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumResourceDuplicateNameStrategy copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumOrderNumberDateType extends IDataEnum implements IDataDynamic{
@@ -509,6 +613,15 @@ class TypeEnumOrderNumberDateType extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumOrderNumberDateType? deepCopy(TypeEnumOrderNumberDateType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumOrderNumberDateType copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -555,6 +668,15 @@ class TypeEnumLiteItemImportWorkerFindingState extends IDataEnum implements IDat
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumLiteItemImportWorkerFindingState? deepCopy(TypeEnumLiteItemImportWorkerFindingState? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumLiteItemImportWorkerFindingState copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumOrderCustomInvoiceBackState extends IDataEnum implements IDataDynamic{
@@ -593,6 +715,15 @@ class TypeEnumOrderCustomInvoiceBackState extends IDataEnum implements IDataDyna
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumOrderCustomInvoiceBackState? deepCopy(TypeEnumOrderCustomInvoiceBackState? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumOrderCustomInvoiceBackState copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -633,6 +764,15 @@ class TypeEnumDateOrderType extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumDateOrderType? deepCopy(TypeEnumDateOrderType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumDateOrderType copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumMainErrorCode extends IDataEnum implements IDataDynamic{
@@ -671,6 +811,15 @@ class TypeEnumMainErrorCode extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumMainErrorCode? deepCopy(TypeEnumMainErrorCode? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumMainErrorCode copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -717,6 +866,15 @@ class TypeEnumFilterNumber extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumFilterNumber? deepCopy(TypeEnumFilterNumber? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumFilterNumber copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumOrderArapType extends IDataEnum implements IDataDynamic{
@@ -755,6 +913,15 @@ class TypeEnumOrderArapType extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumOrderArapType? deepCopy(TypeEnumOrderArapType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumOrderArapType copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -798,6 +965,15 @@ class TypeEnumReportGroupTimeType extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumReportGroupTimeType? deepCopy(TypeEnumReportGroupTimeType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumReportGroupTimeType copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumOrderSubType extends IDataEnum implements IDataDynamic{
@@ -833,6 +1009,15 @@ class TypeEnumOrderSubType extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumOrderSubType? deepCopy(TypeEnumOrderSubType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumOrderSubType copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -872,6 +1057,15 @@ class TypeEnumOrderChangeItemUtilOrderChangeItemDiffStrategy extends IDataEnum i
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumOrderChangeItemUtilOrderChangeItemDiffStrategy? deepCopy(TypeEnumOrderChangeItemUtilOrderChangeItemDiffStrategy? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumOrderChangeItemUtilOrderChangeItemDiffStrategy copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -917,6 +1111,15 @@ class TypeEnumOrderItemPivotQueryOrderItemPivotField extends IDataEnum implement
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumOrderItemPivotQueryOrderItemPivotField? deepCopy(TypeEnumOrderItemPivotQueryOrderItemPivotField? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumOrderItemPivotQueryOrderItemPivotField copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -987,6 +1190,15 @@ class TypeEnumBatchChangeSupportOrder extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumBatchChangeSupportOrder? deepCopy(TypeEnumBatchChangeSupportOrder? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumBatchChangeSupportOrder copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumFilterInvoiceBackState extends IDataEnum implements IDataDynamic{
@@ -1028,6 +1240,15 @@ class TypeEnumFilterInvoiceBackState extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumFilterInvoiceBackState? deepCopy(TypeEnumFilterInvoiceBackState? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumFilterInvoiceBackState copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -1071,6 +1292,15 @@ class TypeEnumItemCustomAbnormalState extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumItemCustomAbnormalState? deepCopy(TypeEnumItemCustomAbnormalState? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumItemCustomAbnormalState copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumApiMethod extends IDataEnum implements IDataDynamic{
@@ -1109,6 +1339,15 @@ class TypeEnumApiMethod extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumApiMethod? deepCopy(TypeEnumApiMethod? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumApiMethod copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -1164,6 +1403,15 @@ class TypeEnumColumnValueType extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumColumnValueType? deepCopy(TypeEnumColumnValueType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumColumnValueType copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumContactType extends IDataEnum implements IDataDynamic{
@@ -1202,6 +1450,15 @@ class TypeEnumContactType extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumContactType? deepCopy(TypeEnumContactType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumContactType copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -1245,6 +1502,15 @@ class TypeEnumOrderPivotQueryOrderPivotField extends IDataEnum implements IDataD
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumOrderPivotQueryOrderPivotField? deepCopy(TypeEnumOrderPivotQueryOrderPivotField? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumOrderPivotQueryOrderPivotField copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumBatchChangeType extends IDataEnum implements IDataDynamic{
@@ -1286,6 +1552,15 @@ class TypeEnumBatchChangeType extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumBatchChangeType? deepCopy(TypeEnumBatchChangeType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumBatchChangeType copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -1329,6 +1604,15 @@ class TypeEnumFilterInvoiceSubmitState extends IDataEnum implements IDataDynamic
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumFilterInvoiceSubmitState? deepCopy(TypeEnumFilterInvoiceSubmitState? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumFilterInvoiceSubmitState copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumFilterOrderExecuteState extends IDataEnum implements IDataDynamic{
@@ -1370,6 +1654,15 @@ class TypeEnumFilterOrderExecuteState extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumFilterOrderExecuteState? deepCopy(TypeEnumFilterOrderExecuteState? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumFilterOrderExecuteState copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -1413,6 +1706,15 @@ class TypeEnumBackendTaskRowState extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumBackendTaskRowState? deepCopy(TypeEnumBackendTaskRowState? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumBackendTaskRowState copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumSoftEnableIsEnable extends IDataEnum implements IDataDynamic{
@@ -1451,6 +1753,15 @@ class TypeEnumSoftEnableIsEnable extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumSoftEnableIsEnable? deepCopy(TypeEnumSoftEnableIsEnable? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumSoftEnableIsEnable copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -1496,6 +1807,15 @@ class TypeEnumResourceSortStrategy extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumResourceSortStrategy? deepCopy(TypeEnumResourceSortStrategy? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumResourceSortStrategy copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -1683,6 +2003,15 @@ class TypeEnumOrderType extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumOrderType? deepCopy(TypeEnumOrderType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumOrderType copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumAccountAuxiliary extends IDataEnum implements IDataDynamic{
@@ -1725,6 +2054,15 @@ class TypeEnumAccountAuxiliary extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumAccountAuxiliary? deepCopy(TypeEnumAccountAuxiliary? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumAccountAuxiliary copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumOrderCustomInvoiceSubmitState extends IDataEnum implements IDataDynamic{
@@ -1763,6 +2101,15 @@ class TypeEnumOrderCustomInvoiceSubmitState extends IDataEnum implements IDataDy
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumOrderCustomInvoiceSubmitState? deepCopy(TypeEnumOrderCustomInvoiceSubmitState? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumOrderCustomInvoiceSubmitState copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -1808,6 +2155,15 @@ class TypeEnumAccountSubType extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumAccountSubType? deepCopy(TypeEnumAccountSubType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumAccountSubType copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -1857,6 +2213,15 @@ class TypeEnumFilterOrderState extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumFilterOrderState? deepCopy(TypeEnumFilterOrderState? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumFilterOrderState copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumBackendTaskState extends IDataEnum implements IDataDynamic{
@@ -1898,6 +2263,15 @@ class TypeEnumBackendTaskState extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumBackendTaskState? deepCopy(TypeEnumBackendTaskState? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumBackendTaskState copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -1956,6 +2330,15 @@ class TypeEnumOperation extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumOperation? deepCopy(TypeEnumOperation? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumOperation copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumFilterIsEnabled extends IDataEnum implements IDataDynamic{
@@ -1998,6 +2381,15 @@ class TypeEnumFilterIsEnabled extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumFilterIsEnabled? deepCopy(TypeEnumFilterIsEnabled? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumFilterIsEnabled copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumOrderRedState extends IDataEnum implements IDataDynamic{
@@ -2039,6 +2431,15 @@ class TypeEnumOrderRedState extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumOrderRedState? deepCopy(TypeEnumOrderRedState? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumOrderRedState copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -2157,6 +2558,15 @@ class TypeEnumAccountPredefine extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumAccountPredefine? deepCopy(TypeEnumAccountPredefine? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumAccountPredefine copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumStockAutoDecreaseAmountStrategy extends IDataEnum implements IDataDynamic{
@@ -2196,6 +2606,15 @@ class TypeEnumStockAutoDecreaseAmountStrategy extends IDataEnum implements IData
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumStockAutoDecreaseAmountStrategy? deepCopy(TypeEnumStockAutoDecreaseAmountStrategy? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumStockAutoDecreaseAmountStrategy copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumOperatorRole extends IDataEnum implements IDataDynamic{
@@ -2234,6 +2653,15 @@ class TypeEnumOperatorRole extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumOperatorRole? deepCopy(TypeEnumOperatorRole? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumOperatorRole copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -2277,6 +2705,15 @@ class TypeEnumAccountBalanceCheckType extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumAccountBalanceCheckType? deepCopy(TypeEnumAccountBalanceCheckType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumAccountBalanceCheckType copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumOrderOrderItemStockRemainType extends IDataEnum implements IDataDynamic{
@@ -2319,6 +2756,15 @@ class TypeEnumOrderOrderItemStockRemainType extends IDataEnum implements IDataDy
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumOrderOrderItemStockRemainType? deepCopy(TypeEnumOrderOrderItemStockRemainType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumOrderOrderItemStockRemainType copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumOrderCustomInvoiceBillState extends IDataEnum implements IDataDynamic{
@@ -2360,6 +2806,15 @@ class TypeEnumOrderCustomInvoiceBillState extends IDataEnum implements IDataDyna
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumOrderCustomInvoiceBillState? deepCopy(TypeEnumOrderCustomInvoiceBillState? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumOrderCustomInvoiceBillState copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -2406,6 +2861,15 @@ class TypeEnumAvailableStockType extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumAvailableStockType? deepCopy(TypeEnumAvailableStockType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumAvailableStockType copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumOrderState extends IDataEnum implements IDataDynamic{
@@ -2451,6 +2915,15 @@ class TypeEnumOrderState extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumOrderState? deepCopy(TypeEnumOrderState? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumOrderState copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumColumnShowType extends IDataEnum implements IDataDynamic{
@@ -2493,6 +2966,15 @@ class TypeEnumColumnShowType extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumColumnShowType? deepCopy(TypeEnumColumnShowType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumColumnShowType copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumOrderDocumentType extends IDataEnum implements IDataDynamic{
@@ -2531,6 +3013,15 @@ class TypeEnumOrderDocumentType extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumOrderDocumentType? deepCopy(TypeEnumOrderDocumentType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumOrderDocumentType copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -2907,6 +3398,15 @@ class TypeEnumEntity extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumEntity? deepCopy(TypeEnumEntity? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumEntity copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumFilterInvoiceBillState extends IDataEnum implements IDataDynamic{
@@ -2948,6 +3448,15 @@ class TypeEnumFilterInvoiceBillState extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumFilterInvoiceBillState? deepCopy(TypeEnumFilterInvoiceBillState? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumFilterInvoiceBillState copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -2991,6 +3500,15 @@ class TypeEnumOrderBillType extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumOrderBillType? deepCopy(TypeEnumOrderBillType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumOrderBillType copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumAccountDirection extends IDataEnum implements IDataDynamic{
@@ -3029,6 +3547,15 @@ class TypeEnumAccountDirection extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumAccountDirection? deepCopy(TypeEnumAccountDirection? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumAccountDirection copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -3081,6 +3608,15 @@ class TypeEnumMainIndexQueryMainIndexDateType extends IDataEnum implements IData
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumMainIndexQueryMainIndexDateType? deepCopy(TypeEnumMainIndexQueryMainIndexDateType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumMainIndexQueryMainIndexDateType copy() {
+    return deepCopy(this)!;
+  }
 }
 
 class TypeEnumAccountType extends IDataEnum implements IDataDynamic{
@@ -3125,6 +3661,15 @@ class TypeEnumAccountType extends IDataEnum implements IDataDynamic{
   @override
   Object encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumAccountType? deepCopy(TypeEnumAccountType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumAccountType copy() {
+    return deepCopy(this)!;
   }
 }
 
@@ -3174,6 +3719,15 @@ class TypeEnumReportGroupType extends IDataEnum implements IDataDynamic{
   Object encodeDynamic() {
     return toDynamic(this)!;
   }
+
+  static TypeEnumReportGroupType? deepCopy(TypeEnumReportGroupType? data) {
+    return data;
+  }
+
+  @override
+  TypeEnumReportGroupType copy() {
+    return deepCopy(this)!;
+  }
 }
 
 
@@ -3220,7 +3774,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumAccountAuxiliary.fromDynamic;
       data.auxiliary = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumAccountAuxiliary.deepCopy;
+      newData.auxiliary = copyer(oldData.auxiliary);
+    },
   ),
   "balance": (
     getter: (data) => data.balance,
@@ -3232,7 +3790,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.balance = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.balance = copyer(oldData.balance);
+    },
   ),
   "balanceCheckType": (
     getter: (data) => data.balanceCheckType,
@@ -3244,7 +3806,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumAccountBalanceCheckType.fromDynamic;
       data.balanceCheckType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumAccountBalanceCheckType.deepCopy;
+      newData.balanceCheckType = copyer(oldData.balanceCheckType);
+    },
   ),
   "balanceDirection": (
     getter: (data) => data.balanceDirection,
@@ -3256,7 +3822,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumAccountDirection.fromDynamic;
       data.balanceDirection = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumAccountDirection.deepCopy;
+      newData.balanceDirection = copyer(oldData.balanceDirection);
+    },
   ),
   "balanceShowDirection": (
     getter: (data) => data.balanceShowDirection,
@@ -3268,7 +3838,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumAccountDirection.fromDynamic;
       data.balanceShowDirection = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumAccountDirection.deepCopy;
+      newData.balanceShowDirection = copyer(oldData.balanceShowDirection);
+    },
   ),
   "children": (
     getter: (data) => data.children,
@@ -3286,7 +3860,14 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
         return handler(single)!;
       });
       data.children = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeAccount>((single){
+        final handler = TypeAccount.deepCopy;
+        return handler(single)!;
+      });
+      newData.children = copyer(oldData.children);
+    },
   ),
   "createTime": (
     getter: (data) => data.createTime,
@@ -3298,7 +3879,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "firstChildNumber": (
     getter: (data) => data.firstChildNumber,
@@ -3310,7 +3895,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.firstChildNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.firstChildNumber = copyer(oldData.firstChildNumber);
+    },
   ),
   "fullName": (
     getter: (data) => data.fullName,
@@ -3322,7 +3911,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.fullName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.fullName = copyer(oldData.fullName);
+    },
   ),
   "hasBusinessLink": (
     getter: (data) => data.hasBusinessLink,
@@ -3334,7 +3927,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasBusinessLink = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasBusinessLink = copyer(oldData.hasBusinessLink);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -3346,7 +3943,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "initialBalance": (
     getter: (data) => data.initialBalance,
@@ -3358,7 +3959,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.initialBalance = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.initialBalance = copyer(oldData.initialBalance);
+    },
   ),
   "initialBalanceDirection": (
     getter: (data) => data.initialBalanceDirection,
@@ -3370,7 +3975,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumAccountDirection.fromDynamic;
       data.initialBalanceDirection = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumAccountDirection.deepCopy;
+      newData.initialBalanceDirection = copyer(oldData.initialBalanceDirection);
+    },
   ),
   "isCategory": (
     getter: (data) => data.isCategory,
@@ -3382,7 +3991,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isCategory = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isCategory = copyer(oldData.isCategory);
+    },
   ),
   "isEnabled": (
     getter: (data) => data.isEnabled,
@@ -3394,7 +4007,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumSoftEnableIsEnable.fromDynamic;
       data.isEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumSoftEnableIsEnable.deepCopy;
+      newData.isEnabled = copyer(oldData.isEnabled);
+    },
   ),
   "isMonthlyCloseAccountIncome": (
     getter: (data) => data.isMonthlyCloseAccountIncome,
@@ -3406,7 +4023,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isMonthlyCloseAccountIncome = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isMonthlyCloseAccountIncome = copyer(oldData.isMonthlyCloseAccountIncome);
+    },
   ),
   "isSystem": (
     getter: (data) => data.isSystem,
@@ -3418,7 +4039,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isSystem = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isSystem = copyer(oldData.isSystem);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -3430,7 +4055,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "monthlyCloseAccountId": (
     getter: (data) => data.monthlyCloseAccountId,
@@ -3442,7 +4071,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.monthlyCloseAccountId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.monthlyCloseAccountId = copyer(oldData.monthlyCloseAccountId);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -3454,7 +4087,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "number": (
     getter: (data) => data.number,
@@ -3466,7 +4103,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.number = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.number = copyer(oldData.number);
+    },
   ),
   "parentId": (
     getter: (data) => data.parentId,
@@ -3478,7 +4119,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.parentId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.parentId = copyer(oldData.parentId);
+    },
   ),
   "parentInfo": (
     getter: (data) => data.parentInfo,
@@ -3490,7 +4135,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeAccount.fromDynamic;
       data.parentInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeAccount.deepCopy;
+      newData.parentInfo = copyer(oldData.parentInfo);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -3502,7 +4151,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "subType": (
     getter: (data) => data.subType,
@@ -3514,7 +4167,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumAccountSubType.fromDynamic;
       data.subType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumAccountSubType.deepCopy;
+      newData.subType = copyer(oldData.subType);
+    },
   ),
   "treeLevel": (
     getter: (data) => data.treeLevel,
@@ -3526,7 +4183,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.treeLevel = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.treeLevel = copyer(oldData.treeLevel);
+    },
   ),
   "treePath": (
     getter: (data) => data.treePath,
@@ -3538,7 +4199,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.treePath = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.treePath = copyer(oldData.treePath);
+    },
   ),
   "type": (
     getter: (data) => data.type,
@@ -3550,7 +4215,11 @@ final FieldReflectInfo<TypeAccount> _TypeAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumAccountType.fromDynamic;
       data.type = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumAccountType.deepCopy;
+      newData.type = copyer(oldData.type);
+    },
   ),
 };
 
@@ -3626,6 +4295,24 @@ class TypeAccount extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeAccount? deepCopy(TypeAccount? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeAccount();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeAccount_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeAccount copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -3735,7 +4422,14 @@ final FieldReflectInfo<TypeAccountFlowQueryDTO> _TypeAccountFlowQueryDTO_fields 
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeAccountFlowQueryDataDTO>((single){
+        final handler = TypeAccountFlowQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -3747,7 +4441,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDTO> _TypeAccountFlowQueryDTO_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -3759,7 +4457,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDTO> _TypeAccountFlowQueryDTO_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -3771,7 +4473,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDTO> _TypeAccountFlowQueryDTO_fields 
     fromDynamic: (data, value) {
       final parser = TypeAccountFlowQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeAccountFlowQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -3823,6 +4529,24 @@ class TypeAccountFlowQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeAccountFlowQueryDTO? deepCopy(TypeAccountFlowQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeAccountFlowQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeAccountFlowQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeAccountFlowQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -3898,7 +4622,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.accountId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.accountId = copyer(oldData.accountId);
+    },
   ),
   "accountName": (
     getter: (data) => data.accountName,
@@ -3910,7 +4638,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.accountName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.accountName = copyer(oldData.accountName);
+    },
   ),
   "changeTotal": (
     getter: (data) => data.changeTotal,
@@ -3922,7 +4654,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.changeTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.changeTotal = copyer(oldData.changeTotal);
+    },
   ),
   "creditChange": (
     getter: (data) => data.creditChange,
@@ -3934,7 +4670,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.creditChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.creditChange = copyer(oldData.creditChange);
+    },
   ),
   "debitChange": (
     getter: (data) => data.debitChange,
@@ -3946,7 +4686,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.debitChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.debitChange = copyer(oldData.debitChange);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -3958,7 +4702,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "orderContactId": (
     getter: (data) => data.orderContactId,
@@ -3970,7 +4718,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderContactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderContactId = copyer(oldData.orderContactId);
+    },
   ),
   "orderContactName": (
     getter: (data) => data.orderContactName,
@@ -3982,7 +4734,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderContactName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderContactName = copyer(oldData.orderContactName);
+    },
   ),
   "orderDate": (
     getter: (data) => data.orderDate,
@@ -3994,7 +4750,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDate = copyer(oldData.orderDate);
+    },
   ),
   "orderDrawEmployeeId": (
     getter: (data) => data.orderDrawEmployeeId,
@@ -4006,7 +4766,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderDrawEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderDrawEmployeeId = copyer(oldData.orderDrawEmployeeId);
+    },
   ),
   "orderDrawEmployeeName": (
     getter: (data) => data.orderDrawEmployeeName,
@@ -4018,7 +4782,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDrawEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDrawEmployeeName = copyer(oldData.orderDrawEmployeeName);
+    },
   ),
   "orderDrawTime": (
     getter: (data) => data.orderDrawTime,
@@ -4030,7 +4798,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDrawTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDrawTime = copyer(oldData.orderDrawTime);
+    },
   ),
   "orderEntryAccountEmployeeId": (
     getter: (data) => data.orderEntryAccountEmployeeId,
@@ -4042,7 +4814,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderEntryAccountEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderEntryAccountEmployeeId = copyer(oldData.orderEntryAccountEmployeeId);
+    },
   ),
   "orderEntryAccountEmployeeName": (
     getter: (data) => data.orderEntryAccountEmployeeName,
@@ -4054,7 +4830,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderEntryAccountEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderEntryAccountEmployeeName = copyer(oldData.orderEntryAccountEmployeeName);
+    },
   ),
   "orderEntryAccountTime": (
     getter: (data) => data.orderEntryAccountTime,
@@ -4066,7 +4846,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderEntryAccountTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderEntryAccountTime = copyer(oldData.orderEntryAccountTime);
+    },
   ),
   "orderId": (
     getter: (data) => data.orderId,
@@ -4078,7 +4862,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderId = copyer(oldData.orderId);
+    },
   ),
   "orderManageEmployeeId": (
     getter: (data) => data.orderManageEmployeeId,
@@ -4090,7 +4878,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderManageEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderManageEmployeeId = copyer(oldData.orderManageEmployeeId);
+    },
   ),
   "orderManageEmployeeName": (
     getter: (data) => data.orderManageEmployeeName,
@@ -4102,7 +4894,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderManageEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderManageEmployeeName = copyer(oldData.orderManageEmployeeName);
+    },
   ),
   "orderNumber": (
     getter: (data) => data.orderNumber,
@@ -4114,7 +4910,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderNumber = copyer(oldData.orderNumber);
+    },
   ),
   "orderRedState": (
     getter: (data) => data.orderRedState,
@@ -4126,7 +4926,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderRedState.fromDynamic;
       data.orderRedState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderRedState.deepCopy;
+      newData.orderRedState = copyer(oldData.orderRedState);
+    },
   ),
   "orderState": (
     getter: (data) => data.orderState,
@@ -4138,7 +4942,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderState.fromDynamic;
       data.orderState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderState.deepCopy;
+      newData.orderState = copyer(oldData.orderState);
+    },
   ),
   "orderType": (
     getter: (data) => data.orderType,
@@ -4150,7 +4958,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.orderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.orderType = copyer(oldData.orderType);
+    },
   ),
   "previousTotal": (
     getter: (data) => data.previousTotal,
@@ -4162,7 +4974,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.previousTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.previousTotal = copyer(oldData.previousTotal);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -4174,7 +4990,11 @@ final FieldReflectInfo<TypeAccountFlowQueryDataDTO> _TypeAccountFlowQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
 };
 
@@ -4246,6 +5066,24 @@ class TypeAccountFlowQueryDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeAccountFlowQueryDataDTO? deepCopy(TypeAccountFlowQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeAccountFlowQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeAccountFlowQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeAccountFlowQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -4340,7 +5178,11 @@ final FieldReflectInfo<TypeAccountFlowQuerySumDTO> _TypeAccountFlowQuerySumDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "creditChange": (
     getter: (data) => data.creditChange,
@@ -4352,7 +5194,11 @@ final FieldReflectInfo<TypeAccountFlowQuerySumDTO> _TypeAccountFlowQuerySumDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.creditChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.creditChange = copyer(oldData.creditChange);
+    },
   ),
   "debitChange": (
     getter: (data) => data.debitChange,
@@ -4364,7 +5210,11 @@ final FieldReflectInfo<TypeAccountFlowQuerySumDTO> _TypeAccountFlowQuerySumDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.debitChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.debitChange = copyer(oldData.debitChange);
+    },
   ),
 };
 
@@ -4415,6 +5265,24 @@ class TypeAccountFlowQuerySumDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeAccountFlowQuerySumDTO? deepCopy(TypeAccountFlowQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeAccountFlowQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeAccountFlowQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeAccountFlowQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -4468,7 +5336,11 @@ final FieldReflectInfo<TypeAccountGroupQueryDTO> _TypeAccountGroupQueryDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.beginOrderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.beginOrderDate = copyer(oldData.beginOrderDate);
+    },
   ),
   "data": (
     getter: (data) => data.data,
@@ -4486,7 +5358,14 @@ final FieldReflectInfo<TypeAccountGroupQueryDTO> _TypeAccountGroupQueryDTO_field
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeAccountGroupQueryDataDTO>((single){
+        final handler = TypeAccountGroupQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "endOrderDate": (
     getter: (data) => data.endOrderDate,
@@ -4498,7 +5377,11 @@ final FieldReflectInfo<TypeAccountGroupQueryDTO> _TypeAccountGroupQueryDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.endOrderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.endOrderDate = copyer(oldData.endOrderDate);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -4510,7 +5393,11 @@ final FieldReflectInfo<TypeAccountGroupQueryDTO> _TypeAccountGroupQueryDTO_field
     fromDynamic: (data, value) {
       final parser = TypeAccountGroupQueryDataDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeAccountGroupQueryDataDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -4562,6 +5449,24 @@ class TypeAccountGroupQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeAccountGroupQueryDTO? deepCopy(TypeAccountGroupQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeAccountGroupQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeAccountGroupQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeAccountGroupQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -4623,7 +5528,11 @@ final FieldReflectInfo<TypeAccountGroupQueryDataDTO> _TypeAccountGroupQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.beginBalance = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.beginBalance = copyer(oldData.beginBalance);
+    },
   ),
   "creditChange": (
     getter: (data) => data.creditChange,
@@ -4635,7 +5544,11 @@ final FieldReflectInfo<TypeAccountGroupQueryDataDTO> _TypeAccountGroupQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.creditChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.creditChange = copyer(oldData.creditChange);
+    },
   ),
   "debitChange": (
     getter: (data) => data.debitChange,
@@ -4647,7 +5560,11 @@ final FieldReflectInfo<TypeAccountGroupQueryDataDTO> _TypeAccountGroupQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.debitChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.debitChange = copyer(oldData.debitChange);
+    },
   ),
   "endBalance": (
     getter: (data) => data.endBalance,
@@ -4659,7 +5576,11 @@ final FieldReflectInfo<TypeAccountGroupQueryDataDTO> _TypeAccountGroupQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.endBalance = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.endBalance = copyer(oldData.endBalance);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -4671,7 +5592,11 @@ final FieldReflectInfo<TypeAccountGroupQueryDataDTO> _TypeAccountGroupQueryDataD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "isCategory": (
     getter: (data) => data.isCategory,
@@ -4683,7 +5608,11 @@ final FieldReflectInfo<TypeAccountGroupQueryDataDTO> _TypeAccountGroupQueryDataD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isCategory = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isCategory = copyer(oldData.isCategory);
+    },
   ),
   "isEnabled": (
     getter: (data) => data.isEnabled,
@@ -4695,7 +5624,11 @@ final FieldReflectInfo<TypeAccountGroupQueryDataDTO> _TypeAccountGroupQueryDataD
     fromDynamic: (data, value) {
       final parser = TypeEnumSoftEnableIsEnable.fromDynamic;
       data.isEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumSoftEnableIsEnable.deepCopy;
+      newData.isEnabled = copyer(oldData.isEnabled);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -4707,7 +5640,11 @@ final FieldReflectInfo<TypeAccountGroupQueryDataDTO> _TypeAccountGroupQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "number": (
     getter: (data) => data.number,
@@ -4719,7 +5656,11 @@ final FieldReflectInfo<TypeAccountGroupQueryDataDTO> _TypeAccountGroupQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.number = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.number = copyer(oldData.number);
+    },
   ),
   "treeLevel": (
     getter: (data) => data.treeLevel,
@@ -4731,7 +5672,11 @@ final FieldReflectInfo<TypeAccountGroupQueryDataDTO> _TypeAccountGroupQueryDataD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.treeLevel = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.treeLevel = copyer(oldData.treeLevel);
+    },
   ),
 };
 
@@ -4789,6 +5734,24 @@ class TypeAccountGroupQueryDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeAccountGroupQueryDataDTO? deepCopy(TypeAccountGroupQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeAccountGroupQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeAccountGroupQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeAccountGroupQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -4862,7 +5825,14 @@ final FieldReflectInfo<TypeArapFlowQueryDTO> _TypeArapFlowQueryDTO_fields = {
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeArapFlowQueryDataDTO>((single){
+        final handler = TypeArapFlowQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -4874,7 +5844,11 @@ final FieldReflectInfo<TypeArapFlowQueryDTO> _TypeArapFlowQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -4886,7 +5860,11 @@ final FieldReflectInfo<TypeArapFlowQueryDTO> _TypeArapFlowQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -4898,7 +5876,11 @@ final FieldReflectInfo<TypeArapFlowQueryDTO> _TypeArapFlowQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = TypeArapFlowQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeArapFlowQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -4950,6 +5932,24 @@ class TypeArapFlowQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeArapFlowQueryDTO? deepCopy(TypeArapFlowQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeArapFlowQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeArapFlowQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeArapFlowQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -5027,7 +6027,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.adpChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.adpChange = copyer(oldData.adpChange);
+    },
   ),
   "adrChange": (
     getter: (data) => data.adrChange,
@@ -5039,7 +6043,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.adrChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.adrChange = copyer(oldData.adrChange);
+    },
   ),
   "apChange": (
     getter: (data) => data.apChange,
@@ -5051,7 +6059,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.apChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.apChange = copyer(oldData.apChange);
+    },
   ),
   "arChange": (
     getter: (data) => data.arChange,
@@ -5063,7 +6075,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.arChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.arChange = copyer(oldData.arChange);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -5075,7 +6091,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "orderContactId": (
     getter: (data) => data.orderContactId,
@@ -5087,7 +6107,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderContactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderContactId = copyer(oldData.orderContactId);
+    },
   ),
   "orderContactName": (
     getter: (data) => data.orderContactName,
@@ -5099,7 +6123,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderContactName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderContactName = copyer(oldData.orderContactName);
+    },
   ),
   "orderDate": (
     getter: (data) => data.orderDate,
@@ -5111,7 +6139,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDate = copyer(oldData.orderDate);
+    },
   ),
   "orderDrawEmployeeId": (
     getter: (data) => data.orderDrawEmployeeId,
@@ -5123,7 +6155,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderDrawEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderDrawEmployeeId = copyer(oldData.orderDrawEmployeeId);
+    },
   ),
   "orderDrawEmployeeName": (
     getter: (data) => data.orderDrawEmployeeName,
@@ -5135,7 +6171,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDrawEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDrawEmployeeName = copyer(oldData.orderDrawEmployeeName);
+    },
   ),
   "orderDrawTime": (
     getter: (data) => data.orderDrawTime,
@@ -5147,7 +6187,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDrawTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDrawTime = copyer(oldData.orderDrawTime);
+    },
   ),
   "orderEntryAccountEmployeeId": (
     getter: (data) => data.orderEntryAccountEmployeeId,
@@ -5159,7 +6203,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderEntryAccountEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderEntryAccountEmployeeId = copyer(oldData.orderEntryAccountEmployeeId);
+    },
   ),
   "orderEntryAccountEmployeeName": (
     getter: (data) => data.orderEntryAccountEmployeeName,
@@ -5171,7 +6219,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderEntryAccountEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderEntryAccountEmployeeName = copyer(oldData.orderEntryAccountEmployeeName);
+    },
   ),
   "orderEntryAccountTime": (
     getter: (data) => data.orderEntryAccountTime,
@@ -5183,7 +6235,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderEntryAccountTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderEntryAccountTime = copyer(oldData.orderEntryAccountTime);
+    },
   ),
   "orderId": (
     getter: (data) => data.orderId,
@@ -5195,7 +6251,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderId = copyer(oldData.orderId);
+    },
   ),
   "orderManageEmployeeId": (
     getter: (data) => data.orderManageEmployeeId,
@@ -5207,7 +6267,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderManageEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderManageEmployeeId = copyer(oldData.orderManageEmployeeId);
+    },
   ),
   "orderManageEmployeeName": (
     getter: (data) => data.orderManageEmployeeName,
@@ -5219,7 +6283,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderManageEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderManageEmployeeName = copyer(oldData.orderManageEmployeeName);
+    },
   ),
   "orderNumber": (
     getter: (data) => data.orderNumber,
@@ -5231,7 +6299,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderNumber = copyer(oldData.orderNumber);
+    },
   ),
   "orderRedState": (
     getter: (data) => data.orderRedState,
@@ -5243,7 +6315,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderRedState.fromDynamic;
       data.orderRedState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderRedState.deepCopy;
+      newData.orderRedState = copyer(oldData.orderRedState);
+    },
   ),
   "orderState": (
     getter: (data) => data.orderState,
@@ -5255,7 +6331,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderState.fromDynamic;
       data.orderState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderState.deepCopy;
+      newData.orderState = copyer(oldData.orderState);
+    },
   ),
   "orderType": (
     getter: (data) => data.orderType,
@@ -5267,7 +6347,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.orderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.orderType = copyer(oldData.orderType);
+    },
   ),
   "previousAdpChange": (
     getter: (data) => data.previousAdpChange,
@@ -5279,7 +6363,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.previousAdpChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.previousAdpChange = copyer(oldData.previousAdpChange);
+    },
   ),
   "previousAdrChange": (
     getter: (data) => data.previousAdrChange,
@@ -5291,7 +6379,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.previousAdrChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.previousAdrChange = copyer(oldData.previousAdrChange);
+    },
   ),
   "previousApChange": (
     getter: (data) => data.previousApChange,
@@ -5303,7 +6395,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.previousApChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.previousApChange = copyer(oldData.previousApChange);
+    },
   ),
   "previousArChange": (
     getter: (data) => data.previousArChange,
@@ -5315,7 +6411,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.previousArChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.previousArChange = copyer(oldData.previousArChange);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -5327,7 +6427,11 @@ final FieldReflectInfo<TypeArapFlowQueryDataDTO> _TypeArapFlowQueryDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
 };
 
@@ -5401,6 +6505,24 @@ class TypeArapFlowQueryDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeArapFlowQueryDataDTO? deepCopy(TypeArapFlowQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeArapFlowQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeArapFlowQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeArapFlowQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -5501,7 +6623,11 @@ final FieldReflectInfo<TypeArapFlowQuerySumDTO> _TypeArapFlowQuerySumDTO_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.adpChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.adpChange = copyer(oldData.adpChange);
+    },
   ),
   "adrChange": (
     getter: (data) => data.adrChange,
@@ -5513,7 +6639,11 @@ final FieldReflectInfo<TypeArapFlowQuerySumDTO> _TypeArapFlowQuerySumDTO_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.adrChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.adrChange = copyer(oldData.adrChange);
+    },
   ),
   "apChange": (
     getter: (data) => data.apChange,
@@ -5525,7 +6655,11 @@ final FieldReflectInfo<TypeArapFlowQuerySumDTO> _TypeArapFlowQuerySumDTO_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.apChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.apChange = copyer(oldData.apChange);
+    },
   ),
   "arChange": (
     getter: (data) => data.arChange,
@@ -5537,7 +6671,11 @@ final FieldReflectInfo<TypeArapFlowQuerySumDTO> _TypeArapFlowQuerySumDTO_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.arChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.arChange = copyer(oldData.arChange);
+    },
   ),
   "count": (
     getter: (data) => data.count,
@@ -5549,7 +6687,11 @@ final FieldReflectInfo<TypeArapFlowQuerySumDTO> _TypeArapFlowQuerySumDTO_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
 };
 
@@ -5602,6 +6744,24 @@ class TypeArapFlowQuerySumDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeArapFlowQuerySumDTO? deepCopy(TypeArapFlowQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeArapFlowQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeArapFlowQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeArapFlowQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -5667,7 +6827,11 @@ final FieldReflectInfo<TypeAssembleTemplate> _TypeAssembleTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -5679,7 +6843,11 @@ final FieldReflectInfo<TypeAssembleTemplate> _TypeAssembleTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "isEnabled": (
     getter: (data) => data.isEnabled,
@@ -5691,7 +6859,11 @@ final FieldReflectInfo<TypeAssembleTemplate> _TypeAssembleTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumSoftEnableIsEnable.fromDynamic;
       data.isEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumSoftEnableIsEnable.deepCopy;
+      newData.isEnabled = copyer(oldData.isEnabled);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -5703,7 +6875,11 @@ final FieldReflectInfo<TypeAssembleTemplate> _TypeAssembleTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "itemInfo": (
     getter: (data) => data.itemInfo,
@@ -5715,7 +6891,11 @@ final FieldReflectInfo<TypeAssembleTemplate> _TypeAssembleTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = TypeItem.fromDynamic;
       data.itemInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeItem.deepCopy;
+      newData.itemInfo = copyer(oldData.itemInfo);
+    },
   ),
   "items": (
     getter: (data) => data.items,
@@ -5733,7 +6913,14 @@ final FieldReflectInfo<TypeAssembleTemplate> _TypeAssembleTemplate_fields = {
         return handler(single)!;
       });
       data.items = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeAssembleTemplateItem>((single){
+        final handler = TypeAssembleTemplateItem.deepCopy;
+        return handler(single)!;
+      });
+      newData.items = copyer(oldData.items);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -5745,7 +6932,11 @@ final FieldReflectInfo<TypeAssembleTemplate> _TypeAssembleTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -5757,7 +6948,11 @@ final FieldReflectInfo<TypeAssembleTemplate> _TypeAssembleTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "number": (
     getter: (data) => data.number,
@@ -5769,7 +6964,11 @@ final FieldReflectInfo<TypeAssembleTemplate> _TypeAssembleTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.number = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.number = copyer(oldData.number);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -5781,7 +6980,11 @@ final FieldReflectInfo<TypeAssembleTemplate> _TypeAssembleTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "unitId": (
     getter: (data) => data.unitId,
@@ -5793,7 +6996,11 @@ final FieldReflectInfo<TypeAssembleTemplate> _TypeAssembleTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.unitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.unitId = copyer(oldData.unitId);
+    },
   ),
   "unitInfo": (
     getter: (data) => data.unitInfo,
@@ -5805,7 +7012,11 @@ final FieldReflectInfo<TypeAssembleTemplate> _TypeAssembleTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = TypeUnit.fromDynamic;
       data.unitInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeUnit.deepCopy;
+      newData.unitInfo = copyer(oldData.unitInfo);
+    },
   ),
 };
 
@@ -5865,6 +7076,24 @@ class TypeAssembleTemplate extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeAssembleTemplate? deepCopy(TypeAssembleTemplate? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeAssembleTemplate();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeAssembleTemplate_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeAssembleTemplate copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -5937,7 +7166,11 @@ final FieldReflectInfo<TypeAssembleTemplateItem> _TypeAssembleTemplateItem_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.amount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.amount = copyer(oldData.amount);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -5949,7 +7182,11 @@ final FieldReflectInfo<TypeAssembleTemplateItem> _TypeAssembleTemplateItem_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "itemInfo": (
     getter: (data) => data.itemInfo,
@@ -5961,7 +7198,11 @@ final FieldReflectInfo<TypeAssembleTemplateItem> _TypeAssembleTemplateItem_field
     fromDynamic: (data, value) {
       final parser = TypeItem.fromDynamic;
       data.itemInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeItem.deepCopy;
+      newData.itemInfo = copyer(oldData.itemInfo);
+    },
   ),
   "unitId": (
     getter: (data) => data.unitId,
@@ -5973,7 +7214,11 @@ final FieldReflectInfo<TypeAssembleTemplateItem> _TypeAssembleTemplateItem_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.unitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.unitId = copyer(oldData.unitId);
+    },
   ),
   "unitInfo": (
     getter: (data) => data.unitInfo,
@@ -5985,7 +7230,11 @@ final FieldReflectInfo<TypeAssembleTemplateItem> _TypeAssembleTemplateItem_field
     fromDynamic: (data, value) {
       final parser = TypeUnit.fromDynamic;
       data.unitInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeUnit.deepCopy;
+      newData.unitInfo = copyer(oldData.unitInfo);
+    },
   ),
 };
 
@@ -6038,6 +7287,24 @@ class TypeAssembleTemplateItem extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeAssembleTemplateItem? deepCopy(TypeAssembleTemplateItem? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeAssembleTemplateItem();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeAssembleTemplateItem_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeAssembleTemplateItem copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -6103,7 +7370,11 @@ final FieldReflectInfo<TypeAttachment> _TypeAttachment_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.createEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.createEmployeeId = copyer(oldData.createEmployeeId);
+    },
   ),
   "createEmployeeName": (
     getter: (data) => data.createEmployeeName,
@@ -6115,7 +7386,11 @@ final FieldReflectInfo<TypeAttachment> _TypeAttachment_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createEmployeeName = copyer(oldData.createEmployeeName);
+    },
   ),
   "createTime": (
     getter: (data) => data.createTime,
@@ -6127,7 +7402,11 @@ final FieldReflectInfo<TypeAttachment> _TypeAttachment_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -6139,7 +7418,11 @@ final FieldReflectInfo<TypeAttachment> _TypeAttachment_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "insertUniqueId": (
     getter: (data) => data.insertUniqueId,
@@ -6151,7 +7434,11 @@ final FieldReflectInfo<TypeAttachment> _TypeAttachment_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.insertUniqueId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.insertUniqueId = copyer(oldData.insertUniqueId);
+    },
   ),
   "isFromOrder": (
     getter: (data) => data.isFromOrder,
@@ -6163,7 +7450,11 @@ final FieldReflectInfo<TypeAttachment> _TypeAttachment_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isFromOrder = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isFromOrder = copyer(oldData.isFromOrder);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -6175,7 +7466,11 @@ final FieldReflectInfo<TypeAttachment> _TypeAttachment_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -6187,7 +7482,11 @@ final FieldReflectInfo<TypeAttachment> _TypeAttachment_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "orderId": (
     getter: (data) => data.orderId,
@@ -6199,7 +7498,11 @@ final FieldReflectInfo<TypeAttachment> _TypeAttachment_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderId = copyer(oldData.orderId);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -6211,7 +7514,11 @@ final FieldReflectInfo<TypeAttachment> _TypeAttachment_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "showFileKey": (
     getter: (data) => data.showFileKey,
@@ -6223,7 +7530,11 @@ final FieldReflectInfo<TypeAttachment> _TypeAttachment_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.showFileKey = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.showFileKey = copyer(oldData.showFileKey);
+    },
   ),
   "size": (
     getter: (data) => data.size,
@@ -6235,7 +7546,11 @@ final FieldReflectInfo<TypeAttachment> _TypeAttachment_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.size = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.size = copyer(oldData.size);
+    },
   ),
 };
 
@@ -6295,6 +7610,24 @@ class TypeAttachment extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeAttachment? deepCopy(TypeAttachment? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeAttachment();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeAttachment_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeAttachment copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -6372,7 +7705,14 @@ final FieldReflectInfo<TypeAttachmentQueryDTO> _TypeAttachmentQueryDTO_fields = 
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeAttachmentQueryDataDTO>((single){
+        final handler = TypeAttachmentQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -6384,7 +7724,11 @@ final FieldReflectInfo<TypeAttachmentQueryDTO> _TypeAttachmentQueryDTO_fields = 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -6396,7 +7740,11 @@ final FieldReflectInfo<TypeAttachmentQueryDTO> _TypeAttachmentQueryDTO_fields = 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -6408,7 +7756,11 @@ final FieldReflectInfo<TypeAttachmentQueryDTO> _TypeAttachmentQueryDTO_fields = 
     fromDynamic: (data, value) {
       final parser = TypeAttachmentQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeAttachmentQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -6460,6 +7812,24 @@ class TypeAttachmentQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeAttachmentQueryDTO? deepCopy(TypeAttachmentQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeAttachmentQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeAttachmentQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeAttachmentQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -6523,7 +7893,11 @@ final FieldReflectInfo<TypeAttachmentQueryDataDTO> _TypeAttachmentQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.createEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.createEmployeeId = copyer(oldData.createEmployeeId);
+    },
   ),
   "createEmployeeName": (
     getter: (data) => data.createEmployeeName,
@@ -6535,7 +7909,11 @@ final FieldReflectInfo<TypeAttachmentQueryDataDTO> _TypeAttachmentQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createEmployeeName = copyer(oldData.createEmployeeName);
+    },
   ),
   "createTime": (
     getter: (data) => data.createTime,
@@ -6547,7 +7925,11 @@ final FieldReflectInfo<TypeAttachmentQueryDataDTO> _TypeAttachmentQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -6559,7 +7941,11 @@ final FieldReflectInfo<TypeAttachmentQueryDataDTO> _TypeAttachmentQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "insertUniqueId": (
     getter: (data) => data.insertUniqueId,
@@ -6571,7 +7957,11 @@ final FieldReflectInfo<TypeAttachmentQueryDataDTO> _TypeAttachmentQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.insertUniqueId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.insertUniqueId = copyer(oldData.insertUniqueId);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -6583,7 +7973,11 @@ final FieldReflectInfo<TypeAttachmentQueryDataDTO> _TypeAttachmentQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "orderId": (
     getter: (data) => data.orderId,
@@ -6595,7 +7989,11 @@ final FieldReflectInfo<TypeAttachmentQueryDataDTO> _TypeAttachmentQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderId = copyer(oldData.orderId);
+    },
   ),
   "orderNumber": (
     getter: (data) => data.orderNumber,
@@ -6607,7 +8005,11 @@ final FieldReflectInfo<TypeAttachmentQueryDataDTO> _TypeAttachmentQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderNumber = copyer(oldData.orderNumber);
+    },
   ),
   "orderType": (
     getter: (data) => data.orderType,
@@ -6619,7 +8021,11 @@ final FieldReflectInfo<TypeAttachmentQueryDataDTO> _TypeAttachmentQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.orderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.orderType = copyer(oldData.orderType);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -6631,7 +8037,11 @@ final FieldReflectInfo<TypeAttachmentQueryDataDTO> _TypeAttachmentQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "showFileKey": (
     getter: (data) => data.showFileKey,
@@ -6643,7 +8053,11 @@ final FieldReflectInfo<TypeAttachmentQueryDataDTO> _TypeAttachmentQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.showFileKey = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.showFileKey = copyer(oldData.showFileKey);
+    },
   ),
   "size": (
     getter: (data) => data.size,
@@ -6655,7 +8069,11 @@ final FieldReflectInfo<TypeAttachmentQueryDataDTO> _TypeAttachmentQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.size = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.size = copyer(oldData.size);
+    },
   ),
 };
 
@@ -6715,6 +8133,24 @@ class TypeAttachmentQueryDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeAttachmentQueryDataDTO? deepCopy(TypeAttachmentQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeAttachmentQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeAttachmentQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeAttachmentQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -6784,7 +8220,11 @@ final FieldReflectInfo<TypeAttachmentQuerySumDTO> _TypeAttachmentQuerySumDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "size": (
     getter: (data) => data.size,
@@ -6796,7 +8236,11 @@ final FieldReflectInfo<TypeAttachmentQuerySumDTO> _TypeAttachmentQuerySumDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.size = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.size = copyer(oldData.size);
+    },
   ),
 };
 
@@ -6846,6 +8290,24 @@ class TypeAttachmentQuerySumDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeAttachmentQuerySumDTO? deepCopy(TypeAttachmentQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeAttachmentQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeAttachmentQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeAttachmentQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -6902,7 +8364,11 @@ final FieldReflectInfo<TypeAutoInjectLiteItemUnitConvert> _TypeAutoInjectLiteIte
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "isBasic": (
     getter: (data) => data.isBasic,
@@ -6914,7 +8380,11 @@ final FieldReflectInfo<TypeAutoInjectLiteItemUnitConvert> _TypeAutoInjectLiteIte
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isBasic = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isBasic = copyer(oldData.isBasic);
+    },
   ),
   "isCommon": (
     getter: (data) => data.isCommon,
@@ -6926,7 +8396,11 @@ final FieldReflectInfo<TypeAutoInjectLiteItemUnitConvert> _TypeAutoInjectLiteIte
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isCommon = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isCommon = copyer(oldData.isCommon);
+    },
   ),
   "isEnabled": (
     getter: (data) => data.isEnabled,
@@ -6938,7 +8412,11 @@ final FieldReflectInfo<TypeAutoInjectLiteItemUnitConvert> _TypeAutoInjectLiteIte
     fromDynamic: (data, value) {
       final parser = TypeEnumSoftEnableIsEnable.fromDynamic;
       data.isEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumSoftEnableIsEnable.deepCopy;
+      newData.isEnabled = copyer(oldData.isEnabled);
+    },
   ),
   "unitConvert": (
     getter: (data) => data.unitConvert,
@@ -6950,7 +8428,11 @@ final FieldReflectInfo<TypeAutoInjectLiteItemUnitConvert> _TypeAutoInjectLiteIte
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.unitConvert = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.unitConvert = copyer(oldData.unitConvert);
+    },
   ),
   "unitConvertDesc": (
     getter: (data) => data.unitConvertDesc,
@@ -6962,7 +8444,11 @@ final FieldReflectInfo<TypeAutoInjectLiteItemUnitConvert> _TypeAutoInjectLiteIte
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.unitConvertDesc = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.unitConvertDesc = copyer(oldData.unitConvertDesc);
+    },
   ),
   "unitId": (
     getter: (data) => data.unitId,
@@ -6974,7 +8460,11 @@ final FieldReflectInfo<TypeAutoInjectLiteItemUnitConvert> _TypeAutoInjectLiteIte
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.unitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.unitId = copyer(oldData.unitId);
+    },
   ),
   "unitName": (
     getter: (data) => data.unitName,
@@ -6986,7 +8476,11 @@ final FieldReflectInfo<TypeAutoInjectLiteItemUnitConvert> _TypeAutoInjectLiteIte
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.unitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.unitName = copyer(oldData.unitName);
+    },
   ),
   "wholeSalesPrice": (
     getter: (data) => data.wholeSalesPrice,
@@ -6998,7 +8492,11 @@ final FieldReflectInfo<TypeAutoInjectLiteItemUnitConvert> _TypeAutoInjectLiteIte
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.wholeSalesPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.wholeSalesPrice = copyer(oldData.wholeSalesPrice);
+    },
   ),
 };
 
@@ -7055,6 +8553,24 @@ class TypeAutoInjectLiteItemUnitConvert extends IDataBasic implements IDataDynam
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeAutoInjectLiteItemUnitConvert? deepCopy(TypeAutoInjectLiteItemUnitConvert? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeAutoInjectLiteItemUnitConvert();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeAutoInjectLiteItemUnitConvert_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeAutoInjectLiteItemUnitConvert copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -7142,7 +8658,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.billTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.billTotal = copyer(oldData.billTotal);
+    },
   ),
   "billType": (
     getter: (data) => data.billType,
@@ -7154,7 +8674,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderBillType.fromDynamic;
       data.billType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderBillType.deepCopy;
+      newData.billType = copyer(oldData.billType);
+    },
   ),
   "contactId": (
     getter: (data) => data.contactId,
@@ -7166,7 +8690,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactId = copyer(oldData.contactId);
+    },
   ),
   "contactName": (
     getter: (data) => data.contactName,
@@ -7178,7 +8706,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactName = copyer(oldData.contactName);
+    },
   ),
   "costTotal": (
     getter: (data) => data.costTotal,
@@ -7190,7 +8722,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.costTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.costTotal = copyer(oldData.costTotal);
+    },
   ),
   "discountTotal": (
     getter: (data) => data.discountTotal,
@@ -7202,7 +8738,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.discountTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.discountTotal = copyer(oldData.discountTotal);
+    },
   ),
   "doneBillTotal": (
     getter: (data) => data.doneBillTotal,
@@ -7214,7 +8754,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.doneBillTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.doneBillTotal = copyer(oldData.doneBillTotal);
+    },
   ),
   "feeTotal": (
     getter: (data) => data.feeTotal,
@@ -7226,7 +8770,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.feeTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.feeTotal = copyer(oldData.feeTotal);
+    },
   ),
   "hasFinishBill": (
     getter: (data) => data.hasFinishBill,
@@ -7238,7 +8786,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasFinishBill = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasFinishBill = copyer(oldData.hasFinishBill);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -7250,7 +8802,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "number": (
     getter: (data) => data.number,
@@ -7262,7 +8818,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.number = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.number = copyer(oldData.number);
+    },
   ),
   "orderDate": (
     getter: (data) => data.orderDate,
@@ -7274,7 +8834,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDate = copyer(oldData.orderDate);
+    },
   ),
   "preTaxTotal": (
     getter: (data) => data.preTaxTotal,
@@ -7286,7 +8850,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.preTaxTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.preTaxTotal = copyer(oldData.preTaxTotal);
+    },
   ),
   "profitRate": (
     getter: (data) => data.profitRate,
@@ -7298,7 +8866,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.profitRate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.profitRate = copyer(oldData.profitRate);
+    },
   ),
   "profitTotal": (
     getter: (data) => data.profitTotal,
@@ -7310,7 +8882,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.profitTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.profitTotal = copyer(oldData.profitTotal);
+    },
   ),
   "redState": (
     getter: (data) => data.redState,
@@ -7322,7 +8898,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderRedState.fromDynamic;
       data.redState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderRedState.deepCopy;
+      newData.redState = copyer(oldData.redState);
+    },
   ),
   "state": (
     getter: (data) => data.state,
@@ -7334,7 +8914,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderState.fromDynamic;
       data.state = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderState.deepCopy;
+      newData.state = copyer(oldData.state);
+    },
   ),
   "storeId": (
     getter: (data) => data.storeId,
@@ -7346,7 +8930,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.storeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.storeId = copyer(oldData.storeId);
+    },
   ),
   "storeName": (
     getter: (data) => data.storeName,
@@ -7358,7 +8946,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.storeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.storeName = copyer(oldData.storeName);
+    },
   ),
   "subType": (
     getter: (data) => data.subType,
@@ -7370,7 +8962,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderSubType.fromDynamic;
       data.subType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderSubType.deepCopy;
+      newData.subType = copyer(oldData.subType);
+    },
   ),
   "tax": (
     getter: (data) => data.tax,
@@ -7382,7 +8978,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.tax = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.tax = copyer(oldData.tax);
+    },
   ),
   "taxOnlyTotal": (
     getter: (data) => data.taxOnlyTotal,
@@ -7394,7 +8994,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.taxOnlyTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.taxOnlyTotal = copyer(oldData.taxOnlyTotal);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -7406,7 +9010,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
   "totalAmount": (
     getter: (data) => data.totalAmount,
@@ -7418,7 +9026,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.totalAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.totalAmount = copyer(oldData.totalAmount);
+    },
   ),
   "type": (
     getter: (data) => data.type,
@@ -7430,7 +9042,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.type = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.type = copyer(oldData.type);
+    },
   ),
   "undoneBillTotal": (
     getter: (data) => data.undoneBillTotal,
@@ -7442,7 +9058,11 @@ final FieldReflectInfo<TypeAutoInjectLiteOrder> _TypeAutoInjectLiteOrder_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.undoneBillTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.undoneBillTotal = copyer(oldData.undoneBillTotal);
+    },
   ),
 };
 
@@ -7516,6 +9136,24 @@ class TypeAutoInjectLiteOrder extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeAutoInjectLiteOrder? deepCopy(TypeAutoInjectLiteOrder? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeAutoInjectLiteOrder();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeAutoInjectLiteOrder_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeAutoInjectLiteOrder copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -7613,7 +9251,11 @@ final FieldReflectInfo<TypeAutoInjectLiteUnit> _TypeAutoInjectLiteUnit_fields = 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -7625,7 +9267,11 @@ final FieldReflectInfo<TypeAutoInjectLiteUnit> _TypeAutoInjectLiteUnit_fields = 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
 };
 
@@ -7675,6 +9321,24 @@ class TypeAutoInjectLiteUnit extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeAutoInjectLiteUnit? deepCopy(TypeAutoInjectLiteUnit? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeAutoInjectLiteUnit();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeAutoInjectLiteUnit_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeAutoInjectLiteUnit copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -7733,7 +9397,11 @@ final FieldReflectInfo<TypeBackendTask> _TypeBackendTask_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.allCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.allCount = copyer(oldData.allCount);
+    },
   ),
   "createTime": (
     getter: (data) => data.createTime,
@@ -7745,7 +9413,11 @@ final FieldReflectInfo<TypeBackendTask> _TypeBackendTask_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "description": (
     getter: (data) => data.description,
@@ -7757,7 +9429,11 @@ final FieldReflectInfo<TypeBackendTask> _TypeBackendTask_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.description = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.description = copyer(oldData.description);
+    },
   ),
   "failCount": (
     getter: (data) => data.failCount,
@@ -7769,7 +9445,11 @@ final FieldReflectInfo<TypeBackendTask> _TypeBackendTask_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.failCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.failCount = copyer(oldData.failCount);
+    },
   ),
   "finishCount": (
     getter: (data) => data.finishCount,
@@ -7781,7 +9461,11 @@ final FieldReflectInfo<TypeBackendTask> _TypeBackendTask_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.finishCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.finishCount = copyer(oldData.finishCount);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -7793,7 +9477,11 @@ final FieldReflectInfo<TypeBackendTask> _TypeBackendTask_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -7805,7 +9493,11 @@ final FieldReflectInfo<TypeBackendTask> _TypeBackendTask_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "msg": (
     getter: (data) => data.msg,
@@ -7817,7 +9509,11 @@ final FieldReflectInfo<TypeBackendTask> _TypeBackendTask_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.msg = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.msg = copyer(oldData.msg);
+    },
   ),
   "state": (
     getter: (data) => data.state,
@@ -7829,7 +9525,11 @@ final FieldReflectInfo<TypeBackendTask> _TypeBackendTask_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumBackendTaskState.fromDynamic;
       data.state = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumBackendTaskState.deepCopy;
+      newData.state = copyer(oldData.state);
+    },
   ),
   "subType": (
     getter: (data) => data.subType,
@@ -7841,7 +9541,11 @@ final FieldReflectInfo<TypeBackendTask> _TypeBackendTask_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.subType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.subType = copyer(oldData.subType);
+    },
   ),
   "type": (
     getter: (data) => data.type,
@@ -7853,7 +9557,11 @@ final FieldReflectInfo<TypeBackendTask> _TypeBackendTask_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumBackendTaskType.fromDynamic;
       data.type = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumBackendTaskType.deepCopy;
+      newData.type = copyer(oldData.type);
+    },
   ),
 };
 
@@ -7912,6 +9620,24 @@ class TypeBackendTask extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeBackendTask? deepCopy(TypeBackendTask? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeBackendTask();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeBackendTask_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeBackendTask copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -7988,7 +9714,11 @@ final FieldReflectInfo<TypeColumnConstraintItem> _TypeColumnConstraintItem_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.columnAliasName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.columnAliasName = copyer(oldData.columnAliasName);
+    },
   ),
   "columnConstraintId": (
     getter: (data) => data.columnConstraintId,
@@ -8000,7 +9730,11 @@ final FieldReflectInfo<TypeColumnConstraintItem> _TypeColumnConstraintItem_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.columnConstraintId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.columnConstraintId = copyer(oldData.columnConstraintId);
+    },
   ),
   "columnId": (
     getter: (data) => data.columnId,
@@ -8012,7 +9746,11 @@ final FieldReflectInfo<TypeColumnConstraintItem> _TypeColumnConstraintItem_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.columnId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.columnId = copyer(oldData.columnId);
+    },
   ),
   "columnIsEditable": (
     getter: (data) => data.columnIsEditable,
@@ -8024,7 +9762,11 @@ final FieldReflectInfo<TypeColumnConstraintItem> _TypeColumnConstraintItem_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.columnIsEditable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.columnIsEditable = copyer(oldData.columnIsEditable);
+    },
   ),
   "columnIsRequired": (
     getter: (data) => data.columnIsRequired,
@@ -8036,7 +9778,11 @@ final FieldReflectInfo<TypeColumnConstraintItem> _TypeColumnConstraintItem_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.columnIsRequired = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.columnIsRequired = copyer(oldData.columnIsRequired);
+    },
   ),
   "columnShowType": (
     getter: (data) => data.columnShowType,
@@ -8048,7 +9794,11 @@ final FieldReflectInfo<TypeColumnConstraintItem> _TypeColumnConstraintItem_field
     fromDynamic: (data, value) {
       final parser = TypeEnumColumnShowType.fromDynamic;
       data.columnShowType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumColumnShowType.deepCopy;
+      newData.columnShowType = copyer(oldData.columnShowType);
+    },
   ),
   "createTime": (
     getter: (data) => data.createTime,
@@ -8060,7 +9810,11 @@ final FieldReflectInfo<TypeColumnConstraintItem> _TypeColumnConstraintItem_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -8072,7 +9826,11 @@ final FieldReflectInfo<TypeColumnConstraintItem> _TypeColumnConstraintItem_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -8084,7 +9842,11 @@ final FieldReflectInfo<TypeColumnConstraintItem> _TypeColumnConstraintItem_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "positionId": (
     getter: (data) => data.positionId,
@@ -8096,7 +9858,11 @@ final FieldReflectInfo<TypeColumnConstraintItem> _TypeColumnConstraintItem_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.positionId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.positionId = copyer(oldData.positionId);
+    },
   ),
   "sceneId": (
     getter: (data) => data.sceneId,
@@ -8108,7 +9874,11 @@ final FieldReflectInfo<TypeColumnConstraintItem> _TypeColumnConstraintItem_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.sceneId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.sceneId = copyer(oldData.sceneId);
+    },
   ),
 };
 
@@ -8167,6 +9937,24 @@ class TypeColumnConstraintItem extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeColumnConstraintItem? deepCopy(TypeColumnConstraintItem? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeColumnConstraintItem();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeColumnConstraintItem_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeColumnConstraintItem copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -8238,7 +10026,11 @@ final FieldReflectInfo<TypeColumnState> _TypeColumnState_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -8250,7 +10042,11 @@ final FieldReflectInfo<TypeColumnState> _TypeColumnState_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "items": (
     getter: (data) => data.items,
@@ -8268,7 +10064,14 @@ final FieldReflectInfo<TypeColumnState> _TypeColumnState_fields = {
         return handler(single)!;
       });
       data.items = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeColumnStateItem>((single){
+        final handler = TypeColumnStateItem.deepCopy;
+        return handler(single)!;
+      });
+      newData.items = copyer(oldData.items);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -8280,7 +10083,11 @@ final FieldReflectInfo<TypeColumnState> _TypeColumnState_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "operatorId": (
     getter: (data) => data.operatorId,
@@ -8292,7 +10099,11 @@ final FieldReflectInfo<TypeColumnState> _TypeColumnState_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.operatorId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.operatorId = copyer(oldData.operatorId);
+    },
   ),
   "sceneId": (
     getter: (data) => data.sceneId,
@@ -8304,7 +10115,11 @@ final FieldReflectInfo<TypeColumnState> _TypeColumnState_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.sceneId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.sceneId = copyer(oldData.sceneId);
+    },
   ),
 };
 
@@ -8358,6 +10173,24 @@ class TypeColumnState extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeColumnState? deepCopy(TypeColumnState? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeColumnState();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeColumnState_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeColumnState copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -8422,7 +10255,11 @@ final FieldReflectInfo<TypeColumnStateItem> _TypeColumnStateItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.columnId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.columnId = copyer(oldData.columnId);
+    },
   ),
   "createTime": (
     getter: (data) => data.createTime,
@@ -8434,7 +10271,11 @@ final FieldReflectInfo<TypeColumnStateItem> _TypeColumnStateItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "defaultValue": (
     getter: (data) => data.defaultValue,
@@ -8446,7 +10287,11 @@ final FieldReflectInfo<TypeColumnStateItem> _TypeColumnStateItem_fields = {
     fromDynamic: (data, value) {
       final parser = ObjectHelper.fromDynamic;
       data.defaultValue = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ObjectHelper.deepCopy;
+      newData.defaultValue = copyer(oldData.defaultValue);
+    },
   ),
   "defaultValueType": (
     getter: (data) => data.defaultValueType,
@@ -8458,7 +10303,11 @@ final FieldReflectInfo<TypeColumnStateItem> _TypeColumnStateItem_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumColumnValueType.fromDynamic;
       data.defaultValueType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumColumnValueType.deepCopy;
+      newData.defaultValueType = copyer(oldData.defaultValueType);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -8470,7 +10319,11 @@ final FieldReflectInfo<TypeColumnStateItem> _TypeColumnStateItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "isEnterJumpIn": (
     getter: (data) => data.isEnterJumpIn,
@@ -8482,7 +10335,11 @@ final FieldReflectInfo<TypeColumnStateItem> _TypeColumnStateItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isEnterJumpIn = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isEnterJumpIn = copyer(oldData.isEnterJumpIn);
+    },
   ),
   "isShow": (
     getter: (data) => data.isShow,
@@ -8494,7 +10351,11 @@ final FieldReflectInfo<TypeColumnStateItem> _TypeColumnStateItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isShow = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isShow = copyer(oldData.isShow);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -8506,7 +10367,11 @@ final FieldReflectInfo<TypeColumnStateItem> _TypeColumnStateItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "width": (
     getter: (data) => data.width,
@@ -8518,7 +10383,11 @@ final FieldReflectInfo<TypeColumnStateItem> _TypeColumnStateItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.width = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.width = copyer(oldData.width);
+    },
   ),
 };
 
@@ -8575,6 +10444,24 @@ class TypeColumnStateItem extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeColumnStateItem? deepCopy(TypeColumnStateItem? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeColumnStateItem();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeColumnStateItem_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeColumnStateItem copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -8641,7 +10528,11 @@ final FieldReflectInfo<TypeCombineConstraint> _TypeCombineConstraint_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.columnAliasName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.columnAliasName = copyer(oldData.columnAliasName);
+    },
   ),
   "columnId": (
     getter: (data) => data.columnId,
@@ -8653,7 +10544,11 @@ final FieldReflectInfo<TypeCombineConstraint> _TypeCombineConstraint_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.columnId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.columnId = copyer(oldData.columnId);
+    },
   ),
   "columnIsEditable": (
     getter: (data) => data.columnIsEditable,
@@ -8665,7 +10560,11 @@ final FieldReflectInfo<TypeCombineConstraint> _TypeCombineConstraint_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.columnIsEditable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.columnIsEditable = copyer(oldData.columnIsEditable);
+    },
   ),
   "columnIsRequired": (
     getter: (data) => data.columnIsRequired,
@@ -8677,7 +10576,11 @@ final FieldReflectInfo<TypeCombineConstraint> _TypeCombineConstraint_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.columnIsRequired = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.columnIsRequired = copyer(oldData.columnIsRequired);
+    },
   ),
   "columnShowType": (
     getter: (data) => data.columnShowType,
@@ -8689,7 +10592,11 @@ final FieldReflectInfo<TypeCombineConstraint> _TypeCombineConstraint_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumColumnShowType.fromDynamic;
       data.columnShowType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumColumnShowType.deepCopy;
+      newData.columnShowType = copyer(oldData.columnShowType);
+    },
   ),
 };
 
@@ -8742,6 +10649,24 @@ class TypeCombineConstraint extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeCombineConstraint? deepCopy(TypeCombineConstraint? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeCombineConstraint();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeCombineConstraint_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeCombineConstraint copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -8797,7 +10722,11 @@ final FieldReflectInfo<TypeConstant> _TypeConstant_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.label = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.label = copyer(oldData.label);
+    },
   ),
   "value": (
     getter: (data) => data.value,
@@ -8809,7 +10738,11 @@ final FieldReflectInfo<TypeConstant> _TypeConstant_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.value = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.value = copyer(oldData.value);
+    },
   ),
 };
 
@@ -8859,6 +10792,24 @@ class TypeConstant extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeConstant? deepCopy(TypeConstant? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeConstant();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeConstant_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeConstant copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -8941,7 +10892,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.accountPayable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.accountPayable = copyer(oldData.accountPayable);
+    },
   ),
   "accountReceivable": (
     getter: (data) => data.accountReceivable,
@@ -8953,7 +10908,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.accountReceivable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.accountReceivable = copyer(oldData.accountReceivable);
+    },
   ),
   "address": (
     getter: (data) => data.address,
@@ -8965,7 +10924,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.address = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.address = copyer(oldData.address);
+    },
   ),
   "advancePayable": (
     getter: (data) => data.advancePayable,
@@ -8977,7 +10940,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.advancePayable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.advancePayable = copyer(oldData.advancePayable);
+    },
   ),
   "advanceReceivable": (
     getter: (data) => data.advanceReceivable,
@@ -8989,7 +10956,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.advanceReceivable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.advanceReceivable = copyer(oldData.advanceReceivable);
+    },
   ),
   "bank": (
     getter: (data) => data.bank,
@@ -9001,7 +10972,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.bank = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.bank = copyer(oldData.bank);
+    },
   ),
   "bankAccount": (
     getter: (data) => data.bankAccount,
@@ -9013,7 +10988,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.bankAccount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.bankAccount = copyer(oldData.bankAccount);
+    },
   ),
   "children": (
     getter: (data) => data.children,
@@ -9031,7 +11010,14 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
         return handler(single)!;
       });
       data.children = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeContact>((single){
+        final handler = TypeContact.deepCopy;
+        return handler(single)!;
+      });
+      newData.children = copyer(oldData.children);
+    },
   ),
   "createTime": (
     getter: (data) => data.createTime,
@@ -9043,7 +11029,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "defaultTax": (
     getter: (data) => data.defaultTax,
@@ -9055,7 +11045,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.defaultTax = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.defaultTax = copyer(oldData.defaultTax);
+    },
   ),
   "deferInvoiceTotal": (
     getter: (data) => data.deferInvoiceTotal,
@@ -9067,7 +11061,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.deferInvoiceTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.deferInvoiceTotal = copyer(oldData.deferInvoiceTotal);
+    },
   ),
   "hasBusinessLink": (
     getter: (data) => data.hasBusinessLink,
@@ -9079,7 +11077,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasBusinessLink = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasBusinessLink = copyer(oldData.hasBusinessLink);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -9091,7 +11093,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "initialAccountPayable": (
     getter: (data) => data.initialAccountPayable,
@@ -9103,7 +11109,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.initialAccountPayable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.initialAccountPayable = copyer(oldData.initialAccountPayable);
+    },
   ),
   "initialAccountReceivable": (
     getter: (data) => data.initialAccountReceivable,
@@ -9115,7 +11125,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.initialAccountReceivable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.initialAccountReceivable = copyer(oldData.initialAccountReceivable);
+    },
   ),
   "initialAdvancePayable": (
     getter: (data) => data.initialAdvancePayable,
@@ -9127,7 +11141,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.initialAdvancePayable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.initialAdvancePayable = copyer(oldData.initialAdvancePayable);
+    },
   ),
   "initialAdvanceReceivable": (
     getter: (data) => data.initialAdvanceReceivable,
@@ -9139,7 +11157,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.initialAdvanceReceivable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.initialAdvanceReceivable = copyer(oldData.initialAdvanceReceivable);
+    },
   ),
   "isCategory": (
     getter: (data) => data.isCategory,
@@ -9151,7 +11173,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isCategory = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isCategory = copyer(oldData.isCategory);
+    },
   ),
   "isCustomer": (
     getter: (data) => data.isCustomer,
@@ -9163,7 +11189,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isCustomer = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isCustomer = copyer(oldData.isCustomer);
+    },
   ),
   "isCustomerAndSupplier": (
     getter: (data) => data.isCustomerAndSupplier,
@@ -9175,7 +11205,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isCustomerAndSupplier = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isCustomerAndSupplier = copyer(oldData.isCustomerAndSupplier);
+    },
   ),
   "isEnabled": (
     getter: (data) => data.isEnabled,
@@ -9187,7 +11221,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumSoftEnableIsEnable.fromDynamic;
       data.isEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumSoftEnableIsEnable.deepCopy;
+      newData.isEnabled = copyer(oldData.isEnabled);
+    },
   ),
   "isSupplier": (
     getter: (data) => data.isSupplier,
@@ -9199,7 +11237,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isSupplier = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isSupplier = copyer(oldData.isSupplier);
+    },
   ),
   "isSystem": (
     getter: (data) => data.isSystem,
@@ -9211,7 +11253,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isSystem = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isSystem = copyer(oldData.isSystem);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -9223,7 +11269,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -9235,7 +11285,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "number": (
     getter: (data) => data.number,
@@ -9247,7 +11301,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.number = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.number = copyer(oldData.number);
+    },
   ),
   "parentId": (
     getter: (data) => data.parentId,
@@ -9259,7 +11317,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.parentId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.parentId = copyer(oldData.parentId);
+    },
   ),
   "parentInfo": (
     getter: (data) => data.parentInfo,
@@ -9271,7 +11333,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = TypeContact.fromDynamic;
       data.parentInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeContact.deepCopy;
+      newData.parentInfo = copyer(oldData.parentInfo);
+    },
   ),
   "phones": (
     getter: (data) => data.phones,
@@ -9289,7 +11355,14 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
         return handler(single)!;
       });
       data.phones = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeContactPhone>((single){
+        final handler = TypeContactPhone.deepCopy;
+        return handler(single)!;
+      });
+      newData.phones = copyer(oldData.phones);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -9301,7 +11374,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "sortWeight": (
     getter: (data) => data.sortWeight,
@@ -9313,7 +11390,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.sortWeight = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.sortWeight = copyer(oldData.sortWeight);
+    },
   ),
   "taxNumber": (
     getter: (data) => data.taxNumber,
@@ -9325,7 +11406,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.taxNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.taxNumber = copyer(oldData.taxNumber);
+    },
   ),
   "treeLevel": (
     getter: (data) => data.treeLevel,
@@ -9337,7 +11422,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.treeLevel = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.treeLevel = copyer(oldData.treeLevel);
+    },
   ),
   "treePath": (
     getter: (data) => data.treePath,
@@ -9349,7 +11438,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.treePath = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.treePath = copyer(oldData.treePath);
+    },
   ),
   "type": (
     getter: (data) => data.type,
@@ -9361,7 +11454,11 @@ final FieldReflectInfo<TypeContact> _TypeContact_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumContactType.fromDynamic;
       data.type = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumContactType.deepCopy;
+      newData.type = copyer(oldData.type);
+    },
   ),
 };
 
@@ -9444,6 +11541,24 @@ class TypeContact extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeContact? deepCopy(TypeContact? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeContact();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeContact_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeContact copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -9562,7 +11677,11 @@ final FieldReflectInfo<TypeContactPhone> _TypeContactPhone_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.birthday = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.birthday = copyer(oldData.birthday);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -9574,7 +11693,11 @@ final FieldReflectInfo<TypeContactPhone> _TypeContactPhone_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "phone": (
     getter: (data) => data.phone,
@@ -9586,7 +11709,11 @@ final FieldReflectInfo<TypeContactPhone> _TypeContactPhone_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.phone = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.phone = copyer(oldData.phone);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -9598,7 +11725,11 @@ final FieldReflectInfo<TypeContactPhone> _TypeContactPhone_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "shippingAddress": (
     getter: (data) => data.shippingAddress,
@@ -9610,7 +11741,11 @@ final FieldReflectInfo<TypeContactPhone> _TypeContactPhone_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.shippingAddress = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.shippingAddress = copyer(oldData.shippingAddress);
+    },
   ),
 };
 
@@ -9663,6 +11798,24 @@ class TypeContactPhone extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeContactPhone? deepCopy(TypeContactPhone? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeContactPhone();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeContactPhone_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeContactPhone copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -9726,7 +11879,14 @@ final FieldReflectInfo<TypeContactQueryDTO> _TypeContactQueryDTO_fields = {
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeContactQueryDataDTO>((single){
+        final handler = TypeContactQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -9738,7 +11898,11 @@ final FieldReflectInfo<TypeContactQueryDTO> _TypeContactQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -9750,7 +11914,11 @@ final FieldReflectInfo<TypeContactQueryDTO> _TypeContactQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -9762,7 +11930,11 @@ final FieldReflectInfo<TypeContactQueryDTO> _TypeContactQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = TypeContactQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeContactQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -9814,6 +11986,24 @@ class TypeContactQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeContactQueryDTO? deepCopy(TypeContactQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeContactQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeContactQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeContactQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -9883,7 +12073,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.accountPayable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.accountPayable = copyer(oldData.accountPayable);
+    },
   ),
   "accountReceivable": (
     getter: (data) => data.accountReceivable,
@@ -9895,7 +12089,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.accountReceivable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.accountReceivable = copyer(oldData.accountReceivable);
+    },
   ),
   "advancePayable": (
     getter: (data) => data.advancePayable,
@@ -9907,7 +12105,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.advancePayable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.advancePayable = copyer(oldData.advancePayable);
+    },
   ),
   "advanceReceivable": (
     getter: (data) => data.advanceReceivable,
@@ -9919,7 +12121,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.advanceReceivable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.advanceReceivable = copyer(oldData.advanceReceivable);
+    },
   ),
   "createTime": (
     getter: (data) => data.createTime,
@@ -9931,7 +12137,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -9943,7 +12153,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "initialAccountPayable": (
     getter: (data) => data.initialAccountPayable,
@@ -9955,7 +12169,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.initialAccountPayable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.initialAccountPayable = copyer(oldData.initialAccountPayable);
+    },
   ),
   "initialAccountReceivable": (
     getter: (data) => data.initialAccountReceivable,
@@ -9967,7 +12185,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.initialAccountReceivable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.initialAccountReceivable = copyer(oldData.initialAccountReceivable);
+    },
   ),
   "initialAdvancePayable": (
     getter: (data) => data.initialAdvancePayable,
@@ -9979,7 +12201,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.initialAdvancePayable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.initialAdvancePayable = copyer(oldData.initialAdvancePayable);
+    },
   ),
   "initialAdvanceReceivable": (
     getter: (data) => data.initialAdvanceReceivable,
@@ -9991,7 +12217,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.initialAdvanceReceivable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.initialAdvanceReceivable = copyer(oldData.initialAdvanceReceivable);
+    },
   ),
   "isCustomer": (
     getter: (data) => data.isCustomer,
@@ -10003,7 +12233,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isCustomer = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isCustomer = copyer(oldData.isCustomer);
+    },
   ),
   "isEnabled": (
     getter: (data) => data.isEnabled,
@@ -10015,7 +12249,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = TypeEnumSoftEnableIsEnable.fromDynamic;
       data.isEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumSoftEnableIsEnable.deepCopy;
+      newData.isEnabled = copyer(oldData.isEnabled);
+    },
   ),
   "isSupplier": (
     getter: (data) => data.isSupplier,
@@ -10027,7 +12265,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isSupplier = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isSupplier = copyer(oldData.isSupplier);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -10039,7 +12281,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "number": (
     getter: (data) => data.number,
@@ -10051,7 +12297,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.number = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.number = copyer(oldData.number);
+    },
   ),
   "parentId": (
     getter: (data) => data.parentId,
@@ -10063,7 +12313,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.parentId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.parentId = copyer(oldData.parentId);
+    },
   ),
   "parentName": (
     getter: (data) => data.parentName,
@@ -10075,7 +12329,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.parentName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.parentName = copyer(oldData.parentName);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -10087,7 +12345,11 @@ final FieldReflectInfo<TypeContactQueryDataDTO> _TypeContactQueryDataDTO_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
 };
 
@@ -10153,6 +12415,24 @@ class TypeContactQueryDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeContactQueryDataDTO? deepCopy(TypeContactQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeContactQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeContactQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeContactQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -10241,7 +12521,11 @@ final FieldReflectInfo<TypeContactQuerySumDTO> _TypeContactQuerySumDTO_fields = 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.accountPayable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.accountPayable = copyer(oldData.accountPayable);
+    },
   ),
   "accountReceivable": (
     getter: (data) => data.accountReceivable,
@@ -10253,7 +12537,11 @@ final FieldReflectInfo<TypeContactQuerySumDTO> _TypeContactQuerySumDTO_fields = 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.accountReceivable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.accountReceivable = copyer(oldData.accountReceivable);
+    },
   ),
   "advancePayable": (
     getter: (data) => data.advancePayable,
@@ -10265,7 +12553,11 @@ final FieldReflectInfo<TypeContactQuerySumDTO> _TypeContactQuerySumDTO_fields = 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.advancePayable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.advancePayable = copyer(oldData.advancePayable);
+    },
   ),
   "advanceReceivable": (
     getter: (data) => data.advanceReceivable,
@@ -10277,7 +12569,11 @@ final FieldReflectInfo<TypeContactQuerySumDTO> _TypeContactQuerySumDTO_fields = 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.advanceReceivable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.advanceReceivable = copyer(oldData.advanceReceivable);
+    },
   ),
   "count": (
     getter: (data) => data.count,
@@ -10289,7 +12585,11 @@ final FieldReflectInfo<TypeContactQuerySumDTO> _TypeContactQuerySumDTO_fields = 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "initialAccountPayable": (
     getter: (data) => data.initialAccountPayable,
@@ -10301,7 +12601,11 @@ final FieldReflectInfo<TypeContactQuerySumDTO> _TypeContactQuerySumDTO_fields = 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.initialAccountPayable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.initialAccountPayable = copyer(oldData.initialAccountPayable);
+    },
   ),
   "initialAccountReceivable": (
     getter: (data) => data.initialAccountReceivable,
@@ -10313,7 +12617,11 @@ final FieldReflectInfo<TypeContactQuerySumDTO> _TypeContactQuerySumDTO_fields = 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.initialAccountReceivable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.initialAccountReceivable = copyer(oldData.initialAccountReceivable);
+    },
   ),
   "initialAdvancePayable": (
     getter: (data) => data.initialAdvancePayable,
@@ -10325,7 +12633,11 @@ final FieldReflectInfo<TypeContactQuerySumDTO> _TypeContactQuerySumDTO_fields = 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.initialAdvancePayable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.initialAdvancePayable = copyer(oldData.initialAdvancePayable);
+    },
   ),
   "initialAdvanceReceivable": (
     getter: (data) => data.initialAdvanceReceivable,
@@ -10337,7 +12649,11 @@ final FieldReflectInfo<TypeContactQuerySumDTO> _TypeContactQuerySumDTO_fields = 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.initialAdvanceReceivable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.initialAdvanceReceivable = copyer(oldData.initialAdvanceReceivable);
+    },
   ),
 };
 
@@ -10394,6 +12710,24 @@ class TypeContactQuerySumDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeContactQuerySumDTO? deepCopy(TypeContactQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeContactQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeContactQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeContactQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -10466,7 +12800,11 @@ final FieldReflectInfo<TypeEmployee> _TypeEmployee_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "hasBusinessLink": (
     getter: (data) => data.hasBusinessLink,
@@ -10478,7 +12816,11 @@ final FieldReflectInfo<TypeEmployee> _TypeEmployee_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasBusinessLink = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasBusinessLink = copyer(oldData.hasBusinessLink);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -10490,7 +12832,11 @@ final FieldReflectInfo<TypeEmployee> _TypeEmployee_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "identityNumber": (
     getter: (data) => data.identityNumber,
@@ -10502,7 +12848,11 @@ final FieldReflectInfo<TypeEmployee> _TypeEmployee_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.identityNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.identityNumber = copyer(oldData.identityNumber);
+    },
   ),
   "isEnabled": (
     getter: (data) => data.isEnabled,
@@ -10514,7 +12864,11 @@ final FieldReflectInfo<TypeEmployee> _TypeEmployee_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumSoftEnableIsEnable.fromDynamic;
       data.isEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumSoftEnableIsEnable.deepCopy;
+      newData.isEnabled = copyer(oldData.isEnabled);
+    },
   ),
   "job": (
     getter: (data) => data.job,
@@ -10526,7 +12880,11 @@ final FieldReflectInfo<TypeEmployee> _TypeEmployee_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.job = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.job = copyer(oldData.job);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -10538,7 +12896,11 @@ final FieldReflectInfo<TypeEmployee> _TypeEmployee_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -10550,7 +12912,11 @@ final FieldReflectInfo<TypeEmployee> _TypeEmployee_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "number": (
     getter: (data) => data.number,
@@ -10562,7 +12928,11 @@ final FieldReflectInfo<TypeEmployee> _TypeEmployee_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.number = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.number = copyer(oldData.number);
+    },
   ),
   "phone": (
     getter: (data) => data.phone,
@@ -10574,7 +12944,11 @@ final FieldReflectInfo<TypeEmployee> _TypeEmployee_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.phone = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.phone = copyer(oldData.phone);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -10586,7 +12960,11 @@ final FieldReflectInfo<TypeEmployee> _TypeEmployee_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
 };
 
@@ -10645,6 +13023,24 @@ class TypeEmployee extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEmployee? deepCopy(TypeEmployee? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeEmployee();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeEmployee_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeEmployee copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -10714,7 +13110,11 @@ final FieldReflectInfo<TypeEntityOperation> _TypeEntityOperation_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumEntity.fromDynamic;
       data.entity = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumEntity.deepCopy;
+      newData.entity = copyer(oldData.entity);
+    },
   ),
   "group": (
     getter: (data) => data.group,
@@ -10726,7 +13126,11 @@ final FieldReflectInfo<TypeEntityOperation> _TypeEntityOperation_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.group = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.group = copyer(oldData.group);
+    },
   ),
   "operationList": (
     getter: (data) => data.operationList,
@@ -10744,7 +13148,14 @@ final FieldReflectInfo<TypeEntityOperation> _TypeEntityOperation_fields = {
         return handler(single)!;
       });
       data.operationList = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeEnumOperation>((single){
+        final handler = TypeEnumOperation.deepCopy;
+        return handler(single)!;
+      });
+      newData.operationList = copyer(oldData.operationList);
+    },
   ),
   "operationMask": (
     getter: (data) => data.operationMask,
@@ -10756,7 +13167,11 @@ final FieldReflectInfo<TypeEntityOperation> _TypeEntityOperation_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.operationMask = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.operationMask = copyer(oldData.operationMask);
+    },
   ),
 };
 
@@ -10808,6 +13223,24 @@ class TypeEntityOperation extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEntityOperation? deepCopy(TypeEntityOperation? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeEntityOperation();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeEntityOperation_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeEntityOperation copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -10869,7 +13302,14 @@ final FieldReflectInfo<TypeEnumInfo> _TypeEnumInfo_fields = {
         return handler(single)!;
       });
       data.constantList = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeConstant>((single){
+        final handler = TypeConstant.deepCopy;
+        return handler(single)!;
+      });
+      newData.constantList = copyer(oldData.constantList);
+    },
   ),
   "encloseName": (
     getter: (data) => data.encloseName,
@@ -10881,7 +13321,11 @@ final FieldReflectInfo<TypeEnumInfo> _TypeEnumInfo_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.encloseName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.encloseName = copyer(oldData.encloseName);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -10893,7 +13337,11 @@ final FieldReflectInfo<TypeEnumInfo> _TypeEnumInfo_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "packageName": (
     getter: (data) => data.packageName,
@@ -10905,7 +13353,11 @@ final FieldReflectInfo<TypeEnumInfo> _TypeEnumInfo_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.packageName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.packageName = copyer(oldData.packageName);
+    },
   ),
 };
 
@@ -10957,6 +13409,24 @@ class TypeEnumInfo extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeEnumInfo? deepCopy(TypeEnumInfo? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeEnumInfo();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeEnumInfo_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeEnumInfo copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -11013,7 +13483,11 @@ final FieldReflectInfo<TypeImageInfo> _TypeImageInfo_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "showOriginUrl": (
     getter: (data) => data.showOriginUrl,
@@ -11025,7 +13499,11 @@ final FieldReflectInfo<TypeImageInfo> _TypeImageInfo_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.showOriginUrl = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.showOriginUrl = copyer(oldData.showOriginUrl);
+    },
   ),
   "showPreviewUrl": (
     getter: (data) => data.showPreviewUrl,
@@ -11037,7 +13515,11 @@ final FieldReflectInfo<TypeImageInfo> _TypeImageInfo_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.showPreviewUrl = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.showPreviewUrl = copyer(oldData.showPreviewUrl);
+    },
   ),
   "showThumbUrl": (
     getter: (data) => data.showThumbUrl,
@@ -11049,7 +13531,11 @@ final FieldReflectInfo<TypeImageInfo> _TypeImageInfo_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.showThumbUrl = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.showThumbUrl = copyer(oldData.showThumbUrl);
+    },
   ),
   "showUrl": (
     getter: (data) => data.showUrl,
@@ -11061,7 +13547,11 @@ final FieldReflectInfo<TypeImageInfo> _TypeImageInfo_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.showUrl = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.showUrl = copyer(oldData.showUrl);
+    },
   ),
 };
 
@@ -11114,6 +13604,24 @@ class TypeImageInfo extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeImageInfo? deepCopy(TypeImageInfo? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeImageInfo();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeImageInfo_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeImageInfo copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -11177,7 +13685,14 @@ final FieldReflectInfo<TypeImageQueryDTO> _TypeImageQueryDTO_fields = {
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeImageQueryDataDTO>((single){
+        final handler = TypeImageQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -11189,7 +13704,11 @@ final FieldReflectInfo<TypeImageQueryDTO> _TypeImageQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -11201,7 +13720,11 @@ final FieldReflectInfo<TypeImageQueryDTO> _TypeImageQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -11213,7 +13736,11 @@ final FieldReflectInfo<TypeImageQueryDTO> _TypeImageQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = TypeImageQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeImageQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -11265,6 +13792,24 @@ class TypeImageQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeImageQueryDTO? deepCopy(TypeImageQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeImageQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeImageQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeImageQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -11328,7 +13873,11 @@ final FieldReflectInfo<TypeImageQueryDataDTO> _TypeImageQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.attachmentId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.attachmentId = copyer(oldData.attachmentId);
+    },
   ),
   "createEmployeeId": (
     getter: (data) => data.createEmployeeId,
@@ -11340,7 +13889,11 @@ final FieldReflectInfo<TypeImageQueryDataDTO> _TypeImageQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.createEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.createEmployeeId = copyer(oldData.createEmployeeId);
+    },
   ),
   "createEmployeeName": (
     getter: (data) => data.createEmployeeName,
@@ -11352,7 +13905,11 @@ final FieldReflectInfo<TypeImageQueryDataDTO> _TypeImageQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createEmployeeName = copyer(oldData.createEmployeeName);
+    },
   ),
   "createTime": (
     getter: (data) => data.createTime,
@@ -11364,7 +13921,11 @@ final FieldReflectInfo<TypeImageQueryDataDTO> _TypeImageQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -11376,7 +13937,11 @@ final FieldReflectInfo<TypeImageQueryDataDTO> _TypeImageQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -11388,7 +13953,11 @@ final FieldReflectInfo<TypeImageQueryDataDTO> _TypeImageQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "itemName": (
     getter: (data) => data.itemName,
@@ -11400,7 +13969,11 @@ final FieldReflectInfo<TypeImageQueryDataDTO> _TypeImageQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemName = copyer(oldData.itemName);
+    },
   ),
   "itemNumber": (
     getter: (data) => data.itemNumber,
@@ -11412,7 +13985,11 @@ final FieldReflectInfo<TypeImageQueryDataDTO> _TypeImageQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemNumber = copyer(oldData.itemNumber);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -11424,7 +14001,11 @@ final FieldReflectInfo<TypeImageQueryDataDTO> _TypeImageQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -11436,7 +14017,11 @@ final FieldReflectInfo<TypeImageQueryDataDTO> _TypeImageQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "showFileKey": (
     getter: (data) => data.showFileKey,
@@ -11448,7 +14033,11 @@ final FieldReflectInfo<TypeImageQueryDataDTO> _TypeImageQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.showFileKey = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.showFileKey = copyer(oldData.showFileKey);
+    },
   ),
   "size": (
     getter: (data) => data.size,
@@ -11460,7 +14049,11 @@ final FieldReflectInfo<TypeImageQueryDataDTO> _TypeImageQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.size = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.size = copyer(oldData.size);
+    },
   ),
 };
 
@@ -11520,6 +14113,24 @@ class TypeImageQueryDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeImageQueryDataDTO? deepCopy(TypeImageQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeImageQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeImageQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeImageQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -11589,7 +14200,11 @@ final FieldReflectInfo<TypeImageQuerySumDTO> _TypeImageQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "size": (
     getter: (data) => data.size,
@@ -11601,7 +14216,11 @@ final FieldReflectInfo<TypeImageQuerySumDTO> _TypeImageQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.size = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.size = copyer(oldData.size);
+    },
   ),
 };
 
@@ -11651,6 +14270,24 @@ class TypeImageQuerySumDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeImageQuerySumDTO? deepCopy(TypeImageQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeImageQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeImageQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeImageQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -11740,7 +14377,14 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
         return handler(single)!;
       });
       data.aliases = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeItemContactAlias>((single){
+        final handler = TypeItemContactAlias.deepCopy;
+        return handler(single)!;
+      });
+      newData.aliases = copyer(oldData.aliases);
+    },
   ),
   "basicUnitId": (
     getter: (data) => data.basicUnitId,
@@ -11752,7 +14396,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.basicUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.basicUnitId = copyer(oldData.basicUnitId);
+    },
   ),
   "basicUnitInfo": (
     getter: (data) => data.basicUnitInfo,
@@ -11764,7 +14412,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = TypeUnit.fromDynamic;
       data.basicUnitInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeUnit.deepCopy;
+      newData.basicUnitInfo = copyer(oldData.basicUnitInfo);
+    },
   ),
   "basicUnitName": (
     getter: (data) => data.basicUnitName,
@@ -11776,7 +14428,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.basicUnitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.basicUnitName = copyer(oldData.basicUnitName);
+    },
   ),
   "children": (
     getter: (data) => data.children,
@@ -11794,7 +14450,14 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
         return handler(single)!;
       });
       data.children = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeItem>((single){
+        final handler = TypeItem.deepCopy;
+        return handler(single)!;
+      });
+      newData.children = copyer(oldData.children);
+    },
   ),
   "commonUnitConvert": (
     getter: (data) => data.commonUnitConvert,
@@ -11806,7 +14469,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.commonUnitConvert = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.commonUnitConvert = copyer(oldData.commonUnitConvert);
+    },
   ),
   "commonUnitId": (
     getter: (data) => data.commonUnitId,
@@ -11818,7 +14485,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.commonUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.commonUnitId = copyer(oldData.commonUnitId);
+    },
   ),
   "commonUnitInfo": (
     getter: (data) => data.commonUnitInfo,
@@ -11830,7 +14501,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = TypeUnit.fromDynamic;
       data.commonUnitInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeUnit.deepCopy;
+      newData.commonUnitInfo = copyer(oldData.commonUnitInfo);
+    },
   ),
   "commonUnitName": (
     getter: (data) => data.commonUnitName,
@@ -11842,7 +14517,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.commonUnitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.commonUnitName = copyer(oldData.commonUnitName);
+    },
   ),
   "createTime": (
     getter: (data) => data.createTime,
@@ -11854,7 +14533,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "custom": (
     getter: (data) => data.custom,
@@ -11866,7 +14549,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = TypeItemCustom.fromDynamic;
       data.custom = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeItemCustom.deepCopy;
+      newData.custom = copyer(oldData.custom);
+    },
   ),
   "defaultContact": (
     getter: (data) => data.defaultContact,
@@ -11878,7 +14565,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = TypeContact.fromDynamic;
       data.defaultContact = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeContact.deepCopy;
+      newData.defaultContact = copyer(oldData.defaultContact);
+    },
   ),
   "defaultContactId": (
     getter: (data) => data.defaultContactId,
@@ -11890,7 +14581,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.defaultContactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.defaultContactId = copyer(oldData.defaultContactId);
+    },
   ),
   "hasBusinessLink": (
     getter: (data) => data.hasBusinessLink,
@@ -11902,7 +14597,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasBusinessLink = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasBusinessLink = copyer(oldData.hasBusinessLink);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -11914,7 +14613,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "image1": (
     getter: (data) => data.image1,
@@ -11926,7 +14629,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.image1 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.image1 = copyer(oldData.image1);
+    },
   ),
   "image2": (
     getter: (data) => data.image2,
@@ -11938,7 +14645,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.image2 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.image2 = copyer(oldData.image2);
+    },
   ),
   "imageInfo1": (
     getter: (data) => data.imageInfo1,
@@ -11950,7 +14661,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = TypeImageInfo.fromDynamic;
       data.imageInfo1 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeImageInfo.deepCopy;
+      newData.imageInfo1 = copyer(oldData.imageInfo1);
+    },
   ),
   "imageInfo2": (
     getter: (data) => data.imageInfo2,
@@ -11962,7 +14677,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = TypeImageInfo.fromDynamic;
       data.imageInfo2 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeImageInfo.deepCopy;
+      newData.imageInfo2 = copyer(oldData.imageInfo2);
+    },
   ),
   "isCategory": (
     getter: (data) => data.isCategory,
@@ -11974,7 +14693,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isCategory = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isCategory = copyer(oldData.isCategory);
+    },
   ),
   "isEnabled": (
     getter: (data) => data.isEnabled,
@@ -11986,7 +14709,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumSoftEnableIsEnable.fromDynamic;
       data.isEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumSoftEnableIsEnable.deepCopy;
+      newData.isEnabled = copyer(oldData.isEnabled);
+    },
   ),
   "isRegularType": (
     getter: (data) => data.isRegularType,
@@ -11998,7 +14725,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isRegularType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isRegularType = copyer(oldData.isRegularType);
+    },
   ),
   "isSystem": (
     getter: (data) => data.isSystem,
@@ -12010,7 +14741,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isSystem = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isSystem = copyer(oldData.isSystem);
+    },
   ),
   "modelRemark": (
     getter: (data) => data.modelRemark,
@@ -12022,7 +14757,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modelRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modelRemark = copyer(oldData.modelRemark);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -12034,7 +14773,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -12046,7 +14789,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "number": (
     getter: (data) => data.number,
@@ -12058,7 +14805,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.number = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.number = copyer(oldData.number);
+    },
   ),
   "parentId": (
     getter: (data) => data.parentId,
@@ -12070,7 +14821,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.parentId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.parentId = copyer(oldData.parentId);
+    },
   ),
   "parentInfo": (
     getter: (data) => data.parentInfo,
@@ -12082,7 +14837,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = TypeItem.fromDynamic;
       data.parentInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeItem.deepCopy;
+      newData.parentInfo = copyer(oldData.parentInfo);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -12094,7 +14853,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "sortWeight": (
     getter: (data) => data.sortWeight,
@@ -12106,7 +14869,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.sortWeight = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.sortWeight = copyer(oldData.sortWeight);
+    },
   ),
   "specsRemark": (
     getter: (data) => data.specsRemark,
@@ -12118,7 +14885,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.specsRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.specsRemark = copyer(oldData.specsRemark);
+    },
   ),
   "treeLevel": (
     getter: (data) => data.treeLevel,
@@ -12130,7 +14901,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.treeLevel = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.treeLevel = copyer(oldData.treeLevel);
+    },
   ),
   "treePath": (
     getter: (data) => data.treePath,
@@ -12142,7 +14917,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.treePath = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.treePath = copyer(oldData.treePath);
+    },
   ),
   "unitConvertDesc": (
     getter: (data) => data.unitConvertDesc,
@@ -12154,7 +14933,11 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.unitConvertDesc = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.unitConvertDesc = copyer(oldData.unitConvertDesc);
+    },
   ),
   "unitConverts": (
     getter: (data) => data.unitConverts,
@@ -12172,7 +14955,14 @@ final FieldReflectInfo<TypeItem> _TypeItem_fields = {
         return handler(single)!;
       });
       data.unitConverts = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeItemUnitConvert>((single){
+        final handler = TypeItemUnitConvert.deepCopy;
+        return handler(single)!;
+      });
+      newData.unitConverts = copyer(oldData.unitConverts);
+    },
   ),
 };
 
@@ -12256,6 +15046,24 @@ class TypeItem extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeItem? deepCopy(TypeItem? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeItem();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeItem_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeItem copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -12378,7 +15186,11 @@ final FieldReflectInfo<TypeItemContactAlias> _TypeItemContactAlias_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.aliasItemName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.aliasItemName = copyer(oldData.aliasItemName);
+    },
   ),
   "aliasItemNumber": (
     getter: (data) => data.aliasItemNumber,
@@ -12390,7 +15202,11 @@ final FieldReflectInfo<TypeItemContactAlias> _TypeItemContactAlias_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.aliasItemNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.aliasItemNumber = copyer(oldData.aliasItemNumber);
+    },
   ),
   "contactId": (
     getter: (data) => data.contactId,
@@ -12402,7 +15218,11 @@ final FieldReflectInfo<TypeItemContactAlias> _TypeItemContactAlias_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactId = copyer(oldData.contactId);
+    },
   ),
   "contactInfo": (
     getter: (data) => data.contactInfo,
@@ -12414,7 +15234,11 @@ final FieldReflectInfo<TypeItemContactAlias> _TypeItemContactAlias_fields = {
     fromDynamic: (data, value) {
       final parser = TypeContact.fromDynamic;
       data.contactInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeContact.deepCopy;
+      newData.contactInfo = copyer(oldData.contactInfo);
+    },
   ),
   "createTime": (
     getter: (data) => data.createTime,
@@ -12426,7 +15250,11 @@ final FieldReflectInfo<TypeItemContactAlias> _TypeItemContactAlias_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -12438,7 +15266,11 @@ final FieldReflectInfo<TypeItemContactAlias> _TypeItemContactAlias_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -12450,7 +15282,11 @@ final FieldReflectInfo<TypeItemContactAlias> _TypeItemContactAlias_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
 };
 
@@ -12505,6 +15341,24 @@ class TypeItemContactAlias extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeItemContactAlias? deepCopy(TypeItemContactAlias? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeItemContactAlias();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeItemContactAlias_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeItemContactAlias copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -12564,7 +15418,11 @@ final FieldReflectInfo<TypeItemCustom> _TypeItemCustom_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.abnormalRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.abnormalRemark = copyer(oldData.abnormalRemark);
+    },
   ),
   "abnormalState": (
     getter: (data) => data.abnormalState,
@@ -12576,7 +15434,11 @@ final FieldReflectInfo<TypeItemCustom> _TypeItemCustom_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumItemCustomAbnormalState.fromDynamic;
       data.abnormalState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumItemCustomAbnormalState.deepCopy;
+      newData.abnormalState = copyer(oldData.abnormalState);
+    },
   ),
 };
 
@@ -12626,6 +15488,24 @@ class TypeItemCustom extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeItemCustom? deepCopy(TypeItemCustom? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeItemCustom();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeItemCustom_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeItemCustom copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -12688,7 +15568,11 @@ final FieldReflectInfo<TypeItemUnitConvert> _TypeItemUnitConvert_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.canBusinessLink = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.canBusinessLink = copyer(oldData.canBusinessLink);
+    },
   ),
   "createTime": (
     getter: (data) => data.createTime,
@@ -12700,7 +15584,11 @@ final FieldReflectInfo<TypeItemUnitConvert> _TypeItemUnitConvert_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "hasBusinessLink": (
     getter: (data) => data.hasBusinessLink,
@@ -12712,7 +15600,11 @@ final FieldReflectInfo<TypeItemUnitConvert> _TypeItemUnitConvert_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasBusinessLink = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasBusinessLink = copyer(oldData.hasBusinessLink);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -12724,7 +15616,11 @@ final FieldReflectInfo<TypeItemUnitConvert> _TypeItemUnitConvert_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "isBasic": (
     getter: (data) => data.isBasic,
@@ -12736,7 +15632,11 @@ final FieldReflectInfo<TypeItemUnitConvert> _TypeItemUnitConvert_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isBasic = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isBasic = copyer(oldData.isBasic);
+    },
   ),
   "isCommon": (
     getter: (data) => data.isCommon,
@@ -12748,7 +15648,11 @@ final FieldReflectInfo<TypeItemUnitConvert> _TypeItemUnitConvert_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isCommon = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isCommon = copyer(oldData.isCommon);
+    },
   ),
   "isEnabled": (
     getter: (data) => data.isEnabled,
@@ -12760,7 +15664,11 @@ final FieldReflectInfo<TypeItemUnitConvert> _TypeItemUnitConvert_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumSoftEnableIsEnable.fromDynamic;
       data.isEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumSoftEnableIsEnable.deepCopy;
+      newData.isEnabled = copyer(oldData.isEnabled);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -12772,7 +15680,11 @@ final FieldReflectInfo<TypeItemUnitConvert> _TypeItemUnitConvert_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "purchasePrice": (
     getter: (data) => data.purchasePrice,
@@ -12784,7 +15696,11 @@ final FieldReflectInfo<TypeItemUnitConvert> _TypeItemUnitConvert_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.purchasePrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.purchasePrice = copyer(oldData.purchasePrice);
+    },
   ),
   "unitConvert": (
     getter: (data) => data.unitConvert,
@@ -12796,7 +15712,11 @@ final FieldReflectInfo<TypeItemUnitConvert> _TypeItemUnitConvert_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.unitConvert = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.unitConvert = copyer(oldData.unitConvert);
+    },
   ),
   "unitConvertDesc": (
     getter: (data) => data.unitConvertDesc,
@@ -12808,7 +15728,11 @@ final FieldReflectInfo<TypeItemUnitConvert> _TypeItemUnitConvert_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.unitConvertDesc = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.unitConvertDesc = copyer(oldData.unitConvertDesc);
+    },
   ),
   "unitId": (
     getter: (data) => data.unitId,
@@ -12820,7 +15744,11 @@ final FieldReflectInfo<TypeItemUnitConvert> _TypeItemUnitConvert_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.unitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.unitId = copyer(oldData.unitId);
+    },
   ),
   "unitInfo": (
     getter: (data) => data.unitInfo,
@@ -12832,7 +15760,11 @@ final FieldReflectInfo<TypeItemUnitConvert> _TypeItemUnitConvert_fields = {
     fromDynamic: (data, value) {
       final parser = TypeUnit.fromDynamic;
       data.unitInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeUnit.deepCopy;
+      newData.unitInfo = copyer(oldData.unitInfo);
+    },
   ),
   "unitName": (
     getter: (data) => data.unitName,
@@ -12844,7 +15776,11 @@ final FieldReflectInfo<TypeItemUnitConvert> _TypeItemUnitConvert_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.unitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.unitName = copyer(oldData.unitName);
+    },
   ),
   "wholeSalesPrice": (
     getter: (data) => data.wholeSalesPrice,
@@ -12856,7 +15792,11 @@ final FieldReflectInfo<TypeItemUnitConvert> _TypeItemUnitConvert_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.wholeSalesPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.wholeSalesPrice = copyer(oldData.wholeSalesPrice);
+    },
   ),
 };
 
@@ -12919,6 +15859,24 @@ class TypeItemUnitConvert extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeItemUnitConvert? deepCopy(TypeItemUnitConvert? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeItemUnitConvert();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeItemUnitConvert_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeItemUnitConvert copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -13002,7 +15960,14 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDTO> _TypeItemUnitConvertQueryDTO
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeItemUnitConvertQueryDataDTO>((single){
+        final handler = TypeItemUnitConvertQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -13014,7 +15979,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDTO> _TypeItemUnitConvertQueryDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -13026,7 +15995,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDTO> _TypeItemUnitConvertQueryDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -13038,7 +16011,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDTO> _TypeItemUnitConvertQueryDTO
     fromDynamic: (data, value) {
       final parser = TypeItemUnitConvertQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeItemUnitConvertQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -13090,6 +16067,24 @@ class TypeItemUnitConvertQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeItemUnitConvertQueryDTO? deepCopy(TypeItemUnitConvertQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeItemUnitConvertQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeItemUnitConvertQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeItemUnitConvertQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -13160,7 +16155,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -13172,7 +16171,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "itemImage1": (
     getter: (data) => data.itemImage1,
@@ -13184,7 +16187,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemImage1 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemImage1 = copyer(oldData.itemImage1);
+    },
   ),
   "itemImageInfo1": (
     getter: (data) => data.itemImageInfo1,
@@ -13196,7 +16203,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = TypeImageInfo.fromDynamic;
       data.itemImageInfo1 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeImageInfo.deepCopy;
+      newData.itemImageInfo1 = copyer(oldData.itemImageInfo1);
+    },
   ),
   "itemIsEnabled": (
     getter: (data) => data.itemIsEnabled,
@@ -13208,7 +16219,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemIsEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemIsEnabled = copyer(oldData.itemIsEnabled);
+    },
   ),
   "itemModelRemark": (
     getter: (data) => data.itemModelRemark,
@@ -13220,7 +16235,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemModelRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemModelRemark = copyer(oldData.itemModelRemark);
+    },
   ),
   "itemName": (
     getter: (data) => data.itemName,
@@ -13232,7 +16251,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemName = copyer(oldData.itemName);
+    },
   ),
   "itemNumber": (
     getter: (data) => data.itemNumber,
@@ -13244,7 +16267,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemNumber = copyer(oldData.itemNumber);
+    },
   ),
   "itemParentId": (
     getter: (data) => data.itemParentId,
@@ -13256,7 +16283,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemParentId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemParentId = copyer(oldData.itemParentId);
+    },
   ),
   "itemParentName": (
     getter: (data) => data.itemParentName,
@@ -13268,7 +16299,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemParentName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemParentName = copyer(oldData.itemParentName);
+    },
   ),
   "itemRemark": (
     getter: (data) => data.itemRemark,
@@ -13280,7 +16315,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemRemark = copyer(oldData.itemRemark);
+    },
   ),
   "itemSortWeight": (
     getter: (data) => data.itemSortWeight,
@@ -13292,7 +16331,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemSortWeight = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemSortWeight = copyer(oldData.itemSortWeight);
+    },
   ),
   "itemSpecsRemark": (
     getter: (data) => data.itemSpecsRemark,
@@ -13304,7 +16347,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemSpecsRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemSpecsRemark = copyer(oldData.itemSpecsRemark);
+    },
   ),
   "itemTreePath": (
     getter: (data) => data.itemTreePath,
@@ -13316,7 +16363,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemTreePath = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemTreePath = copyer(oldData.itemTreePath);
+    },
   ),
   "itemUnitConvertDesc": (
     getter: (data) => data.itemUnitConvertDesc,
@@ -13328,7 +16379,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemUnitConvertDesc = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemUnitConvertDesc = copyer(oldData.itemUnitConvertDesc);
+    },
   ),
   "purchasePrice": (
     getter: (data) => data.purchasePrice,
@@ -13340,7 +16395,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.purchasePrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.purchasePrice = copyer(oldData.purchasePrice);
+    },
   ),
   "unitId": (
     getter: (data) => data.unitId,
@@ -13352,7 +16411,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.unitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.unitId = copyer(oldData.unitId);
+    },
   ),
   "unitName": (
     getter: (data) => data.unitName,
@@ -13364,7 +16427,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.unitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.unitName = copyer(oldData.unitName);
+    },
   ),
   "wholeSalesPrice": (
     getter: (data) => data.wholeSalesPrice,
@@ -13376,7 +16443,11 @@ final FieldReflectInfo<TypeItemUnitConvertQueryDataDTO> _TypeItemUnitConvertQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.wholeSalesPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.wholeSalesPrice = copyer(oldData.wholeSalesPrice);
+    },
   ),
 };
 
@@ -13443,6 +16514,24 @@ class TypeItemUnitConvertQueryDataDTO extends IDataBasic implements IDataDynamic
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeItemUnitConvertQueryDataDTO? deepCopy(TypeItemUnitConvertQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeItemUnitConvertQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeItemUnitConvertQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeItemUnitConvertQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -13525,7 +16614,11 @@ final FieldReflectInfo<TypeItemUnitConvertQuerySumDTO> _TypeItemUnitConvertQuery
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
 };
 
@@ -13574,6 +16667,24 @@ class TypeItemUnitConvertQuerySumDTO extends IDataBasic implements IDataDynamic 
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeItemUnitConvertQuerySumDTO? deepCopy(TypeItemUnitConvertQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeItemUnitConvertQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeItemUnitConvertQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeItemUnitConvertQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -13628,7 +16739,11 @@ final FieldReflectInfo<TypeMainIndexAccountDataDTO> _TypeMainIndexAccountDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.accountPayableBalance = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.accountPayableBalance = copyer(oldData.accountPayableBalance);
+    },
   ),
   "accountReceivableBalance": (
     getter: (data) => data.accountReceivableBalance,
@@ -13640,7 +16755,11 @@ final FieldReflectInfo<TypeMainIndexAccountDataDTO> _TypeMainIndexAccountDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.accountReceivableBalance = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.accountReceivableBalance = copyer(oldData.accountReceivableBalance);
+    },
   ),
   "cashBalance": (
     getter: (data) => data.cashBalance,
@@ -13652,7 +16771,11 @@ final FieldReflectInfo<TypeMainIndexAccountDataDTO> _TypeMainIndexAccountDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.cashBalance = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.cashBalance = copyer(oldData.cashBalance);
+    },
   ),
   "receiveCashTotal": (
     getter: (data) => data.receiveCashTotal,
@@ -13664,7 +16787,11 @@ final FieldReflectInfo<TypeMainIndexAccountDataDTO> _TypeMainIndexAccountDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.receiveCashTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.receiveCashTotal = copyer(oldData.receiveCashTotal);
+    },
   ),
   "salesCost": (
     getter: (data) => data.salesCost,
@@ -13676,7 +16803,11 @@ final FieldReflectInfo<TypeMainIndexAccountDataDTO> _TypeMainIndexAccountDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.salesCost = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.salesCost = copyer(oldData.salesCost);
+    },
   ),
   "salesIncome": (
     getter: (data) => data.salesIncome,
@@ -13688,7 +16819,11 @@ final FieldReflectInfo<TypeMainIndexAccountDataDTO> _TypeMainIndexAccountDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.salesIncome = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.salesIncome = copyer(oldData.salesIncome);
+    },
   ),
   "salesProfit": (
     getter: (data) => data.salesProfit,
@@ -13700,7 +16835,11 @@ final FieldReflectInfo<TypeMainIndexAccountDataDTO> _TypeMainIndexAccountDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.salesProfit = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.salesProfit = copyer(oldData.salesProfit);
+    },
   ),
   "salesProfitRate": (
     getter: (data) => data.salesProfitRate,
@@ -13712,7 +16851,11 @@ final FieldReflectInfo<TypeMainIndexAccountDataDTO> _TypeMainIndexAccountDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.salesProfitRate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.salesProfitRate = copyer(oldData.salesProfitRate);
+    },
   ),
   "stockBalance": (
     getter: (data) => data.stockBalance,
@@ -13724,7 +16867,11 @@ final FieldReflectInfo<TypeMainIndexAccountDataDTO> _TypeMainIndexAccountDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockBalance = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockBalance = copyer(oldData.stockBalance);
+    },
   ),
 };
 
@@ -13781,6 +16928,24 @@ class TypeMainIndexAccountDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeMainIndexAccountDataDTO? deepCopy(TypeMainIndexAccountDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeMainIndexAccountDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeMainIndexAccountDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeMainIndexAccountDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -13845,7 +17010,11 @@ final FieldReflectInfo<TypeMainIndexContactDataDTO> _TypeMainIndexContactDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -13857,7 +17026,11 @@ final FieldReflectInfo<TypeMainIndexContactDataDTO> _TypeMainIndexContactDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -13869,7 +17042,11 @@ final FieldReflectInfo<TypeMainIndexContactDataDTO> _TypeMainIndexContactDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
 };
 
@@ -13920,6 +17097,24 @@ class TypeMainIndexContactDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeMainIndexContactDataDTO? deepCopy(TypeMainIndexContactDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeMainIndexContactDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeMainIndexContactDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeMainIndexContactDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -13974,7 +17169,11 @@ final FieldReflectInfo<TypeMainIndexDataDTO> _TypeMainIndexDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = TypeMainIndexAccountDataDTO.fromDynamic;
       data.account = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeMainIndexAccountDataDTO.deepCopy;
+      newData.account = copyer(oldData.account);
+    },
   ),
   "contacts": (
     getter: (data) => data.contacts,
@@ -13992,7 +17191,14 @@ final FieldReflectInfo<TypeMainIndexDataDTO> _TypeMainIndexDataDTO_fields = {
         return handler(single)!;
       });
       data.contacts = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeMainIndexContactDataDTO>((single){
+        final handler = TypeMainIndexContactDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.contacts = copyer(oldData.contacts);
+    },
   ),
   "items": (
     getter: (data) => data.items,
@@ -14010,7 +17216,14 @@ final FieldReflectInfo<TypeMainIndexDataDTO> _TypeMainIndexDataDTO_fields = {
         return handler(single)!;
       });
       data.items = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeMainIndexItemDataDTO>((single){
+        final handler = TypeMainIndexItemDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.items = copyer(oldData.items);
+    },
   ),
   "profits": (
     getter: (data) => data.profits,
@@ -14028,7 +17241,14 @@ final FieldReflectInfo<TypeMainIndexDataDTO> _TypeMainIndexDataDTO_fields = {
         return handler(single)!;
       });
       data.profits = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeMainIndexProfitDataDTO>((single){
+        final handler = TypeMainIndexProfitDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.profits = copyer(oldData.profits);
+    },
   ),
   "todo": (
     getter: (data) => data.todo,
@@ -14040,7 +17260,11 @@ final FieldReflectInfo<TypeMainIndexDataDTO> _TypeMainIndexDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = TypeMainIndexTodoDataDTO.fromDynamic;
       data.todo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeMainIndexTodoDataDTO.deepCopy;
+      newData.todo = copyer(oldData.todo);
+    },
   ),
 };
 
@@ -14093,6 +17317,24 @@ class TypeMainIndexDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeMainIndexDataDTO? deepCopy(TypeMainIndexDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeMainIndexDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeMainIndexDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeMainIndexDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -14149,7 +17391,11 @@ final FieldReflectInfo<TypeMainIndexItemDataDTO> _TypeMainIndexItemDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -14161,7 +17407,11 @@ final FieldReflectInfo<TypeMainIndexItemDataDTO> _TypeMainIndexItemDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -14173,7 +17423,11 @@ final FieldReflectInfo<TypeMainIndexItemDataDTO> _TypeMainIndexItemDataDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
 };
 
@@ -14224,6 +17478,24 @@ class TypeMainIndexItemDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeMainIndexItemDataDTO? deepCopy(TypeMainIndexItemDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeMainIndexItemDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeMainIndexItemDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeMainIndexItemDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -14278,7 +17550,11 @@ final FieldReflectInfo<TypeMainIndexProfitDataDTO> _TypeMainIndexProfitDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "receiveCashTotal": (
     getter: (data) => data.receiveCashTotal,
@@ -14290,7 +17566,11 @@ final FieldReflectInfo<TypeMainIndexProfitDataDTO> _TypeMainIndexProfitDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.receiveCashTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.receiveCashTotal = copyer(oldData.receiveCashTotal);
+    },
   ),
   "salesCost": (
     getter: (data) => data.salesCost,
@@ -14302,7 +17582,11 @@ final FieldReflectInfo<TypeMainIndexProfitDataDTO> _TypeMainIndexProfitDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.salesCost = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.salesCost = copyer(oldData.salesCost);
+    },
   ),
   "salesIncome": (
     getter: (data) => data.salesIncome,
@@ -14314,7 +17598,11 @@ final FieldReflectInfo<TypeMainIndexProfitDataDTO> _TypeMainIndexProfitDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.salesIncome = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.salesIncome = copyer(oldData.salesIncome);
+    },
   ),
   "salesProfit": (
     getter: (data) => data.salesProfit,
@@ -14326,7 +17614,11 @@ final FieldReflectInfo<TypeMainIndexProfitDataDTO> _TypeMainIndexProfitDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.salesProfit = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.salesProfit = copyer(oldData.salesProfit);
+    },
   ),
 };
 
@@ -14379,6 +17671,24 @@ class TypeMainIndexProfitDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeMainIndexProfitDataDTO? deepCopy(TypeMainIndexProfitDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeMainIndexProfitDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeMainIndexProfitDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeMainIndexProfitDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -14434,7 +17744,11 @@ final FieldReflectInfo<TypeMainIndexTodoDataDTO> _TypeMainIndexTodoDataDTO_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.waitingInOrderCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.waitingInOrderCount = copyer(oldData.waitingInOrderCount);
+    },
   ),
   "waitingOutOrderCount": (
     getter: (data) => data.waitingOutOrderCount,
@@ -14446,7 +17760,11 @@ final FieldReflectInfo<TypeMainIndexTodoDataDTO> _TypeMainIndexTodoDataDTO_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.waitingOutOrderCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.waitingOutOrderCount = copyer(oldData.waitingOutOrderCount);
+    },
   ),
 };
 
@@ -14498,6 +17816,24 @@ class TypeMainIndexTodoDataDTO extends IDataBasic implements IDataDynamic {
     return toDynamic(this)!;
   }
 
+  static TypeMainIndexTodoDataDTO? deepCopy(TypeMainIndexTodoDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeMainIndexTodoDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeMainIndexTodoDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeMainIndexTodoDataDTO copy() {
+    return deepCopy(this)!;
+  }
+
   @override
   String toString() {
     return encodeDynamic().toString();
@@ -14547,7 +17883,11 @@ final FieldReflectInfo<TypeMenuConfig> _TypeMenuConfig_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -14559,7 +17899,11 @@ final FieldReflectInfo<TypeMenuConfig> _TypeMenuConfig_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "items": (
     getter: (data) => data.items,
@@ -14577,7 +17921,14 @@ final FieldReflectInfo<TypeMenuConfig> _TypeMenuConfig_fields = {
         return handler(single)!;
       });
       data.items = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeMenuConfigItem>((single){
+        final handler = TypeMenuConfigItem.deepCopy;
+        return handler(single)!;
+      });
+      newData.items = copyer(oldData.items);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -14589,7 +17940,11 @@ final FieldReflectInfo<TypeMenuConfig> _TypeMenuConfig_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
 };
 
@@ -14641,6 +17996,24 @@ class TypeMenuConfig extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeMenuConfig? deepCopy(TypeMenuConfig? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeMenuConfig();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeMenuConfig_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeMenuConfig copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -14695,7 +18068,11 @@ final FieldReflectInfo<TypeMenuConfigItem> _TypeMenuConfigItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.color = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.color = copyer(oldData.color);
+    },
   ),
   "isOpen": (
     getter: (data) => data.isOpen,
@@ -14707,7 +18084,11 @@ final FieldReflectInfo<TypeMenuConfigItem> _TypeMenuConfigItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isOpen = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isOpen = copyer(oldData.isOpen);
+    },
   ),
   "menuId": (
     getter: (data) => data.menuId,
@@ -14719,7 +18100,11 @@ final FieldReflectInfo<TypeMenuConfigItem> _TypeMenuConfigItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.menuId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.menuId = copyer(oldData.menuId);
+    },
   ),
 };
 
@@ -14770,6 +18155,24 @@ class TypeMenuConfigItem extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeMenuConfigItem? deepCopy(TypeMenuConfigItem? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeMenuConfigItem();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeMenuConfigItem_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeMenuConfigItem copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -14831,7 +18234,11 @@ final FieldReflectInfo<TypeOperator> _TypeOperator_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "employeeId": (
     getter: (data) => data.employeeId,
@@ -14843,7 +18250,11 @@ final FieldReflectInfo<TypeOperator> _TypeOperator_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.employeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.employeeId = copyer(oldData.employeeId);
+    },
   ),
   "employeeInfo": (
     getter: (data) => data.employeeInfo,
@@ -14855,7 +18266,11 @@ final FieldReflectInfo<TypeOperator> _TypeOperator_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEmployee.fromDynamic;
       data.employeeInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEmployee.deepCopy;
+      newData.employeeInfo = copyer(oldData.employeeInfo);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -14867,7 +18282,11 @@ final FieldReflectInfo<TypeOperator> _TypeOperator_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "isEnabled": (
     getter: (data) => data.isEnabled,
@@ -14879,7 +18298,11 @@ final FieldReflectInfo<TypeOperator> _TypeOperator_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumSoftEnableIsEnable.fromDynamic;
       data.isEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumSoftEnableIsEnable.deepCopy;
+      newData.isEnabled = copyer(oldData.isEnabled);
+    },
   ),
   "isPost": (
     getter: (data) => data.isPost,
@@ -14891,7 +18314,11 @@ final FieldReflectInfo<TypeOperator> _TypeOperator_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isPost = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isPost = copyer(oldData.isPost);
+    },
   ),
   "isSystem": (
     getter: (data) => data.isSystem,
@@ -14903,7 +18330,11 @@ final FieldReflectInfo<TypeOperator> _TypeOperator_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isSystem = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isSystem = copyer(oldData.isSystem);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -14915,7 +18346,11 @@ final FieldReflectInfo<TypeOperator> _TypeOperator_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -14927,7 +18362,11 @@ final FieldReflectInfo<TypeOperator> _TypeOperator_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "posts": (
     getter: (data) => data.posts,
@@ -14945,7 +18384,14 @@ final FieldReflectInfo<TypeOperator> _TypeOperator_fields = {
         return handler(single)!;
       });
       data.posts = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOperatorPost>((single){
+        final handler = TypeOperatorPost.deepCopy;
+        return handler(single)!;
+      });
+      newData.posts = copyer(oldData.posts);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -14957,7 +18403,11 @@ final FieldReflectInfo<TypeOperator> _TypeOperator_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "roles": (
     getter: (data) => data.roles,
@@ -14969,7 +18419,11 @@ final FieldReflectInfo<TypeOperator> _TypeOperator_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOperatorRole.fromDynamic;
       data.roles = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOperatorRole.deepCopy;
+      newData.roles = copyer(oldData.roles);
+    },
   ),
 };
 
@@ -15029,6 +18483,24 @@ class TypeOperator extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOperator? deepCopy(TypeOperator? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOperator();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOperator_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOperator copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -15101,7 +18573,11 @@ final FieldReflectInfo<TypeOperatorPermission> _TypeOperatorPermission_fields = 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.entity = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.entity = copyer(oldData.entity);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -15113,7 +18589,11 @@ final FieldReflectInfo<TypeOperatorPermission> _TypeOperatorPermission_fields = 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "mask": (
     getter: (data) => data.mask,
@@ -15125,7 +18605,11 @@ final FieldReflectInfo<TypeOperatorPermission> _TypeOperatorPermission_fields = 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.mask = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.mask = copyer(oldData.mask);
+    },
   ),
   "operator": (
     getter: (data) => data.operator,
@@ -15137,7 +18621,11 @@ final FieldReflectInfo<TypeOperatorPermission> _TypeOperatorPermission_fields = 
     fromDynamic: (data, value) {
       final parser = TypeOperator.fromDynamic;
       data.operator = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeOperator.deepCopy;
+      newData.operator = copyer(oldData.operator);
+    },
   ),
   "operatorId": (
     getter: (data) => data.operatorId,
@@ -15149,7 +18637,11 @@ final FieldReflectInfo<TypeOperatorPermission> _TypeOperatorPermission_fields = 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.operatorId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.operatorId = copyer(oldData.operatorId);
+    },
   ),
 };
 
@@ -15202,6 +18694,24 @@ class TypeOperatorPermission extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOperatorPermission? deepCopy(TypeOperatorPermission? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOperatorPermission();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOperatorPermission_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOperatorPermission copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -15257,7 +18767,11 @@ final FieldReflectInfo<TypeOperatorPermissionInfo> _TypeOperatorPermissionInfo_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.operatorId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.operatorId = copyer(oldData.operatorId);
+    },
   ),
   "permissions": (
     getter: (data) => data.permissions,
@@ -15275,7 +18789,14 @@ final FieldReflectInfo<TypeOperatorPermissionInfo> _TypeOperatorPermissionInfo_f
         return handler(single)!;
       });
       data.permissions = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOperatorPermission>((single){
+        final handler = TypeOperatorPermission.deepCopy;
+        return handler(single)!;
+      });
+      newData.permissions = copyer(oldData.permissions);
+    },
   ),
 };
 
@@ -15327,6 +18848,24 @@ class TypeOperatorPermissionInfo extends IDataBasic implements IDataDynamic {
     return toDynamic(this)!;
   }
 
+  static TypeOperatorPermissionInfo? deepCopy(TypeOperatorPermissionInfo? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOperatorPermissionInfo();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOperatorPermissionInfo_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOperatorPermissionInfo copy() {
+    return deepCopy(this)!;
+  }
+
   @override
   String toString() {
     return encodeDynamic().toString();
@@ -15374,7 +18913,11 @@ final FieldReflectInfo<TypeOperatorPost> _TypeOperatorPost_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.postId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.postId = copyer(oldData.postId);
+    },
   ),
   "postName": (
     getter: (data) => data.postName,
@@ -15386,7 +18929,11 @@ final FieldReflectInfo<TypeOperatorPost> _TypeOperatorPost_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.postName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.postName = copyer(oldData.postName);
+    },
   ),
 };
 
@@ -15436,6 +18983,24 @@ class TypeOperatorPost extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOperatorPost? deepCopy(TypeOperatorPost? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOperatorPost();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOperatorPost_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOperatorPost copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -15574,7 +19139,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.accountDocumentOrderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.accountDocumentOrderId = copyer(oldData.accountDocumentOrderId);
+    },
   ),
   "accounts": (
     getter: (data) => data.accounts,
@@ -15592,7 +19161,14 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
         return handler(single)!;
       });
       data.accounts = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderAccount>((single){
+        final handler = TypeOrderAccount.deepCopy;
+        return handler(single)!;
+      });
+      newData.accounts = copyer(oldData.accounts);
+    },
   ),
   "arapFlows": (
     getter: (data) => data.arapFlows,
@@ -15610,7 +19186,14 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
         return handler(single)!;
       });
       data.arapFlows = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderArapFlow>((single){
+        final handler = TypeOrderArapFlow.deepCopy;
+        return handler(single)!;
+      });
+      newData.arapFlows = copyer(oldData.arapFlows);
+    },
   ),
   "attachmentCount": (
     getter: (data) => data.attachmentCount,
@@ -15622,7 +19205,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.attachmentCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.attachmentCount = copyer(oldData.attachmentCount);
+    },
   ),
   "attachmentSize": (
     getter: (data) => data.attachmentSize,
@@ -15634,7 +19221,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.attachmentSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.attachmentSize = copyer(oldData.attachmentSize);
+    },
   ),
   "billTotal": (
     getter: (data) => data.billTotal,
@@ -15646,7 +19237,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.billTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.billTotal = copyer(oldData.billTotal);
+    },
   ),
   "billType": (
     getter: (data) => data.billType,
@@ -15658,7 +19253,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderBillType.fromDynamic;
       data.billType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderBillType.deepCopy;
+      newData.billType = copyer(oldData.billType);
+    },
   ),
   "bomCostTotal": (
     getter: (data) => data.bomCostTotal,
@@ -15670,7 +19269,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.bomCostTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.bomCostTotal = copyer(oldData.bomCostTotal);
+    },
   ),
   "bomTotal": (
     getter: (data) => data.bomTotal,
@@ -15682,7 +19285,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.bomTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.bomTotal = copyer(oldData.bomTotal);
+    },
   ),
   "contactId": (
     getter: (data) => data.contactId,
@@ -15694,7 +19301,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactId = copyer(oldData.contactId);
+    },
   ),
   "contactInfo": (
     getter: (data) => data.contactInfo,
@@ -15706,7 +19317,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeContact.fromDynamic;
       data.contactInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeContact.deepCopy;
+      newData.contactInfo = copyer(oldData.contactInfo);
+    },
   ),
   "contactPersonAddress": (
     getter: (data) => data.contactPersonAddress,
@@ -15718,7 +19333,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactPersonAddress = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactPersonAddress = copyer(oldData.contactPersonAddress);
+    },
   ),
   "contactPersonName": (
     getter: (data) => data.contactPersonName,
@@ -15730,7 +19349,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactPersonName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactPersonName = copyer(oldData.contactPersonName);
+    },
   ),
   "contactPersonPhone": (
     getter: (data) => data.contactPersonPhone,
@@ -15742,7 +19365,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactPersonPhone = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactPersonPhone = copyer(oldData.contactPersonPhone);
+    },
   ),
   "costTotal": (
     getter: (data) => data.costTotal,
@@ -15754,7 +19381,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.costTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.costTotal = copyer(oldData.costTotal);
+    },
   ),
   "createTime": (
     getter: (data) => data.createTime,
@@ -15766,7 +19397,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "custom": (
     getter: (data) => data.custom,
@@ -15778,7 +19413,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeOrderCustom.fromDynamic;
       data.custom = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeOrderCustom.deepCopy;
+      newData.custom = copyer(oldData.custom);
+    },
   ),
   "customField1": (
     getter: (data) => data.customField1,
@@ -15790,7 +19429,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField1 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField1 = copyer(oldData.customField1);
+    },
   ),
   "customField2": (
     getter: (data) => data.customField2,
@@ -15802,7 +19445,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField2 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField2 = copyer(oldData.customField2);
+    },
   ),
   "customField3": (
     getter: (data) => data.customField3,
@@ -15814,7 +19461,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField3 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField3 = copyer(oldData.customField3);
+    },
   ),
   "customField4": (
     getter: (data) => data.customField4,
@@ -15826,7 +19477,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField4 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField4 = copyer(oldData.customField4);
+    },
   ),
   "customField5": (
     getter: (data) => data.customField5,
@@ -15838,7 +19493,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField5 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField5 = copyer(oldData.customField5);
+    },
   ),
   "customField6": (
     getter: (data) => data.customField6,
@@ -15850,7 +19509,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField6 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField6 = copyer(oldData.customField6);
+    },
   ),
   "customField7": (
     getter: (data) => data.customField7,
@@ -15862,7 +19525,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField7 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField7 = copyer(oldData.customField7);
+    },
   ),
   "customField8": (
     getter: (data) => data.customField8,
@@ -15874,7 +19541,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField8 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField8 = copyer(oldData.customField8);
+    },
   ),
   "discountTotal": (
     getter: (data) => data.discountTotal,
@@ -15886,7 +19557,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.discountTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.discountTotal = copyer(oldData.discountTotal);
+    },
   ),
   "documentType": (
     getter: (data) => data.documentType,
@@ -15898,7 +19573,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderDocumentType.fromDynamic;
       data.documentType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderDocumentType.deepCopy;
+      newData.documentType = copyer(oldData.documentType);
+    },
   ),
   "doneBillTotal": (
     getter: (data) => data.doneBillTotal,
@@ -15910,7 +19589,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.doneBillTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.doneBillTotal = copyer(oldData.doneBillTotal);
+    },
   ),
   "doneExecuteAmount": (
     getter: (data) => data.doneExecuteAmount,
@@ -15922,7 +19605,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.doneExecuteAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.doneExecuteAmount = copyer(oldData.doneExecuteAmount);
+    },
   ),
   "drawEmployeeId": (
     getter: (data) => data.drawEmployeeId,
@@ -15934,7 +19621,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.drawEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.drawEmployeeId = copyer(oldData.drawEmployeeId);
+    },
   ),
   "drawEmployeeInfo": (
     getter: (data) => data.drawEmployeeInfo,
@@ -15946,7 +19637,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEmployee.fromDynamic;
       data.drawEmployeeInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEmployee.deepCopy;
+      newData.drawEmployeeInfo = copyer(oldData.drawEmployeeInfo);
+    },
   ),
   "drawTime": (
     getter: (data) => data.drawTime,
@@ -15958,7 +19653,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.drawTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.drawTime = copyer(oldData.drawTime);
+    },
   ),
   "entryAccountEmployeeId": (
     getter: (data) => data.entryAccountEmployeeId,
@@ -15970,7 +19669,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.entryAccountEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.entryAccountEmployeeId = copyer(oldData.entryAccountEmployeeId);
+    },
   ),
   "entryAccountEmployeeInfo": (
     getter: (data) => data.entryAccountEmployeeInfo,
@@ -15982,7 +19685,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEmployee.fromDynamic;
       data.entryAccountEmployeeInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEmployee.deepCopy;
+      newData.entryAccountEmployeeInfo = copyer(oldData.entryAccountEmployeeInfo);
+    },
   ),
   "entryAccountTime": (
     getter: (data) => data.entryAccountTime,
@@ -15994,7 +19701,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.entryAccountTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.entryAccountTime = copyer(oldData.entryAccountTime);
+    },
   ),
   "feeOnlyTotal": (
     getter: (data) => data.feeOnlyTotal,
@@ -16006,7 +19717,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.feeOnlyTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.feeOnlyTotal = copyer(oldData.feeOnlyTotal);
+    },
   ),
   "feeTotal": (
     getter: (data) => data.feeTotal,
@@ -16018,7 +19733,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.feeTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.feeTotal = copyer(oldData.feeTotal);
+    },
   ),
   "hasBeenIssued": (
     getter: (data) => data.hasBeenIssued,
@@ -16030,7 +19749,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasBeenIssued = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasBeenIssued = copyer(oldData.hasBeenIssued);
+    },
   ),
   "hasBeenPurchased": (
     getter: (data) => data.hasBeenPurchased,
@@ -16042,7 +19765,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasBeenPurchased = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasBeenPurchased = copyer(oldData.hasBeenPurchased);
+    },
   ),
   "hasBeenUsed": (
     getter: (data) => data.hasBeenUsed,
@@ -16054,7 +19781,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasBeenUsed = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasBeenUsed = copyer(oldData.hasBeenUsed);
+    },
   ),
   "hasFinishBill": (
     getter: (data) => data.hasFinishBill,
@@ -16066,7 +19797,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasFinishBill = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasFinishBill = copyer(oldData.hasFinishBill);
+    },
   ),
   "hasStockExecute": (
     getter: (data) => data.hasStockExecute,
@@ -16078,7 +19813,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasStockExecute = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasStockExecute = copyer(oldData.hasStockExecute);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -16090,7 +19829,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "inStoreId": (
     getter: (data) => data.inStoreId,
@@ -16102,7 +19845,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.inStoreId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.inStoreId = copyer(oldData.inStoreId);
+    },
   ),
   "inStoreInfo": (
     getter: (data) => data.inStoreInfo,
@@ -16114,7 +19861,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeStore.fromDynamic;
       data.inStoreInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeStore.deepCopy;
+      newData.inStoreInfo = copyer(oldData.inStoreInfo);
+    },
   ),
   "insertUniqueId": (
     getter: (data) => data.insertUniqueId,
@@ -16126,7 +19877,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.insertUniqueId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.insertUniqueId = copyer(oldData.insertUniqueId);
+    },
   ),
   "isSetStockLocation": (
     getter: (data) => data.isSetStockLocation,
@@ -16138,7 +19893,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isSetStockLocation = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isSetStockLocation = copyer(oldData.isSetStockLocation);
+    },
   ),
   "itemDirection": (
     getter: (data) => data.itemDirection,
@@ -16150,7 +19909,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemDirection = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemDirection = copyer(oldData.itemDirection);
+    },
   ),
   "itemStockType": (
     getter: (data) => data.itemStockType,
@@ -16162,7 +19925,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemStockType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemStockType = copyer(oldData.itemStockType);
+    },
   ),
   "items": (
     getter: (data) => data.items,
@@ -16180,7 +19947,14 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
         return handler(single)!;
       });
       data.items = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderItem>((single){
+        final handler = TypeOrderItem.deepCopy;
+        return handler(single)!;
+      });
+      newData.items = copyer(oldData.items);
+    },
   ),
   "lastChangeOrderId": (
     getter: (data) => data.lastChangeOrderId,
@@ -16192,7 +19966,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.lastChangeOrderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.lastChangeOrderId = copyer(oldData.lastChangeOrderId);
+    },
   ),
   "manageEmployeeId": (
     getter: (data) => data.manageEmployeeId,
@@ -16204,7 +19982,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.manageEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.manageEmployeeId = copyer(oldData.manageEmployeeId);
+    },
   ),
   "manageEmployeeInfo": (
     getter: (data) => data.manageEmployeeInfo,
@@ -16216,7 +19998,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEmployee.fromDynamic;
       data.manageEmployeeInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEmployee.deepCopy;
+      newData.manageEmployeeInfo = copyer(oldData.manageEmployeeInfo);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -16228,7 +20014,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "number": (
     getter: (data) => data.number,
@@ -16240,7 +20030,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.number = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.number = copyer(oldData.number);
+    },
   ),
   "orderDate": (
     getter: (data) => data.orderDate,
@@ -16252,7 +20046,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDate = copyer(oldData.orderDate);
+    },
   ),
   "outStoreId": (
     getter: (data) => data.outStoreId,
@@ -16264,7 +20062,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.outStoreId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.outStoreId = copyer(oldData.outStoreId);
+    },
   ),
   "outStoreInfo": (
     getter: (data) => data.outStoreInfo,
@@ -16276,7 +20078,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeStore.fromDynamic;
       data.outStoreInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeStore.deepCopy;
+      newData.outStoreInfo = copyer(oldData.outStoreInfo);
+    },
   ),
   "parentSourceOrderInfo": (
     getter: (data) => data.parentSourceOrderInfo,
@@ -16288,7 +20094,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeOrderSourceOrderItem.fromDynamic;
       data.parentSourceOrderInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeOrderSourceOrderItem.deepCopy;
+      newData.parentSourceOrderInfo = copyer(oldData.parentSourceOrderInfo);
+    },
   ),
   "payCashAccountId": (
     getter: (data) => data.payCashAccountId,
@@ -16300,7 +20110,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.payCashAccountId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.payCashAccountId = copyer(oldData.payCashAccountId);
+    },
   ),
   "payCashAccountInfo": (
     getter: (data) => data.payCashAccountInfo,
@@ -16312,7 +20126,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeAccount.fromDynamic;
       data.payCashAccountInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeAccount.deepCopy;
+      newData.payCashAccountInfo = copyer(oldData.payCashAccountInfo);
+    },
   ),
   "payCashTotal": (
     getter: (data) => data.payCashTotal,
@@ -16324,7 +20142,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.payCashTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.payCashTotal = copyer(oldData.payCashTotal);
+    },
   ),
   "payDiscount": (
     getter: (data) => data.payDiscount,
@@ -16336,7 +20158,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.payDiscount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.payDiscount = copyer(oldData.payDiscount);
+    },
   ),
   "preTaxTotal": (
     getter: (data) => data.preTaxTotal,
@@ -16348,7 +20174,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.preTaxTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.preTaxTotal = copyer(oldData.preTaxTotal);
+    },
   ),
   "printTimes": (
     getter: (data) => data.printTimes,
@@ -16360,7 +20190,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.printTimes = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.printTimes = copyer(oldData.printTimes);
+    },
   ),
   "profitFlows": (
     getter: (data) => data.profitFlows,
@@ -16378,7 +20212,14 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
         return handler(single)!;
       });
       data.profitFlows = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderProfitFlow>((single){
+        final handler = TypeOrderProfitFlow.deepCopy;
+        return handler(single)!;
+      });
+      newData.profitFlows = copyer(oldData.profitFlows);
+    },
   ),
   "profitRate": (
     getter: (data) => data.profitRate,
@@ -16390,7 +20231,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.profitRate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.profitRate = copyer(oldData.profitRate);
+    },
   ),
   "profitTotal": (
     getter: (data) => data.profitTotal,
@@ -16402,7 +20247,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.profitTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.profitTotal = copyer(oldData.profitTotal);
+    },
   ),
   "receiveCashAccountId": (
     getter: (data) => data.receiveCashAccountId,
@@ -16414,7 +20263,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.receiveCashAccountId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.receiveCashAccountId = copyer(oldData.receiveCashAccountId);
+    },
   ),
   "receiveCashAccountInfo": (
     getter: (data) => data.receiveCashAccountInfo,
@@ -16426,7 +20279,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeAccount.fromDynamic;
       data.receiveCashAccountInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeAccount.deepCopy;
+      newData.receiveCashAccountInfo = copyer(oldData.receiveCashAccountInfo);
+    },
   ),
   "receiveCashTotal": (
     getter: (data) => data.receiveCashTotal,
@@ -16438,7 +20295,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.receiveCashTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.receiveCashTotal = copyer(oldData.receiveCashTotal);
+    },
   ),
   "receiveDiscount": (
     getter: (data) => data.receiveDiscount,
@@ -16450,7 +20311,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.receiveDiscount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.receiveDiscount = copyer(oldData.receiveDiscount);
+    },
   ),
   "redReverseOrderId": (
     getter: (data) => data.redReverseOrderId,
@@ -16462,7 +20327,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.redReverseOrderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.redReverseOrderId = copyer(oldData.redReverseOrderId);
+    },
   ),
   "redState": (
     getter: (data) => data.redState,
@@ -16474,7 +20343,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderRedState.fromDynamic;
       data.redState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderRedState.deepCopy;
+      newData.redState = copyer(oldData.redState);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -16486,7 +20359,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "sourceOrderInfo": (
     getter: (data) => data.sourceOrderInfo,
@@ -16504,7 +20381,14 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
         return handler(single)!;
       });
       data.sourceOrderInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderSourceOrderItem>((single){
+        final handler = TypeOrderSourceOrderItem.deepCopy;
+        return handler(single)!;
+      });
+      newData.sourceOrderInfo = copyer(oldData.sourceOrderInfo);
+    },
   ),
   "spendAdvancePayable": (
     getter: (data) => data.spendAdvancePayable,
@@ -16516,7 +20400,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.spendAdvancePayable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.spendAdvancePayable = copyer(oldData.spendAdvancePayable);
+    },
   ),
   "spendAdvanceReceivable": (
     getter: (data) => data.spendAdvanceReceivable,
@@ -16528,7 +20416,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.spendAdvanceReceivable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.spendAdvanceReceivable = copyer(oldData.spendAdvanceReceivable);
+    },
   ),
   "state": (
     getter: (data) => data.state,
@@ -16540,7 +20432,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderState.fromDynamic;
       data.state = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderState.deepCopy;
+      newData.state = copyer(oldData.state);
+    },
   ),
   "subOrders": (
     getter: (data) => data.subOrders,
@@ -16558,7 +20454,14 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
         return handler(single)!;
       });
       data.subOrders = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderSubOrder>((single){
+        final handler = TypeOrderSubOrder.deepCopy;
+        return handler(single)!;
+      });
+      newData.subOrders = copyer(oldData.subOrders);
+    },
   ),
   "subType": (
     getter: (data) => data.subType,
@@ -16570,7 +20473,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderSubType.fromDynamic;
       data.subType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderSubType.deepCopy;
+      newData.subType = copyer(oldData.subType);
+    },
   ),
   "subjects": (
     getter: (data) => data.subjects,
@@ -16588,7 +20495,14 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
         return handler(single)!;
       });
       data.subjects = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderSubject>((single){
+        final handler = TypeOrderSubject.deepCopy;
+        return handler(single)!;
+      });
+      newData.subjects = copyer(oldData.subjects);
+    },
   ),
   "summaryRemark": (
     getter: (data) => data.summaryRemark,
@@ -16600,7 +20514,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.summaryRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.summaryRemark = copyer(oldData.summaryRemark);
+    },
   ),
   "targetOrderInfo": (
     getter: (data) => data.targetOrderInfo,
@@ -16612,7 +20530,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeOrderSourceOrderItem.fromDynamic;
       data.targetOrderInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeOrderSourceOrderItem.deepCopy;
+      newData.targetOrderInfo = copyer(oldData.targetOrderInfo);
+    },
   ),
   "tax": (
     getter: (data) => data.tax,
@@ -16624,7 +20546,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.tax = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.tax = copyer(oldData.tax);
+    },
   ),
   "taxOnlyTotal": (
     getter: (data) => data.taxOnlyTotal,
@@ -16636,7 +20562,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.taxOnlyTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.taxOnlyTotal = copyer(oldData.taxOnlyTotal);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -16648,7 +20578,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
   "totalAmount": (
     getter: (data) => data.totalAmount,
@@ -16660,7 +20594,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.totalAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.totalAmount = copyer(oldData.totalAmount);
+    },
   ),
   "type": (
     getter: (data) => data.type,
@@ -16672,7 +20610,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.type = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.type = copyer(oldData.type);
+    },
   ),
   "undoneBillTotal": (
     getter: (data) => data.undoneBillTotal,
@@ -16684,7 +20626,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.undoneBillTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.undoneBillTotal = copyer(oldData.undoneBillTotal);
+    },
   ),
   "undoneExecuteAmount": (
     getter: (data) => data.undoneExecuteAmount,
@@ -16696,7 +20642,11 @@ final FieldReflectInfo<TypeOrder> _TypeOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.undoneExecuteAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.undoneExecuteAmount = copyer(oldData.undoneExecuteAmount);
+    },
   ),
 };
 
@@ -16835,6 +20785,24 @@ class TypeOrder extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrder? deepCopy(TypeOrder? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrder();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrder_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrder copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -17085,7 +21053,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.accountId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.accountId = copyer(oldData.accountId);
+    },
   ),
   "accountInfo": (
     getter: (data) => data.accountInfo,
@@ -17097,7 +21069,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeAccount.fromDynamic;
       data.accountInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeAccount.deepCopy;
+      newData.accountInfo = copyer(oldData.accountInfo);
+    },
   ),
   "accountSubType": (
     getter: (data) => data.accountSubType,
@@ -17109,7 +21085,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumAccountSubType.fromDynamic;
       data.accountSubType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumAccountSubType.deepCopy;
+      newData.accountSubType = copyer(oldData.accountSubType);
+    },
   ),
   "accountType": (
     getter: (data) => data.accountType,
@@ -17121,7 +21101,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumAccountType.fromDynamic;
       data.accountType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumAccountType.deepCopy;
+      newData.accountType = copyer(oldData.accountType);
+    },
   ),
   "auxiliaryContactId": (
     getter: (data) => data.auxiliaryContactId,
@@ -17133,7 +21117,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.auxiliaryContactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.auxiliaryContactId = copyer(oldData.auxiliaryContactId);
+    },
   ),
   "auxiliaryContactInfo": (
     getter: (data) => data.auxiliaryContactInfo,
@@ -17145,7 +21133,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeContact.fromDynamic;
       data.auxiliaryContactInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeContact.deepCopy;
+      newData.auxiliaryContactInfo = copyer(oldData.auxiliaryContactInfo);
+    },
   ),
   "auxiliaryEmployeeId": (
     getter: (data) => data.auxiliaryEmployeeId,
@@ -17157,7 +21149,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.auxiliaryEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.auxiliaryEmployeeId = copyer(oldData.auxiliaryEmployeeId);
+    },
   ),
   "auxiliaryEmployeeInfo": (
     getter: (data) => data.auxiliaryEmployeeInfo,
@@ -17169,7 +21165,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEmployee.fromDynamic;
       data.auxiliaryEmployeeInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEmployee.deepCopy;
+      newData.auxiliaryEmployeeInfo = copyer(oldData.auxiliaryEmployeeInfo);
+    },
   ),
   "auxiliaryStoreId": (
     getter: (data) => data.auxiliaryStoreId,
@@ -17181,7 +21181,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.auxiliaryStoreId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.auxiliaryStoreId = copyer(oldData.auxiliaryStoreId);
+    },
   ),
   "auxiliaryStoreInfo": (
     getter: (data) => data.auxiliaryStoreInfo,
@@ -17193,7 +21197,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeStore.fromDynamic;
       data.auxiliaryStoreInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeStore.deepCopy;
+      newData.auxiliaryStoreInfo = copyer(oldData.auxiliaryStoreInfo);
+    },
   ),
   "businessOrderId": (
     getter: (data) => data.businessOrderId,
@@ -17205,7 +21213,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.businessOrderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.businessOrderId = copyer(oldData.businessOrderId);
+    },
   ),
   "contactId": (
     getter: (data) => data.contactId,
@@ -17217,7 +21229,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactId = copyer(oldData.contactId);
+    },
   ),
   "contactInfo": (
     getter: (data) => data.contactInfo,
@@ -17229,7 +21245,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeContact.fromDynamic;
       data.contactInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeContact.deepCopy;
+      newData.contactInfo = copyer(oldData.contactInfo);
+    },
   ),
   "creditChange": (
     getter: (data) => data.creditChange,
@@ -17241,7 +21261,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.creditChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.creditChange = copyer(oldData.creditChange);
+    },
   ),
   "debitChange": (
     getter: (data) => data.debitChange,
@@ -17253,7 +21277,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.debitChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.debitChange = copyer(oldData.debitChange);
+    },
   ),
   "drawEmployeeId": (
     getter: (data) => data.drawEmployeeId,
@@ -17265,7 +21293,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.drawEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.drawEmployeeId = copyer(oldData.drawEmployeeId);
+    },
   ),
   "drawEmployeeInfo": (
     getter: (data) => data.drawEmployeeInfo,
@@ -17277,7 +21309,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEmployee.fromDynamic;
       data.drawEmployeeInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEmployee.deepCopy;
+      newData.drawEmployeeInfo = copyer(oldData.drawEmployeeInfo);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -17289,7 +21325,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "isMonthlyClose": (
     getter: (data) => data.isMonthlyClose,
@@ -17301,7 +21341,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isMonthlyClose = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isMonthlyClose = copyer(oldData.isMonthlyClose);
+    },
   ),
   "manageEmployeeId": (
     getter: (data) => data.manageEmployeeId,
@@ -17313,7 +21357,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.manageEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.manageEmployeeId = copyer(oldData.manageEmployeeId);
+    },
   ),
   "manageEmployeeInfo": (
     getter: (data) => data.manageEmployeeInfo,
@@ -17325,7 +21373,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEmployee.fromDynamic;
       data.manageEmployeeInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEmployee.deepCopy;
+      newData.manageEmployeeInfo = copyer(oldData.manageEmployeeInfo);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -17337,7 +21389,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "storeId": (
     getter: (data) => data.storeId,
@@ -17349,7 +21405,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.storeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.storeId = copyer(oldData.storeId);
+    },
   ),
   "storeInfo": (
     getter: (data) => data.storeInfo,
@@ -17361,7 +21421,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = TypeStore.fromDynamic;
       data.storeInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeStore.deepCopy;
+      newData.storeInfo = copyer(oldData.storeInfo);
+    },
   ),
   "summaryRemark": (
     getter: (data) => data.summaryRemark,
@@ -17373,7 +21437,11 @@ final FieldReflectInfo<TypeOrderAccount> _TypeOrderAccount_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.summaryRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.summaryRemark = copyer(oldData.summaryRemark);
+    },
   ),
 };
 
@@ -17446,6 +21514,24 @@ class TypeOrderAccount extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderAccount? deepCopy(TypeOrderAccount? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderAccount();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderAccount_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderAccount copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -17565,7 +21651,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.adpChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.adpChange = copyer(oldData.adpChange);
+    },
   ),
   "adpCreditChange": (
     getter: (data) => data.adpCreditChange,
@@ -17577,7 +21667,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.adpCreditChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.adpCreditChange = copyer(oldData.adpCreditChange);
+    },
   ),
   "adpDebitChange": (
     getter: (data) => data.adpDebitChange,
@@ -17589,7 +21683,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.adpDebitChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.adpDebitChange = copyer(oldData.adpDebitChange);
+    },
   ),
   "adrChange": (
     getter: (data) => data.adrChange,
@@ -17601,7 +21699,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.adrChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.adrChange = copyer(oldData.adrChange);
+    },
   ),
   "adrCreditChange": (
     getter: (data) => data.adrCreditChange,
@@ -17613,7 +21715,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.adrCreditChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.adrCreditChange = copyer(oldData.adrCreditChange);
+    },
   ),
   "adrDebitChange": (
     getter: (data) => data.adrDebitChange,
@@ -17625,7 +21731,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.adrDebitChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.adrDebitChange = copyer(oldData.adrDebitChange);
+    },
   ),
   "apAdjustTotal": (
     getter: (data) => data.apAdjustTotal,
@@ -17637,7 +21747,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.apAdjustTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.apAdjustTotal = copyer(oldData.apAdjustTotal);
+    },
   ),
   "apChange": (
     getter: (data) => data.apChange,
@@ -17649,7 +21763,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.apChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.apChange = copyer(oldData.apChange);
+    },
   ),
   "apCreditChange": (
     getter: (data) => data.apCreditChange,
@@ -17661,7 +21779,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.apCreditChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.apCreditChange = copyer(oldData.apCreditChange);
+    },
   ),
   "apDebitChange": (
     getter: (data) => data.apDebitChange,
@@ -17673,7 +21795,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.apDebitChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.apDebitChange = copyer(oldData.apDebitChange);
+    },
   ),
   "arAdjustTotal": (
     getter: (data) => data.arAdjustTotal,
@@ -17685,7 +21811,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.arAdjustTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.arAdjustTotal = copyer(oldData.arAdjustTotal);
+    },
   ),
   "arChange": (
     getter: (data) => data.arChange,
@@ -17697,7 +21827,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.arChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.arChange = copyer(oldData.arChange);
+    },
   ),
   "arCreditChange": (
     getter: (data) => data.arCreditChange,
@@ -17709,7 +21843,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.arCreditChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.arCreditChange = copyer(oldData.arCreditChange);
+    },
   ),
   "arDebitChange": (
     getter: (data) => data.arDebitChange,
@@ -17721,7 +21859,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.arDebitChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.arDebitChange = copyer(oldData.arDebitChange);
+    },
   ),
   "arapType": (
     getter: (data) => data.arapType,
@@ -17733,7 +21875,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderArapType.fromDynamic;
       data.arapType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderArapType.deepCopy;
+      newData.arapType = copyer(oldData.arapType);
+    },
   ),
   "businessTotal": (
     getter: (data) => data.businessTotal,
@@ -17745,7 +21891,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.businessTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.businessTotal = copyer(oldData.businessTotal);
+    },
   ),
   "cashApChange": (
     getter: (data) => data.cashApChange,
@@ -17757,7 +21907,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.cashApChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.cashApChange = copyer(oldData.cashApChange);
+    },
   ),
   "cashArChange": (
     getter: (data) => data.cashArChange,
@@ -17769,7 +21923,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.cashArChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.cashArChange = copyer(oldData.cashArChange);
+    },
   ),
   "contactId": (
     getter: (data) => data.contactId,
@@ -17781,7 +21939,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactId = copyer(oldData.contactId);
+    },
   ),
   "discountTotal": (
     getter: (data) => data.discountTotal,
@@ -17793,7 +21955,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.discountTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.discountTotal = copyer(oldData.discountTotal);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -17805,7 +21971,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "manageEmployeeId": (
     getter: (data) => data.manageEmployeeId,
@@ -17817,7 +21987,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.manageEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.manageEmployeeId = copyer(oldData.manageEmployeeId);
+    },
   ),
   "spendAdpChange": (
     getter: (data) => data.spendAdpChange,
@@ -17829,7 +22003,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.spendAdpChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.spendAdpChange = copyer(oldData.spendAdpChange);
+    },
   ),
   "spendAdrChange": (
     getter: (data) => data.spendAdrChange,
@@ -17841,7 +22019,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.spendAdrChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.spendAdrChange = copyer(oldData.spendAdrChange);
+    },
   ),
   "subOrderId": (
     getter: (data) => data.subOrderId,
@@ -17853,7 +22035,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.subOrderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.subOrderId = copyer(oldData.subOrderId);
+    },
   ),
   "subOrderNumber": (
     getter: (data) => data.subOrderNumber,
@@ -17865,7 +22051,11 @@ final FieldReflectInfo<TypeOrderArapFlow> _TypeOrderArapFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.subOrderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.subOrderNumber = copyer(oldData.subOrderNumber);
+    },
   ),
 };
 
@@ -17939,6 +22129,24 @@ class TypeOrderArapFlow extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderArapFlow? deepCopy(TypeOrderArapFlow? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderArapFlow();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderArapFlow_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderArapFlow copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -18044,7 +22252,14 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDTO> _TypeOrderAttachmentQueryDTO
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderAttachmentQueryDataDTO>((single){
+        final handler = TypeOrderAttachmentQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -18056,7 +22271,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDTO> _TypeOrderAttachmentQueryDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -18068,7 +22287,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDTO> _TypeOrderAttachmentQueryDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -18080,7 +22303,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDTO> _TypeOrderAttachmentQueryDTO
     fromDynamic: (data, value) {
       final parser = TypeOrderAttachmentQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeOrderAttachmentQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -18132,6 +22359,24 @@ class TypeOrderAttachmentQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderAttachmentQueryDTO? deepCopy(TypeOrderAttachmentQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderAttachmentQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderAttachmentQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderAttachmentQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -18214,7 +22459,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.attachmentCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.attachmentCount = copyer(oldData.attachmentCount);
+    },
   ),
   "contactId": (
     getter: (data) => data.contactId,
@@ -18226,7 +22475,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactId = copyer(oldData.contactId);
+    },
   ),
   "contactName": (
     getter: (data) => data.contactName,
@@ -18238,7 +22491,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactName = copyer(oldData.contactName);
+    },
   ),
   "contactPersonAddress": (
     getter: (data) => data.contactPersonAddress,
@@ -18250,7 +22507,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactPersonAddress = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactPersonAddress = copyer(oldData.contactPersonAddress);
+    },
   ),
   "contactPersonName": (
     getter: (data) => data.contactPersonName,
@@ -18262,7 +22523,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactPersonName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactPersonName = copyer(oldData.contactPersonName);
+    },
   ),
   "contactPersonPhone": (
     getter: (data) => data.contactPersonPhone,
@@ -18274,7 +22539,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactPersonPhone = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactPersonPhone = copyer(oldData.contactPersonPhone);
+    },
   ),
   "customField1": (
     getter: (data) => data.customField1,
@@ -18286,7 +22555,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField1 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField1 = copyer(oldData.customField1);
+    },
   ),
   "customField2": (
     getter: (data) => data.customField2,
@@ -18298,7 +22571,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField2 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField2 = copyer(oldData.customField2);
+    },
   ),
   "customField3": (
     getter: (data) => data.customField3,
@@ -18310,7 +22587,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField3 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField3 = copyer(oldData.customField3);
+    },
   ),
   "customField4": (
     getter: (data) => data.customField4,
@@ -18322,7 +22603,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField4 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField4 = copyer(oldData.customField4);
+    },
   ),
   "customField5": (
     getter: (data) => data.customField5,
@@ -18334,7 +22619,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField5 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField5 = copyer(oldData.customField5);
+    },
   ),
   "customField6": (
     getter: (data) => data.customField6,
@@ -18346,7 +22635,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField6 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField6 = copyer(oldData.customField6);
+    },
   ),
   "customField7": (
     getter: (data) => data.customField7,
@@ -18358,7 +22651,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField7 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField7 = copyer(oldData.customField7);
+    },
   ),
   "customField8": (
     getter: (data) => data.customField8,
@@ -18370,7 +22667,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField8 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField8 = copyer(oldData.customField8);
+    },
   ),
   "drawEmployeeId": (
     getter: (data) => data.drawEmployeeId,
@@ -18382,7 +22683,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.drawEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.drawEmployeeId = copyer(oldData.drawEmployeeId);
+    },
   ),
   "drawEmployeeName": (
     getter: (data) => data.drawEmployeeName,
@@ -18394,7 +22699,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.drawEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.drawEmployeeName = copyer(oldData.drawEmployeeName);
+    },
   ),
   "drawTime": (
     getter: (data) => data.drawTime,
@@ -18406,7 +22715,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.drawTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.drawTime = copyer(oldData.drawTime);
+    },
   ),
   "entryAccountEmployeeId": (
     getter: (data) => data.entryAccountEmployeeId,
@@ -18418,7 +22731,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.entryAccountEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.entryAccountEmployeeId = copyer(oldData.entryAccountEmployeeId);
+    },
   ),
   "entryAccountEmployeeName": (
     getter: (data) => data.entryAccountEmployeeName,
@@ -18430,7 +22747,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.entryAccountEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.entryAccountEmployeeName = copyer(oldData.entryAccountEmployeeName);
+    },
   ),
   "entryAccountTime": (
     getter: (data) => data.entryAccountTime,
@@ -18442,7 +22763,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.entryAccountTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.entryAccountTime = copyer(oldData.entryAccountTime);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -18454,7 +22779,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "imageInfos": (
     getter: (data) => data.imageInfos,
@@ -18472,7 +22801,14 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
         return handler(single)!;
       });
       data.imageInfos = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeImageInfo>((single){
+        final handler = TypeImageInfo.deepCopy;
+        return handler(single)!;
+      });
+      newData.imageInfos = copyer(oldData.imageInfos);
+    },
   ),
   "manageEmployeeId": (
     getter: (data) => data.manageEmployeeId,
@@ -18484,7 +22820,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.manageEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.manageEmployeeId = copyer(oldData.manageEmployeeId);
+    },
   ),
   "manageEmployeeName": (
     getter: (data) => data.manageEmployeeName,
@@ -18496,7 +22836,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.manageEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.manageEmployeeName = copyer(oldData.manageEmployeeName);
+    },
   ),
   "number": (
     getter: (data) => data.number,
@@ -18508,7 +22852,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.number = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.number = copyer(oldData.number);
+    },
   ),
   "orderDate": (
     getter: (data) => data.orderDate,
@@ -18520,7 +22868,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDate = copyer(oldData.orderDate);
+    },
   ),
   "printTimes": (
     getter: (data) => data.printTimes,
@@ -18532,7 +22884,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.printTimes = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.printTimes = copyer(oldData.printTimes);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -18544,7 +22900,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "state": (
     getter: (data) => data.state,
@@ -18556,7 +22916,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderState.fromDynamic;
       data.state = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderState.deepCopy;
+      newData.state = copyer(oldData.state);
+    },
   ),
   "summaryRemark": (
     getter: (data) => data.summaryRemark,
@@ -18568,7 +22932,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.summaryRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.summaryRemark = copyer(oldData.summaryRemark);
+    },
   ),
   "type": (
     getter: (data) => data.type,
@@ -18580,7 +22948,11 @@ final FieldReflectInfo<TypeOrderAttachmentQueryDataDTO> _TypeOrderAttachmentQuer
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.type = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.type = copyer(oldData.type);
+    },
   ),
 };
 
@@ -18659,6 +23031,24 @@ class TypeOrderAttachmentQueryDataDTO extends IDataBasic implements IDataDynamic
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderAttachmentQueryDataDTO? deepCopy(TypeOrderAttachmentQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderAttachmentQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderAttachmentQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderAttachmentQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -18765,7 +23155,11 @@ final FieldReflectInfo<TypeOrderAttachmentQuerySumDTO> _TypeOrderAttachmentQuery
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
 };
 
@@ -18816,6 +23210,24 @@ class TypeOrderAttachmentQuerySumDTO extends IDataBasic implements IDataDynamic 
     return toDynamic(this)!;
   }
 
+  static TypeOrderAttachmentQuerySumDTO? deepCopy(TypeOrderAttachmentQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderAttachmentQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderAttachmentQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderAttachmentQuerySumDTO copy() {
+    return deepCopy(this)!;
+  }
+
   @override
   String toString() {
     return encodeDynamic().toString();
@@ -18864,7 +23276,11 @@ final FieldReflectInfo<TypeOrderCustom> _TypeOrderCustom_fields = {
     fromDynamic: (data, value) {
       final parser = TypeOrderCustomInvoice.fromDynamic;
       data.invoice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeOrderCustomInvoice.deepCopy;
+      newData.invoice = copyer(oldData.invoice);
+    },
   ),
   "invoiceBack": (
     getter: (data) => data.invoiceBack,
@@ -18876,7 +23292,11 @@ final FieldReflectInfo<TypeOrderCustom> _TypeOrderCustom_fields = {
     fromDynamic: (data, value) {
       final parser = TypeOrderCustomInvoiceBack.fromDynamic;
       data.invoiceBack = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeOrderCustomInvoiceBack.deepCopy;
+      newData.invoiceBack = copyer(oldData.invoiceBack);
+    },
   ),
   "invoiceBill": (
     getter: (data) => data.invoiceBill,
@@ -18888,7 +23308,11 @@ final FieldReflectInfo<TypeOrderCustom> _TypeOrderCustom_fields = {
     fromDynamic: (data, value) {
       final parser = TypeOrderCustomInvoiceBill.fromDynamic;
       data.invoiceBill = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeOrderCustomInvoiceBill.deepCopy;
+      newData.invoiceBill = copyer(oldData.invoiceBill);
+    },
   ),
   "invoiceSubmit": (
     getter: (data) => data.invoiceSubmit,
@@ -18900,7 +23324,11 @@ final FieldReflectInfo<TypeOrderCustom> _TypeOrderCustom_fields = {
     fromDynamic: (data, value) {
       final parser = TypeOrderCustomInvoiceSubmit.fromDynamic;
       data.invoiceSubmit = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeOrderCustomInvoiceSubmit.deepCopy;
+      newData.invoiceSubmit = copyer(oldData.invoiceSubmit);
+    },
   ),
   "log": (
     getter: (data) => data.log,
@@ -18912,7 +23340,11 @@ final FieldReflectInfo<TypeOrderCustom> _TypeOrderCustom_fields = {
     fromDynamic: (data, value) {
       final parser = TypeOrderCustomLog.fromDynamic;
       data.log = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeOrderCustomLog.deepCopy;
+      newData.log = copyer(oldData.log);
+    },
   ),
 };
 
@@ -18965,6 +23397,24 @@ class TypeOrderCustom extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderCustom? deepCopy(TypeOrderCustom? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderCustom();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderCustom_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderCustom copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -19020,7 +23470,11 @@ final FieldReflectInfo<TypeOrderCustomInvoice> _TypeOrderCustomInvoice_fields = 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.goodsRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.goodsRemark = copyer(oldData.goodsRemark);
+    },
   ),
   "taxNumber": (
     getter: (data) => data.taxNumber,
@@ -19032,7 +23486,11 @@ final FieldReflectInfo<TypeOrderCustomInvoice> _TypeOrderCustomInvoice_fields = 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.taxNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.taxNumber = copyer(oldData.taxNumber);
+    },
   ),
 };
 
@@ -19084,6 +23542,24 @@ class TypeOrderCustomInvoice extends IDataBasic implements IDataDynamic {
     return toDynamic(this)!;
   }
 
+  static TypeOrderCustomInvoice? deepCopy(TypeOrderCustomInvoice? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderCustomInvoice();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderCustomInvoice_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderCustomInvoice copy() {
+    return deepCopy(this)!;
+  }
+
   @override
   String toString() {
     return encodeDynamic().toString();
@@ -19131,7 +23607,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBack> _TypeOrderCustomInvoiceBack_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.backDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.backDate = copyer(oldData.backDate);
+    },
   ),
   "state": (
     getter: (data) => data.state,
@@ -19143,7 +23623,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBack> _TypeOrderCustomInvoiceBack_f
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderCustomInvoiceBackState.fromDynamic;
       data.state = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderCustomInvoiceBackState.deepCopy;
+      newData.state = copyer(oldData.state);
+    },
   ),
 };
 
@@ -19193,6 +23677,24 @@ class TypeOrderCustomInvoiceBack extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderCustomInvoiceBack? deepCopy(TypeOrderCustomInvoiceBack? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderCustomInvoiceBack();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderCustomInvoiceBack_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderCustomInvoiceBack copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -19249,7 +23751,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBill> _TypeOrderCustomInvoiceBill_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.adjustedTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.adjustedTotal = copyer(oldData.adjustedTotal);
+    },
   ),
   "allTotal": (
     getter: (data) => data.allTotal,
@@ -19261,7 +23767,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBill> _TypeOrderCustomInvoiceBill_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.allTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.allTotal = copyer(oldData.allTotal);
+    },
   ),
   "bills": (
     getter: (data) => data.bills,
@@ -19279,7 +23789,14 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBill> _TypeOrderCustomInvoiceBill_f
         return handler(single)!;
       });
       data.bills = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderCustomInvoiceBillHistory>((single){
+        final handler = TypeOrderCustomInvoiceBillHistory.deepCopy;
+        return handler(single)!;
+      });
+      newData.bills = copyer(oldData.bills);
+    },
   ),
   "deferTotal": (
     getter: (data) => data.deferTotal,
@@ -19291,7 +23808,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBill> _TypeOrderCustomInvoiceBill_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.deferTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.deferTotal = copyer(oldData.deferTotal);
+    },
   ),
   "doneBillTotal": (
     getter: (data) => data.doneBillTotal,
@@ -19303,7 +23824,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBill> _TypeOrderCustomInvoiceBill_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.doneBillTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.doneBillTotal = copyer(oldData.doneBillTotal);
+    },
   ),
   "extraTotal": (
     getter: (data) => data.extraTotal,
@@ -19315,7 +23840,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBill> _TypeOrderCustomInvoiceBill_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.extraTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.extraTotal = copyer(oldData.extraTotal);
+    },
   ),
   "goodsTotal": (
     getter: (data) => data.goodsTotal,
@@ -19327,7 +23856,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBill> _TypeOrderCustomInvoiceBill_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.goodsTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.goodsTotal = copyer(oldData.goodsTotal);
+    },
   ),
   "state": (
     getter: (data) => data.state,
@@ -19339,7 +23872,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBill> _TypeOrderCustomInvoiceBill_f
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderCustomInvoiceBillState.fromDynamic;
       data.state = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderCustomInvoiceBillState.deepCopy;
+      newData.state = copyer(oldData.state);
+    },
   ),
   "undoneBillTotal": (
     getter: (data) => data.undoneBillTotal,
@@ -19351,7 +23888,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBill> _TypeOrderCustomInvoiceBill_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.undoneBillTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.undoneBillTotal = copyer(oldData.undoneBillTotal);
+    },
   ),
 };
 
@@ -19408,6 +23949,24 @@ class TypeOrderCustomInvoiceBill extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderCustomInvoiceBill? deepCopy(TypeOrderCustomInvoiceBill? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderCustomInvoiceBill();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderCustomInvoiceBill_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderCustomInvoiceBill copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -19476,7 +24035,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBillHistory> _TypeOrderCustomInvoic
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.billDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.billDate = copyer(oldData.billDate);
+    },
   ),
   "billOrderId": (
     getter: (data) => data.billOrderId,
@@ -19488,7 +24051,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBillHistory> _TypeOrderCustomInvoic
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.billOrderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.billOrderId = copyer(oldData.billOrderId);
+    },
   ),
   "billOrderNumber": (
     getter: (data) => data.billOrderNumber,
@@ -19500,7 +24067,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBillHistory> _TypeOrderCustomInvoic
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.billOrderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.billOrderNumber = copyer(oldData.billOrderNumber);
+    },
   ),
   "billOrderType": (
     getter: (data) => data.billOrderType,
@@ -19512,7 +24083,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBillHistory> _TypeOrderCustomInvoic
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.billOrderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.billOrderType = copyer(oldData.billOrderType);
+    },
   ),
   "billTotal": (
     getter: (data) => data.billTotal,
@@ -19524,7 +24099,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBillHistory> _TypeOrderCustomInvoic
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.billTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.billTotal = copyer(oldData.billTotal);
+    },
   ),
   "cashAccountId": (
     getter: (data) => data.cashAccountId,
@@ -19536,7 +24115,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBillHistory> _TypeOrderCustomInvoic
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.cashAccountId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.cashAccountId = copyer(oldData.cashAccountId);
+    },
   ),
   "cashAccountName": (
     getter: (data) => data.cashAccountName,
@@ -19548,7 +24131,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceBillHistory> _TypeOrderCustomInvoic
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.cashAccountName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.cashAccountName = copyer(oldData.cashAccountName);
+    },
   ),
 };
 
@@ -19603,6 +24190,24 @@ class TypeOrderCustomInvoiceBillHistory extends IDataBasic implements IDataDynam
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderCustomInvoiceBillHistory? deepCopy(TypeOrderCustomInvoiceBillHistory? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderCustomInvoiceBillHistory();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderCustomInvoiceBillHistory_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderCustomInvoiceBillHistory copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -19668,7 +24273,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceSubmit> _TypeOrderCustomInvoiceSubm
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactId = copyer(oldData.contactId);
+    },
   ),
   "contactInfo": (
     getter: (data) => data.contactInfo,
@@ -19680,7 +24289,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceSubmit> _TypeOrderCustomInvoiceSubm
     fromDynamic: (data, value) {
       final parser = TypeContact.fromDynamic;
       data.contactInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeContact.deepCopy;
+      newData.contactInfo = copyer(oldData.contactInfo);
+    },
   ),
   "contractNumber": (
     getter: (data) => data.contractNumber,
@@ -19692,7 +24305,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceSubmit> _TypeOrderCustomInvoiceSubm
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contractNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contractNumber = copyer(oldData.contractNumber);
+    },
   ),
   "invoiceDate": (
     getter: (data) => data.invoiceDate,
@@ -19704,7 +24321,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceSubmit> _TypeOrderCustomInvoiceSubm
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceDate = copyer(oldData.invoiceDate);
+    },
   ),
   "invoiceNumber": (
     getter: (data) => data.invoiceNumber,
@@ -19716,7 +24337,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceSubmit> _TypeOrderCustomInvoiceSubm
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceNumber = copyer(oldData.invoiceNumber);
+    },
   ),
   "invoiceReceiveDate": (
     getter: (data) => data.invoiceReceiveDate,
@@ -19728,7 +24353,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceSubmit> _TypeOrderCustomInvoiceSubm
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceReceiveDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceReceiveDate = copyer(oldData.invoiceReceiveDate);
+    },
   ),
   "invoiceTotal": (
     getter: (data) => data.invoiceTotal,
@@ -19740,7 +24369,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceSubmit> _TypeOrderCustomInvoiceSubm
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceTotal = copyer(oldData.invoiceTotal);
+    },
   ),
   "state": (
     getter: (data) => data.state,
@@ -19752,7 +24385,11 @@ final FieldReflectInfo<TypeOrderCustomInvoiceSubmit> _TypeOrderCustomInvoiceSubm
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderCustomInvoiceSubmitState.fromDynamic;
       data.state = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderCustomInvoiceSubmitState.deepCopy;
+      newData.state = copyer(oldData.state);
+    },
   ),
 };
 
@@ -19808,6 +24445,24 @@ class TypeOrderCustomInvoiceSubmit extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderCustomInvoiceSubmit? deepCopy(TypeOrderCustomInvoiceSubmit? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderCustomInvoiceSubmit();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderCustomInvoiceSubmit_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderCustomInvoiceSubmit copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -19874,7 +24529,14 @@ final FieldReflectInfo<TypeOrderCustomLog> _TypeOrderCustomLog_fields = {
         return handler(single)!;
       });
       data.logs = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderCustomLogSingle>((single){
+        final handler = TypeOrderCustomLogSingle.deepCopy;
+        return handler(single)!;
+      });
+      newData.logs = copyer(oldData.logs);
+    },
   ),
 };
 
@@ -19925,6 +24587,24 @@ class TypeOrderCustomLog extends IDataBasic implements IDataDynamic {
     return toDynamic(this)!;
   }
 
+  static TypeOrderCustomLog? deepCopy(TypeOrderCustomLog? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderCustomLog();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderCustomLog_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderCustomLog copy() {
+    return deepCopy(this)!;
+  }
+
   @override
   String toString() {
     return encodeDynamic().toString();
@@ -19972,7 +24652,11 @@ final FieldReflectInfo<TypeOrderCustomLogSingle> _TypeOrderCustomLogSingle_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.date = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.date = copyer(oldData.date);
+    },
   ),
   "employeeId": (
     getter: (data) => data.employeeId,
@@ -19984,7 +24668,11 @@ final FieldReflectInfo<TypeOrderCustomLogSingle> _TypeOrderCustomLogSingle_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.employeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.employeeId = copyer(oldData.employeeId);
+    },
   ),
   "employeeName": (
     getter: (data) => data.employeeName,
@@ -19996,7 +24684,11 @@ final FieldReflectInfo<TypeOrderCustomLogSingle> _TypeOrderCustomLogSingle_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.employeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.employeeName = copyer(oldData.employeeName);
+    },
   ),
   "msg": (
     getter: (data) => data.msg,
@@ -20008,7 +24700,11 @@ final FieldReflectInfo<TypeOrderCustomLogSingle> _TypeOrderCustomLogSingle_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.msg = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.msg = copyer(oldData.msg);
+    },
   ),
 };
 
@@ -20060,6 +24756,24 @@ class TypeOrderCustomLogSingle extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderCustomLogSingle? deepCopy(TypeOrderCustomLogSingle? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderCustomLogSingle();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderCustomLogSingle_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderCustomLogSingle copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -20117,7 +24831,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDTO> _TypeOrderGroupQueryDTO_fields = 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.beginOrderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.beginOrderDate = copyer(oldData.beginOrderDate);
+    },
   ),
   "data": (
     getter: (data) => data.data,
@@ -20135,7 +24853,14 @@ final FieldReflectInfo<TypeOrderGroupQueryDTO> _TypeOrderGroupQueryDTO_fields = 
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderGroupQueryDataDTO>((single){
+        final handler = TypeOrderGroupQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "endOrderDate": (
     getter: (data) => data.endOrderDate,
@@ -20147,7 +24872,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDTO> _TypeOrderGroupQueryDTO_fields = 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.endOrderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.endOrderDate = copyer(oldData.endOrderDate);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -20159,7 +24888,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDTO> _TypeOrderGroupQueryDTO_fields = 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -20171,7 +24904,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDTO> _TypeOrderGroupQueryDTO_fields = 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -20183,7 +24920,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDTO> _TypeOrderGroupQueryDTO_fields = 
     fromDynamic: (data, value) {
       final parser = TypeOrderGroupQueryDataDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeOrderGroupQueryDataDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -20237,6 +24978,24 @@ class TypeOrderGroupQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderGroupQueryDTO? deepCopy(TypeOrderGroupQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderGroupQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderGroupQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderGroupQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -20308,7 +25067,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDataDTO> _TypeOrderGroupQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.beginOrderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.beginOrderDate = copyer(oldData.beginOrderDate);
+    },
   ),
   "billCount": (
     getter: (data) => data.billCount,
@@ -20320,7 +25083,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDataDTO> _TypeOrderGroupQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.billCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.billCount = copyer(oldData.billCount);
+    },
   ),
   "billTotal": (
     getter: (data) => data.billTotal,
@@ -20332,7 +25099,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDataDTO> _TypeOrderGroupQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.billTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.billTotal = copyer(oldData.billTotal);
+    },
   ),
   "contactId": (
     getter: (data) => data.contactId,
@@ -20344,7 +25115,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDataDTO> _TypeOrderGroupQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactId = copyer(oldData.contactId);
+    },
   ),
   "count": (
     getter: (data) => data.count,
@@ -20356,7 +25131,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDataDTO> _TypeOrderGroupQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "discountTotal": (
     getter: (data) => data.discountTotal,
@@ -20368,7 +25147,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDataDTO> _TypeOrderGroupQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.discountTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.discountTotal = copyer(oldData.discountTotal);
+    },
   ),
   "doneBillTotal": (
     getter: (data) => data.doneBillTotal,
@@ -20380,7 +25163,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDataDTO> _TypeOrderGroupQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.doneBillTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.doneBillTotal = copyer(oldData.doneBillTotal);
+    },
   ),
   "endOrderDate": (
     getter: (data) => data.endOrderDate,
@@ -20392,7 +25179,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDataDTO> _TypeOrderGroupQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.endOrderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.endOrderDate = copyer(oldData.endOrderDate);
+    },
   ),
   "hasFinishBillCount": (
     getter: (data) => data.hasFinishBillCount,
@@ -20404,7 +25195,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDataDTO> _TypeOrderGroupQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasFinishBillCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasFinishBillCount = copyer(oldData.hasFinishBillCount);
+    },
   ),
   "hasNotFinishBillCount": (
     getter: (data) => data.hasNotFinishBillCount,
@@ -20416,7 +25211,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDataDTO> _TypeOrderGroupQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasNotFinishBillCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasNotFinishBillCount = copyer(oldData.hasNotFinishBillCount);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -20428,7 +25227,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDataDTO> _TypeOrderGroupQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "manageEmployeeId": (
     getter: (data) => data.manageEmployeeId,
@@ -20440,7 +25243,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDataDTO> _TypeOrderGroupQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.manageEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.manageEmployeeId = copyer(oldData.manageEmployeeId);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -20452,7 +25259,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDataDTO> _TypeOrderGroupQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "preTaxTotal": (
     getter: (data) => data.preTaxTotal,
@@ -20464,7 +25275,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDataDTO> _TypeOrderGroupQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.preTaxTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.preTaxTotal = copyer(oldData.preTaxTotal);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -20476,7 +25291,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDataDTO> _TypeOrderGroupQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
   "undoneBillTotal": (
     getter: (data) => data.undoneBillTotal,
@@ -20488,7 +25307,11 @@ final FieldReflectInfo<TypeOrderGroupQueryDataDTO> _TypeOrderGroupQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.undoneBillTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.undoneBillTotal = copyer(oldData.undoneBillTotal);
+    },
   ),
 };
 
@@ -20552,6 +25375,24 @@ class TypeOrderGroupQueryDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderGroupQueryDataDTO? deepCopy(TypeOrderGroupQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderGroupQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderGroupQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderGroupQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -20637,7 +25478,14 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDTO> _TypeOrderInvoiceQueryDTO_field
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderInvoiceQueryDataDTO>((single){
+        final handler = TypeOrderInvoiceQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -20649,7 +25497,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDTO> _TypeOrderInvoiceQueryDTO_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -20661,7 +25513,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDTO> _TypeOrderInvoiceQueryDTO_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -20673,7 +25529,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDTO> _TypeOrderInvoiceQueryDTO_field
     fromDynamic: (data, value) {
       final parser = TypeOrderInvoiceQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeOrderInvoiceQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -20725,6 +25585,24 @@ class TypeOrderInvoiceQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderInvoiceQueryDTO? deepCopy(TypeOrderInvoiceQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderInvoiceQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderInvoiceQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderInvoiceQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -20814,7 +25692,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactId = copyer(oldData.contactId);
+    },
   ),
   "contactName": (
     getter: (data) => data.contactName,
@@ -20826,7 +25708,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactName = copyer(oldData.contactName);
+    },
   ),
   "drawEmployeeId": (
     getter: (data) => data.drawEmployeeId,
@@ -20838,7 +25724,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.drawEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.drawEmployeeId = copyer(oldData.drawEmployeeId);
+    },
   ),
   "drawEmployeeName": (
     getter: (data) => data.drawEmployeeName,
@@ -20850,7 +25740,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.drawEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.drawEmployeeName = copyer(oldData.drawEmployeeName);
+    },
   ),
   "drawTime": (
     getter: (data) => data.drawTime,
@@ -20862,7 +25756,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.drawTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.drawTime = copyer(oldData.drawTime);
+    },
   ),
   "entryAccountEmployeeId": (
     getter: (data) => data.entryAccountEmployeeId,
@@ -20874,7 +25772,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.entryAccountEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.entryAccountEmployeeId = copyer(oldData.entryAccountEmployeeId);
+    },
   ),
   "entryAccountEmployeeName": (
     getter: (data) => data.entryAccountEmployeeName,
@@ -20886,7 +25788,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.entryAccountEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.entryAccountEmployeeName = copyer(oldData.entryAccountEmployeeName);
+    },
   ),
   "entryAccountTime": (
     getter: (data) => data.entryAccountTime,
@@ -20898,7 +25804,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.entryAccountTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.entryAccountTime = copyer(oldData.entryAccountTime);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -20910,7 +25820,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "invoiceBackDate": (
     getter: (data) => data.invoiceBackDate,
@@ -20922,7 +25836,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceBackDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceBackDate = copyer(oldData.invoiceBackDate);
+    },
   ),
   "invoiceBackState": (
     getter: (data) => data.invoiceBackState,
@@ -20934,7 +25852,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderCustomInvoiceBackState.fromDynamic;
       data.invoiceBackState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderCustomInvoiceBackState.deepCopy;
+      newData.invoiceBackState = copyer(oldData.invoiceBackState);
+    },
   ),
   "invoiceBillAdjustedTotal": (
     getter: (data) => data.invoiceBillAdjustedTotal,
@@ -20946,7 +25868,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceBillAdjustedTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceBillAdjustedTotal = copyer(oldData.invoiceBillAdjustedTotal);
+    },
   ),
   "invoiceBillAllTotal": (
     getter: (data) => data.invoiceBillAllTotal,
@@ -20958,7 +25884,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceBillAllTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceBillAllTotal = copyer(oldData.invoiceBillAllTotal);
+    },
   ),
   "invoiceBillDeferTotal": (
     getter: (data) => data.invoiceBillDeferTotal,
@@ -20970,7 +25900,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceBillDeferTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceBillDeferTotal = copyer(oldData.invoiceBillDeferTotal);
+    },
   ),
   "invoiceBillDoneBillTotal": (
     getter: (data) => data.invoiceBillDoneBillTotal,
@@ -20982,7 +25916,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceBillDoneBillTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceBillDoneBillTotal = copyer(oldData.invoiceBillDoneBillTotal);
+    },
   ),
   "invoiceBillExtraTotal": (
     getter: (data) => data.invoiceBillExtraTotal,
@@ -20994,7 +25932,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceBillExtraTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceBillExtraTotal = copyer(oldData.invoiceBillExtraTotal);
+    },
   ),
   "invoiceBillGoodsTotal": (
     getter: (data) => data.invoiceBillGoodsTotal,
@@ -21006,7 +25948,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceBillGoodsTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceBillGoodsTotal = copyer(oldData.invoiceBillGoodsTotal);
+    },
   ),
   "invoiceBillState": (
     getter: (data) => data.invoiceBillState,
@@ -21018,7 +25964,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderCustomInvoiceBillState.fromDynamic;
       data.invoiceBillState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderCustomInvoiceBillState.deepCopy;
+      newData.invoiceBillState = copyer(oldData.invoiceBillState);
+    },
   ),
   "invoiceBillUndoneBillTotal": (
     getter: (data) => data.invoiceBillUndoneBillTotal,
@@ -21030,7 +25980,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceBillUndoneBillTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceBillUndoneBillTotal = copyer(oldData.invoiceBillUndoneBillTotal);
+    },
   ),
   "invoiceGoodsRemark": (
     getter: (data) => data.invoiceGoodsRemark,
@@ -21042,7 +25996,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceGoodsRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceGoodsRemark = copyer(oldData.invoiceGoodsRemark);
+    },
   ),
   "invoiceSubmitContactId": (
     getter: (data) => data.invoiceSubmitContactId,
@@ -21054,7 +26012,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.invoiceSubmitContactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.invoiceSubmitContactId = copyer(oldData.invoiceSubmitContactId);
+    },
   ),
   "invoiceSubmitContactName": (
     getter: (data) => data.invoiceSubmitContactName,
@@ -21066,7 +26028,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceSubmitContactName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceSubmitContactName = copyer(oldData.invoiceSubmitContactName);
+    },
   ),
   "invoiceSubmitContractNumber": (
     getter: (data) => data.invoiceSubmitContractNumber,
@@ -21078,7 +26044,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceSubmitContractNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceSubmitContractNumber = copyer(oldData.invoiceSubmitContractNumber);
+    },
   ),
   "invoiceSubmitInvoiceDate": (
     getter: (data) => data.invoiceSubmitInvoiceDate,
@@ -21090,7 +26060,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceSubmitInvoiceDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceSubmitInvoiceDate = copyer(oldData.invoiceSubmitInvoiceDate);
+    },
   ),
   "invoiceSubmitInvoiceNumber": (
     getter: (data) => data.invoiceSubmitInvoiceNumber,
@@ -21102,7 +26076,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceSubmitInvoiceNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceSubmitInvoiceNumber = copyer(oldData.invoiceSubmitInvoiceNumber);
+    },
   ),
   "invoiceSubmitInvoiceReceiveDate": (
     getter: (data) => data.invoiceSubmitInvoiceReceiveDate,
@@ -21114,7 +26092,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceSubmitInvoiceReceiveDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceSubmitInvoiceReceiveDate = copyer(oldData.invoiceSubmitInvoiceReceiveDate);
+    },
   ),
   "invoiceSubmitInvoiceTotal": (
     getter: (data) => data.invoiceSubmitInvoiceTotal,
@@ -21126,7 +26108,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceSubmitInvoiceTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceSubmitInvoiceTotal = copyer(oldData.invoiceSubmitInvoiceTotal);
+    },
   ),
   "invoiceSubmitState": (
     getter: (data) => data.invoiceSubmitState,
@@ -21138,7 +26124,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderCustomInvoiceSubmitState.fromDynamic;
       data.invoiceSubmitState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderCustomInvoiceSubmitState.deepCopy;
+      newData.invoiceSubmitState = copyer(oldData.invoiceSubmitState);
+    },
   ),
   "invoiceTaxNumber": (
     getter: (data) => data.invoiceTaxNumber,
@@ -21150,7 +26140,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.invoiceTaxNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.invoiceTaxNumber = copyer(oldData.invoiceTaxNumber);
+    },
   ),
   "manageEmployeeId": (
     getter: (data) => data.manageEmployeeId,
@@ -21162,7 +26156,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.manageEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.manageEmployeeId = copyer(oldData.manageEmployeeId);
+    },
   ),
   "manageEmployeeName": (
     getter: (data) => data.manageEmployeeName,
@@ -21174,7 +26172,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.manageEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.manageEmployeeName = copyer(oldData.manageEmployeeName);
+    },
   ),
   "number": (
     getter: (data) => data.number,
@@ -21186,7 +26188,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.number = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.number = copyer(oldData.number);
+    },
   ),
   "orderDate": (
     getter: (data) => data.orderDate,
@@ -21198,7 +26204,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDate = copyer(oldData.orderDate);
+    },
   ),
   "printTimes": (
     getter: (data) => data.printTimes,
@@ -21210,7 +26220,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.printTimes = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.printTimes = copyer(oldData.printTimes);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -21222,7 +26236,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "state": (
     getter: (data) => data.state,
@@ -21234,7 +26252,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderState.fromDynamic;
       data.state = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderState.deepCopy;
+      newData.state = copyer(oldData.state);
+    },
   ),
   "summaryRemark": (
     getter: (data) => data.summaryRemark,
@@ -21246,7 +26268,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.summaryRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.summaryRemark = copyer(oldData.summaryRemark);
+    },
   ),
   "type": (
     getter: (data) => data.type,
@@ -21258,7 +26284,11 @@ final FieldReflectInfo<TypeOrderInvoiceQueryDataDTO> _TypeOrderInvoiceQueryDataD
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.type = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.type = copyer(oldData.type);
+    },
   ),
 };
 
@@ -21344,6 +26374,24 @@ class TypeOrderInvoiceQueryDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderInvoiceQueryDataDTO? deepCopy(TypeOrderInvoiceQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderInvoiceQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderInvoiceQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderInvoiceQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -21464,7 +26512,11 @@ final FieldReflectInfo<TypeOrderInvoiceQuerySumDTO> _TypeOrderInvoiceQuerySumDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
 };
 
@@ -21513,6 +26565,24 @@ class TypeOrderInvoiceQuerySumDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderInvoiceQuerySumDTO? deepCopy(TypeOrderInvoiceQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderInvoiceQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderInvoiceQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderInvoiceQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -21617,7 +26687,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.aliasItemName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.aliasItemName = copyer(oldData.aliasItemName);
+    },
   ),
   "aliasItemNumber": (
     getter: (data) => data.aliasItemNumber,
@@ -21629,7 +26703,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.aliasItemNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.aliasItemNumber = copyer(oldData.aliasItemNumber);
+    },
   ),
   "amount": (
     getter: (data) => data.amount,
@@ -21641,7 +26719,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.amount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.amount = copyer(oldData.amount);
+    },
   ),
   "basicAmount": (
     getter: (data) => data.basicAmount,
@@ -21653,7 +26735,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.basicAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.basicAmount = copyer(oldData.basicAmount);
+    },
   ),
   "basicUnitInfo": (
     getter: (data) => data.basicUnitInfo,
@@ -21665,7 +26751,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = TypeUnit.fromDynamic;
       data.basicUnitInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeUnit.deepCopy;
+      newData.basicUnitInfo = copyer(oldData.basicUnitInfo);
+    },
   ),
   "bomCostPrice": (
     getter: (data) => data.bomCostPrice,
@@ -21677,7 +26767,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.bomCostPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.bomCostPrice = copyer(oldData.bomCostPrice);
+    },
   ),
   "bomCostTotal": (
     getter: (data) => data.bomCostTotal,
@@ -21689,7 +26783,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.bomCostTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.bomCostTotal = copyer(oldData.bomCostTotal);
+    },
   ),
   "bomPrice": (
     getter: (data) => data.bomPrice,
@@ -21701,7 +26799,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.bomPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.bomPrice = copyer(oldData.bomPrice);
+    },
   ),
   "bomTotal": (
     getter: (data) => data.bomTotal,
@@ -21713,7 +26815,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.bomTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.bomTotal = copyer(oldData.bomTotal);
+    },
   ),
   "costPrice": (
     getter: (data) => data.costPrice,
@@ -21725,7 +26831,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.costPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.costPrice = copyer(oldData.costPrice);
+    },
   ),
   "costTotal": (
     getter: (data) => data.costTotal,
@@ -21737,7 +26847,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.costTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.costTotal = copyer(oldData.costTotal);
+    },
   ),
   "customField1": (
     getter: (data) => data.customField1,
@@ -21749,7 +26863,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField1 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField1 = copyer(oldData.customField1);
+    },
   ),
   "customField2": (
     getter: (data) => data.customField2,
@@ -21761,7 +26879,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField2 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField2 = copyer(oldData.customField2);
+    },
   ),
   "customField3": (
     getter: (data) => data.customField3,
@@ -21773,7 +26895,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField3 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField3 = copyer(oldData.customField3);
+    },
   ),
   "customField4": (
     getter: (data) => data.customField4,
@@ -21785,7 +26911,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField4 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField4 = copyer(oldData.customField4);
+    },
   ),
   "customField5": (
     getter: (data) => data.customField5,
@@ -21797,7 +26927,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField5 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField5 = copyer(oldData.customField5);
+    },
   ),
   "customField6": (
     getter: (data) => data.customField6,
@@ -21809,7 +26943,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField6 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField6 = copyer(oldData.customField6);
+    },
   ),
   "customField7": (
     getter: (data) => data.customField7,
@@ -21821,7 +26959,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField7 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField7 = copyer(oldData.customField7);
+    },
   ),
   "customField8": (
     getter: (data) => data.customField8,
@@ -21833,7 +26975,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField8 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField8 = copyer(oldData.customField8);
+    },
   ),
   "discount": (
     getter: (data) => data.discount,
@@ -21845,7 +26991,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.discount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.discount = copyer(oldData.discount);
+    },
   ),
   "discountPrice": (
     getter: (data) => data.discountPrice,
@@ -21857,7 +27007,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.discountPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.discountPrice = copyer(oldData.discountPrice);
+    },
   ),
   "discountTotal": (
     getter: (data) => data.discountTotal,
@@ -21869,7 +27023,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.discountTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.discountTotal = copyer(oldData.discountTotal);
+    },
   ),
   "doneExecuteAmount": (
     getter: (data) => data.doneExecuteAmount,
@@ -21881,7 +27039,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.doneExecuteAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.doneExecuteAmount = copyer(oldData.doneExecuteAmount);
+    },
   ),
   "fee": (
     getter: (data) => data.fee,
@@ -21893,7 +27055,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.fee = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.fee = copyer(oldData.fee);
+    },
   ),
   "feePrice": (
     getter: (data) => data.feePrice,
@@ -21905,7 +27071,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.feePrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.feePrice = copyer(oldData.feePrice);
+    },
   ),
   "feeTotal": (
     getter: (data) => data.feeTotal,
@@ -21917,7 +27087,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.feeTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.feeTotal = copyer(oldData.feeTotal);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -21929,7 +27103,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -21941,7 +27119,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "itemInfo": (
     getter: (data) => data.itemInfo,
@@ -21953,7 +27135,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = TypeItem.fromDynamic;
       data.itemInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeItem.deepCopy;
+      newData.itemInfo = copyer(oldData.itemInfo);
+    },
   ),
   "itemPurchasePrice": (
     getter: (data) => data.itemPurchasePrice,
@@ -21965,7 +27151,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemPurchasePrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemPurchasePrice = copyer(oldData.itemPurchasePrice);
+    },
   ),
   "itemWholeSalesPrice": (
     getter: (data) => data.itemWholeSalesPrice,
@@ -21977,7 +27167,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemWholeSalesPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemWholeSalesPrice = copyer(oldData.itemWholeSalesPrice);
+    },
   ),
   "newAmount": (
     getter: (data) => data.newAmount,
@@ -21989,7 +27183,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.newAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.newAmount = copyer(oldData.newAmount);
+    },
   ),
   "oldAmount": (
     getter: (data) => data.oldAmount,
@@ -22001,7 +27199,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.oldAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.oldAmount = copyer(oldData.oldAmount);
+    },
   ),
   "oldPrice": (
     getter: (data) => data.oldPrice,
@@ -22013,7 +27215,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.oldPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.oldPrice = copyer(oldData.oldPrice);
+    },
   ),
   "oldTotal": (
     getter: (data) => data.oldTotal,
@@ -22025,7 +27231,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.oldTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.oldTotal = copyer(oldData.oldTotal);
+    },
   ),
   "orderDirection": (
     getter: (data) => data.orderDirection,
@@ -22037,7 +27247,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderDirection = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderDirection = copyer(oldData.orderDirection);
+    },
   ),
   "orderState": (
     getter: (data) => data.orderState,
@@ -22049,7 +27263,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderState.fromDynamic;
       data.orderState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderState.deepCopy;
+      newData.orderState = copyer(oldData.orderState);
+    },
   ),
   "orderStockType": (
     getter: (data) => data.orderStockType,
@@ -22061,7 +27279,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderStockType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderStockType = copyer(oldData.orderStockType);
+    },
   ),
   "orderSubContractStockType": (
     getter: (data) => data.orderSubContractStockType,
@@ -22073,7 +27295,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderSubContractStockType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderSubContractStockType = copyer(oldData.orderSubContractStockType);
+    },
   ),
   "preTaxPrice": (
     getter: (data) => data.preTaxPrice,
@@ -22085,7 +27311,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.preTaxPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.preTaxPrice = copyer(oldData.preTaxPrice);
+    },
   ),
   "preTaxTotal": (
     getter: (data) => data.preTaxTotal,
@@ -22097,7 +27327,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.preTaxTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.preTaxTotal = copyer(oldData.preTaxTotal);
+    },
   ),
   "price": (
     getter: (data) => data.price,
@@ -22109,7 +27343,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.price = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.price = copyer(oldData.price);
+    },
   ),
   "profitRate": (
     getter: (data) => data.profitRate,
@@ -22121,7 +27359,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.profitRate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.profitRate = copyer(oldData.profitRate);
+    },
   ),
   "profitTotal": (
     getter: (data) => data.profitTotal,
@@ -22133,7 +27375,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.profitTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.profitTotal = copyer(oldData.profitTotal);
+    },
   ),
   "refChangeItemId": (
     getter: (data) => data.refChangeItemId,
@@ -22145,7 +27391,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.refChangeItemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.refChangeItemId = copyer(oldData.refChangeItemId);
+    },
   ),
   "refParentItemId": (
     getter: (data) => data.refParentItemId,
@@ -22157,7 +27407,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.refParentItemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.refParentItemId = copyer(oldData.refParentItemId);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -22169,7 +27423,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "stockExecutes": (
     getter: (data) => data.stockExecutes,
@@ -22187,7 +27445,14 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
         return handler(single)!;
       });
       data.stockExecutes = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderItemExecute>((single){
+        final handler = TypeOrderItemExecute.deepCopy;
+        return handler(single)!;
+      });
+      newData.stockExecutes = copyer(oldData.stockExecutes);
+    },
   ),
   "stockLocation": (
     getter: (data) => data.stockLocation,
@@ -22199,7 +27464,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockLocation = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockLocation = copyer(oldData.stockLocation);
+    },
   ),
   "stockRemains": (
     getter: (data) => data.stockRemains,
@@ -22217,7 +27486,14 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
         return handler(single)!;
       });
       data.stockRemains = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderItemRemain>((single){
+        final handler = TypeOrderItemRemain.deepCopy;
+        return handler(single)!;
+      });
+      newData.stockRemains = copyer(oldData.stockRemains);
+    },
   ),
   "storeId": (
     getter: (data) => data.storeId,
@@ -22229,7 +27505,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.storeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.storeId = copyer(oldData.storeId);
+    },
   ),
   "subContractStockRemains": (
     getter: (data) => data.subContractStockRemains,
@@ -22247,7 +27527,14 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
         return handler(single)!;
       });
       data.subContractStockRemains = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderItemRemain>((single){
+        final handler = TypeOrderItemRemain.deepCopy;
+        return handler(single)!;
+      });
+      newData.subContractStockRemains = copyer(oldData.subContractStockRemains);
+    },
   ),
   "tax": (
     getter: (data) => data.tax,
@@ -22259,7 +27546,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.tax = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.tax = copyer(oldData.tax);
+    },
   ),
   "taxOnlyTotal": (
     getter: (data) => data.taxOnlyTotal,
@@ -22271,7 +27562,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.taxOnlyTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.taxOnlyTotal = copyer(oldData.taxOnlyTotal);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -22283,7 +27578,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
   "undoneExecuteAmount": (
     getter: (data) => data.undoneExecuteAmount,
@@ -22295,7 +27594,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.undoneExecuteAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.undoneExecuteAmount = copyer(oldData.undoneExecuteAmount);
+    },
   ),
   "unitConvert": (
     getter: (data) => data.unitConvert,
@@ -22307,7 +27610,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.unitConvert = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.unitConvert = copyer(oldData.unitConvert);
+    },
   ),
   "unitId": (
     getter: (data) => data.unitId,
@@ -22319,7 +27626,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.unitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.unitId = copyer(oldData.unitId);
+    },
   ),
   "unitInfo": (
     getter: (data) => data.unitInfo,
@@ -22331,7 +27642,11 @@ final FieldReflectInfo<TypeOrderItem> _TypeOrderItem_fields = {
     fromDynamic: (data, value) {
       final parser = TypeUnit.fromDynamic;
       data.unitInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeUnit.deepCopy;
+      newData.unitInfo = copyer(oldData.unitInfo);
+    },
   ),
 };
 
@@ -22438,6 +27753,24 @@ class TypeOrderItem extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderItem? deepCopy(TypeOrderItem? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderItem();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderItem_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderItem copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -22603,7 +27936,11 @@ final FieldReflectInfo<TypeOrderItemExecute> _TypeOrderItemExecute_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.amount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.amount = copyer(oldData.amount);
+    },
   ),
   "orderId": (
     getter: (data) => data.orderId,
@@ -22615,7 +27952,11 @@ final FieldReflectInfo<TypeOrderItemExecute> _TypeOrderItemExecute_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderId = copyer(oldData.orderId);
+    },
   ),
   "orderNumber": (
     getter: (data) => data.orderNumber,
@@ -22627,7 +27968,11 @@ final FieldReflectInfo<TypeOrderItemExecute> _TypeOrderItemExecute_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderNumber = copyer(oldData.orderNumber);
+    },
   ),
   "orderType": (
     getter: (data) => data.orderType,
@@ -22639,7 +27984,11 @@ final FieldReflectInfo<TypeOrderItemExecute> _TypeOrderItemExecute_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.orderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.orderType = copyer(oldData.orderType);
+    },
   ),
 };
 
@@ -22691,6 +28040,24 @@ class TypeOrderItemExecute extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderItemExecute? deepCopy(TypeOrderItemExecute? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderItemExecute();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderItemExecute_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderItemExecute copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -22748,7 +28115,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDTO> _TypeOrderItemGroupQueryDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.beginOrderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.beginOrderDate = copyer(oldData.beginOrderDate);
+    },
   ),
   "data": (
     getter: (data) => data.data,
@@ -22766,7 +28137,14 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDTO> _TypeOrderItemGroupQueryDTO_f
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderItemGroupQueryDataDTO>((single){
+        final handler = TypeOrderItemGroupQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "endOrderDate": (
     getter: (data) => data.endOrderDate,
@@ -22778,7 +28156,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDTO> _TypeOrderItemGroupQueryDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.endOrderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.endOrderDate = copyer(oldData.endOrderDate);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -22790,7 +28172,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDTO> _TypeOrderItemGroupQueryDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -22802,7 +28188,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDTO> _TypeOrderItemGroupQueryDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -22814,7 +28204,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDTO> _TypeOrderItemGroupQueryDTO_f
     fromDynamic: (data, value) {
       final parser = TypeOrderItemGroupQueryDataDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeOrderItemGroupQueryDataDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -22868,6 +28262,24 @@ class TypeOrderItemGroupQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderItemGroupQueryDTO? deepCopy(TypeOrderItemGroupQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderItemGroupQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderItemGroupQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderItemGroupQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -22954,7 +28366,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.averageCostPricePerAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.averageCostPricePerAmount = copyer(oldData.averageCostPricePerAmount);
+    },
   ),
   "averagePricePerAmount": (
     getter: (data) => data.averagePricePerAmount,
@@ -22966,7 +28382,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.averagePricePerAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.averagePricePerAmount = copyer(oldData.averagePricePerAmount);
+    },
   ),
   "averageTotalPerContact": (
     getter: (data) => data.averageTotalPerContact,
@@ -22978,7 +28398,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.averageTotalPerContact = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.averageTotalPerContact = copyer(oldData.averageTotalPerContact);
+    },
   ),
   "averageTotalPerOrder": (
     getter: (data) => data.averageTotalPerOrder,
@@ -22990,7 +28414,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.averageTotalPerOrder = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.averageTotalPerOrder = copyer(oldData.averageTotalPerOrder);
+    },
   ),
   "beginOrderDate": (
     getter: (data) => data.beginOrderDate,
@@ -23002,7 +28430,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.beginOrderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.beginOrderDate = copyer(oldData.beginOrderDate);
+    },
   ),
   "contactCount": (
     getter: (data) => data.contactCount,
@@ -23014,7 +28446,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactCount = copyer(oldData.contactCount);
+    },
   ),
   "contactId": (
     getter: (data) => data.contactId,
@@ -23026,7 +28462,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactId = copyer(oldData.contactId);
+    },
   ),
   "costTotal": (
     getter: (data) => data.costTotal,
@@ -23038,7 +28478,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.costTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.costTotal = copyer(oldData.costTotal);
+    },
   ),
   "count": (
     getter: (data) => data.count,
@@ -23050,7 +28494,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "discountTotal": (
     getter: (data) => data.discountTotal,
@@ -23062,7 +28510,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.discountTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.discountTotal = copyer(oldData.discountTotal);
+    },
   ),
   "endOrderDate": (
     getter: (data) => data.endOrderDate,
@@ -23074,7 +28526,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.endOrderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.endOrderDate = copyer(oldData.endOrderDate);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -23086,7 +28542,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -23098,7 +28558,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "itemModelRemark": (
     getter: (data) => data.itemModelRemark,
@@ -23110,7 +28574,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemModelRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemModelRemark = copyer(oldData.itemModelRemark);
+    },
   ),
   "itemSpecsRemark": (
     getter: (data) => data.itemSpecsRemark,
@@ -23122,7 +28590,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemSpecsRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemSpecsRemark = copyer(oldData.itemSpecsRemark);
+    },
   ),
   "manageEmployeeId": (
     getter: (data) => data.manageEmployeeId,
@@ -23134,7 +28606,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.manageEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.manageEmployeeId = copyer(oldData.manageEmployeeId);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -23146,7 +28622,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "normalTotalAmount": (
     getter: (data) => data.normalTotalAmount,
@@ -23158,7 +28638,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.normalTotalAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.normalTotalAmount = copyer(oldData.normalTotalAmount);
+    },
   ),
   "orderCount": (
     getter: (data) => data.orderCount,
@@ -23170,7 +28654,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderCount = copyer(oldData.orderCount);
+    },
   ),
   "preTaxTotal": (
     getter: (data) => data.preTaxTotal,
@@ -23182,7 +28670,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.preTaxTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.preTaxTotal = copyer(oldData.preTaxTotal);
+    },
   ),
   "profitRate": (
     getter: (data) => data.profitRate,
@@ -23194,7 +28686,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.profitRate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.profitRate = copyer(oldData.profitRate);
+    },
   ),
   "profitTotal": (
     getter: (data) => data.profitTotal,
@@ -23206,7 +28702,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.profitTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.profitTotal = copyer(oldData.profitTotal);
+    },
   ),
   "returnRate": (
     getter: (data) => data.returnRate,
@@ -23218,7 +28718,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.returnRate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.returnRate = copyer(oldData.returnRate);
+    },
   ),
   "returnTotalAmount": (
     getter: (data) => data.returnTotalAmount,
@@ -23230,7 +28734,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.returnTotalAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.returnTotalAmount = copyer(oldData.returnTotalAmount);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -23242,7 +28750,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
   "totalAmount": (
     getter: (data) => data.totalAmount,
@@ -23254,7 +28766,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.totalAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.totalAmount = copyer(oldData.totalAmount);
+    },
   ),
   "totalBasicAmount": (
     getter: (data) => data.totalBasicAmount,
@@ -23266,7 +28782,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.totalBasicAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.totalBasicAmount = copyer(oldData.totalBasicAmount);
+    },
   ),
   "totalUnitConvertAmount": (
     getter: (data) => data.totalUnitConvertAmount,
@@ -23278,7 +28798,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.totalUnitConvertAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.totalUnitConvertAmount = copyer(oldData.totalUnitConvertAmount);
+    },
   ),
   "unitConvertDesc": (
     getter: (data) => data.unitConvertDesc,
@@ -23290,7 +28814,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.unitConvertDesc = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.unitConvertDesc = copyer(oldData.unitConvertDesc);
+    },
   ),
   "unitId": (
     getter: (data) => data.unitId,
@@ -23302,7 +28830,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.unitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.unitId = copyer(oldData.unitId);
+    },
   ),
   "unitName": (
     getter: (data) => data.unitName,
@@ -23314,7 +28846,11 @@ final FieldReflectInfo<TypeOrderItemGroupQueryDataDTO> _TypeOrderItemGroupQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.unitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.unitName = copyer(oldData.unitName);
+    },
   ),
 };
 
@@ -23393,6 +28929,24 @@ class TypeOrderItemGroupQueryDataDTO extends IDataBasic implements IDataDynamic 
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderItemGroupQueryDataDTO? deepCopy(TypeOrderItemGroupQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderItemGroupQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderItemGroupQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderItemGroupQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -23508,7 +29062,14 @@ final FieldReflectInfo<TypeOrderItemQueryDTO> _TypeOrderItemQueryDTO_fields = {
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderItemQueryDataDTO>((single){
+        final handler = TypeOrderItemQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -23520,7 +29081,11 @@ final FieldReflectInfo<TypeOrderItemQueryDTO> _TypeOrderItemQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -23532,7 +29097,11 @@ final FieldReflectInfo<TypeOrderItemQueryDTO> _TypeOrderItemQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -23544,7 +29113,11 @@ final FieldReflectInfo<TypeOrderItemQueryDTO> _TypeOrderItemQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = TypeOrderItemQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeOrderItemQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -23596,6 +29169,24 @@ class TypeOrderItemQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderItemQueryDTO? deepCopy(TypeOrderItemQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderItemQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderItemQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderItemQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -23728,7 +29319,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.aliasItemName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.aliasItemName = copyer(oldData.aliasItemName);
+    },
   ),
   "aliasItemNumber": (
     getter: (data) => data.aliasItemNumber,
@@ -23740,7 +29335,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.aliasItemNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.aliasItemNumber = copyer(oldData.aliasItemNumber);
+    },
   ),
   "amount": (
     getter: (data) => data.amount,
@@ -23752,7 +29351,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.amount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.amount = copyer(oldData.amount);
+    },
   ),
   "attachmentCount": (
     getter: (data) => data.attachmentCount,
@@ -23764,7 +29367,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.attachmentCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.attachmentCount = copyer(oldData.attachmentCount);
+    },
   ),
   "attachmentSize": (
     getter: (data) => data.attachmentSize,
@@ -23776,7 +29383,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.attachmentSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.attachmentSize = copyer(oldData.attachmentSize);
+    },
   ),
   "basicAmount": (
     getter: (data) => data.basicAmount,
@@ -23788,7 +29399,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.basicAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.basicAmount = copyer(oldData.basicAmount);
+    },
   ),
   "commonAmount": (
     getter: (data) => data.commonAmount,
@@ -23800,7 +29415,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.commonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.commonAmount = copyer(oldData.commonAmount);
+    },
   ),
   "commonUnitName": (
     getter: (data) => data.commonUnitName,
@@ -23812,7 +29431,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.commonUnitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.commonUnitName = copyer(oldData.commonUnitName);
+    },
   ),
   "costPrice": (
     getter: (data) => data.costPrice,
@@ -23824,7 +29447,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.costPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.costPrice = copyer(oldData.costPrice);
+    },
   ),
   "costTotal": (
     getter: (data) => data.costTotal,
@@ -23836,7 +29463,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.costTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.costTotal = copyer(oldData.costTotal);
+    },
   ),
   "customField1": (
     getter: (data) => data.customField1,
@@ -23848,7 +29479,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField1 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField1 = copyer(oldData.customField1);
+    },
   ),
   "customField2": (
     getter: (data) => data.customField2,
@@ -23860,7 +29495,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField2 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField2 = copyer(oldData.customField2);
+    },
   ),
   "customField3": (
     getter: (data) => data.customField3,
@@ -23872,7 +29511,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField3 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField3 = copyer(oldData.customField3);
+    },
   ),
   "customField4": (
     getter: (data) => data.customField4,
@@ -23884,7 +29527,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField4 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField4 = copyer(oldData.customField4);
+    },
   ),
   "customField5": (
     getter: (data) => data.customField5,
@@ -23896,7 +29543,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField5 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField5 = copyer(oldData.customField5);
+    },
   ),
   "customField6": (
     getter: (data) => data.customField6,
@@ -23908,7 +29559,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField6 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField6 = copyer(oldData.customField6);
+    },
   ),
   "customField7": (
     getter: (data) => data.customField7,
@@ -23920,7 +29575,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField7 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField7 = copyer(oldData.customField7);
+    },
   ),
   "customField8": (
     getter: (data) => data.customField8,
@@ -23932,7 +29591,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField8 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField8 = copyer(oldData.customField8);
+    },
   ),
   "discountPrice": (
     getter: (data) => data.discountPrice,
@@ -23944,7 +29607,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.discountPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.discountPrice = copyer(oldData.discountPrice);
+    },
   ),
   "discountTotal": (
     getter: (data) => data.discountTotal,
@@ -23956,7 +29623,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.discountTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.discountTotal = copyer(oldData.discountTotal);
+    },
   ),
   "doneExecuteAmount": (
     getter: (data) => data.doneExecuteAmount,
@@ -23968,7 +29639,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.doneExecuteAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.doneExecuteAmount = copyer(oldData.doneExecuteAmount);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -23980,7 +29655,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "image1": (
     getter: (data) => data.image1,
@@ -23992,7 +29671,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.image1 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.image1 = copyer(oldData.image1);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -24004,7 +29687,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "itemImageInfo1": (
     getter: (data) => data.itemImageInfo1,
@@ -24016,7 +29703,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = TypeImageInfo.fromDynamic;
       data.itemImageInfo1 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeImageInfo.deepCopy;
+      newData.itemImageInfo1 = copyer(oldData.itemImageInfo1);
+    },
   ),
   "itemModelRemark": (
     getter: (data) => data.itemModelRemark,
@@ -24028,7 +29719,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemModelRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemModelRemark = copyer(oldData.itemModelRemark);
+    },
   ),
   "itemName": (
     getter: (data) => data.itemName,
@@ -24040,7 +29735,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemName = copyer(oldData.itemName);
+    },
   ),
   "itemNumber": (
     getter: (data) => data.itemNumber,
@@ -24052,7 +29751,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemNumber = copyer(oldData.itemNumber);
+    },
   ),
   "itemSpecsRemark": (
     getter: (data) => data.itemSpecsRemark,
@@ -24064,7 +29767,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemSpecsRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemSpecsRemark = copyer(oldData.itemSpecsRemark);
+    },
   ),
   "itemStoreId": (
     getter: (data) => data.itemStoreId,
@@ -24076,7 +29783,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemStoreId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemStoreId = copyer(oldData.itemStoreId);
+    },
   ),
   "itemStoreName": (
     getter: (data) => data.itemStoreName,
@@ -24088,7 +29799,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemStoreName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemStoreName = copyer(oldData.itemStoreName);
+    },
   ),
   "itemsOrder": (
     getter: (data) => data.itemsOrder,
@@ -24100,7 +29815,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemsOrder = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemsOrder = copyer(oldData.itemsOrder);
+    },
   ),
   "orderContactId": (
     getter: (data) => data.orderContactId,
@@ -24112,7 +29831,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderContactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderContactId = copyer(oldData.orderContactId);
+    },
   ),
   "orderContactName": (
     getter: (data) => data.orderContactName,
@@ -24124,7 +29847,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderContactName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderContactName = copyer(oldData.orderContactName);
+    },
   ),
   "orderCustomField1": (
     getter: (data) => data.orderCustomField1,
@@ -24136,7 +29863,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderCustomField1 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderCustomField1 = copyer(oldData.orderCustomField1);
+    },
   ),
   "orderCustomField2": (
     getter: (data) => data.orderCustomField2,
@@ -24148,7 +29879,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderCustomField2 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderCustomField2 = copyer(oldData.orderCustomField2);
+    },
   ),
   "orderCustomField3": (
     getter: (data) => data.orderCustomField3,
@@ -24160,7 +29895,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderCustomField3 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderCustomField3 = copyer(oldData.orderCustomField3);
+    },
   ),
   "orderCustomField4": (
     getter: (data) => data.orderCustomField4,
@@ -24172,7 +29911,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderCustomField4 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderCustomField4 = copyer(oldData.orderCustomField4);
+    },
   ),
   "orderCustomField5": (
     getter: (data) => data.orderCustomField5,
@@ -24184,7 +29927,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderCustomField5 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderCustomField5 = copyer(oldData.orderCustomField5);
+    },
   ),
   "orderCustomField6": (
     getter: (data) => data.orderCustomField6,
@@ -24196,7 +29943,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderCustomField6 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderCustomField6 = copyer(oldData.orderCustomField6);
+    },
   ),
   "orderCustomField7": (
     getter: (data) => data.orderCustomField7,
@@ -24208,7 +29959,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderCustomField7 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderCustomField7 = copyer(oldData.orderCustomField7);
+    },
   ),
   "orderCustomField8": (
     getter: (data) => data.orderCustomField8,
@@ -24220,7 +29975,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderCustomField8 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderCustomField8 = copyer(oldData.orderCustomField8);
+    },
   ),
   "orderDate": (
     getter: (data) => data.orderDate,
@@ -24232,7 +29991,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDate = copyer(oldData.orderDate);
+    },
   ),
   "orderDrawEmployeeId": (
     getter: (data) => data.orderDrawEmployeeId,
@@ -24244,7 +30007,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderDrawEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderDrawEmployeeId = copyer(oldData.orderDrawEmployeeId);
+    },
   ),
   "orderDrawEmployeeName": (
     getter: (data) => data.orderDrawEmployeeName,
@@ -24256,7 +30023,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDrawEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDrawEmployeeName = copyer(oldData.orderDrawEmployeeName);
+    },
   ),
   "orderDrawTime": (
     getter: (data) => data.orderDrawTime,
@@ -24268,7 +30039,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDrawTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDrawTime = copyer(oldData.orderDrawTime);
+    },
   ),
   "orderEntryAccountEmployeeId": (
     getter: (data) => data.orderEntryAccountEmployeeId,
@@ -24280,7 +30055,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderEntryAccountEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderEntryAccountEmployeeId = copyer(oldData.orderEntryAccountEmployeeId);
+    },
   ),
   "orderEntryAccountEmployeeName": (
     getter: (data) => data.orderEntryAccountEmployeeName,
@@ -24292,7 +30071,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderEntryAccountEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderEntryAccountEmployeeName = copyer(oldData.orderEntryAccountEmployeeName);
+    },
   ),
   "orderEntryAccountTime": (
     getter: (data) => data.orderEntryAccountTime,
@@ -24304,7 +30087,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderEntryAccountTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderEntryAccountTime = copyer(oldData.orderEntryAccountTime);
+    },
   ),
   "orderHasStockExecute": (
     getter: (data) => data.orderHasStockExecute,
@@ -24316,7 +30103,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderHasStockExecute = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderHasStockExecute = copyer(oldData.orderHasStockExecute);
+    },
   ),
   "orderId": (
     getter: (data) => data.orderId,
@@ -24328,7 +30119,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderId = copyer(oldData.orderId);
+    },
   ),
   "orderInStoreId": (
     getter: (data) => data.orderInStoreId,
@@ -24340,7 +30135,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderInStoreId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderInStoreId = copyer(oldData.orderInStoreId);
+    },
   ),
   "orderInStoreName": (
     getter: (data) => data.orderInStoreName,
@@ -24352,7 +30151,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderInStoreName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderInStoreName = copyer(oldData.orderInStoreName);
+    },
   ),
   "orderManageEmployeeId": (
     getter: (data) => data.orderManageEmployeeId,
@@ -24364,7 +30167,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderManageEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderManageEmployeeId = copyer(oldData.orderManageEmployeeId);
+    },
   ),
   "orderManageEmployeeName": (
     getter: (data) => data.orderManageEmployeeName,
@@ -24376,7 +30183,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderManageEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderManageEmployeeName = copyer(oldData.orderManageEmployeeName);
+    },
   ),
   "orderNumber": (
     getter: (data) => data.orderNumber,
@@ -24388,7 +30199,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderNumber = copyer(oldData.orderNumber);
+    },
   ),
   "orderOutStoreId": (
     getter: (data) => data.orderOutStoreId,
@@ -24400,7 +30215,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderOutStoreId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderOutStoreId = copyer(oldData.orderOutStoreId);
+    },
   ),
   "orderOutStoreName": (
     getter: (data) => data.orderOutStoreName,
@@ -24412,7 +30231,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderOutStoreName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderOutStoreName = copyer(oldData.orderOutStoreName);
+    },
   ),
   "orderRedState": (
     getter: (data) => data.orderRedState,
@@ -24424,7 +30247,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderRedState.fromDynamic;
       data.orderRedState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderRedState.deepCopy;
+      newData.orderRedState = copyer(oldData.orderRedState);
+    },
   ),
   "orderRemark": (
     getter: (data) => data.orderRemark,
@@ -24436,7 +30263,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderRemark = copyer(oldData.orderRemark);
+    },
   ),
   "orderState": (
     getter: (data) => data.orderState,
@@ -24448,7 +30279,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderState.fromDynamic;
       data.orderState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderState.deepCopy;
+      newData.orderState = copyer(oldData.orderState);
+    },
   ),
   "orderSummaryRemark": (
     getter: (data) => data.orderSummaryRemark,
@@ -24460,7 +30295,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderSummaryRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderSummaryRemark = copyer(oldData.orderSummaryRemark);
+    },
   ),
   "orderTotal": (
     getter: (data) => data.orderTotal,
@@ -24472,7 +30311,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderTotal = copyer(oldData.orderTotal);
+    },
   ),
   "orderTotalAmount": (
     getter: (data) => data.orderTotalAmount,
@@ -24484,7 +30327,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderTotalAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderTotalAmount = copyer(oldData.orderTotalAmount);
+    },
   ),
   "orderType": (
     getter: (data) => data.orderType,
@@ -24496,7 +30343,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.orderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.orderType = copyer(oldData.orderType);
+    },
   ),
   "orderUndoneExecuteAmount": (
     getter: (data) => data.orderUndoneExecuteAmount,
@@ -24508,7 +30359,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderUndoneExecuteAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderUndoneExecuteAmount = copyer(oldData.orderUndoneExecuteAmount);
+    },
   ),
   "parentSourceOrderInfo": (
     getter: (data) => data.parentSourceOrderInfo,
@@ -24520,7 +30375,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.parentSourceOrderInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.parentSourceOrderInfo = copyer(oldData.parentSourceOrderInfo);
+    },
   ),
   "preTaxPrice": (
     getter: (data) => data.preTaxPrice,
@@ -24532,7 +30391,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.preTaxPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.preTaxPrice = copyer(oldData.preTaxPrice);
+    },
   ),
   "preTaxTotal": (
     getter: (data) => data.preTaxTotal,
@@ -24544,7 +30407,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.preTaxTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.preTaxTotal = copyer(oldData.preTaxTotal);
+    },
   ),
   "price": (
     getter: (data) => data.price,
@@ -24556,7 +30423,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.price = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.price = copyer(oldData.price);
+    },
   ),
   "profitRate": (
     getter: (data) => data.profitRate,
@@ -24568,7 +30439,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.profitRate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.profitRate = copyer(oldData.profitRate);
+    },
   ),
   "profitTotal": (
     getter: (data) => data.profitTotal,
@@ -24580,7 +30455,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.profitTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.profitTotal = copyer(oldData.profitTotal);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -24592,7 +30471,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "stockLocation": (
     getter: (data) => data.stockLocation,
@@ -24604,7 +30487,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockLocation = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockLocation = copyer(oldData.stockLocation);
+    },
   ),
   "tax": (
     getter: (data) => data.tax,
@@ -24616,7 +30503,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.tax = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.tax = copyer(oldData.tax);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -24628,7 +30519,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
   "undoneExecuteAmount": (
     getter: (data) => data.undoneExecuteAmount,
@@ -24640,7 +30535,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.undoneExecuteAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.undoneExecuteAmount = copyer(oldData.undoneExecuteAmount);
+    },
   ),
   "unitConvertAmount": (
     getter: (data) => data.unitConvertAmount,
@@ -24652,7 +30551,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.unitConvertAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.unitConvertAmount = copyer(oldData.unitConvertAmount);
+    },
   ),
   "unitConvertDesc": (
     getter: (data) => data.unitConvertDesc,
@@ -24664,7 +30567,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.unitConvertDesc = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.unitConvertDesc = copyer(oldData.unitConvertDesc);
+    },
   ),
   "unitId": (
     getter: (data) => data.unitId,
@@ -24676,7 +30583,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.unitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.unitId = copyer(oldData.unitId);
+    },
   ),
   "unitName": (
     getter: (data) => data.unitName,
@@ -24688,7 +30599,11 @@ final FieldReflectInfo<TypeOrderItemQueryDataDTO> _TypeOrderItemQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.unitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.unitName = copyer(oldData.unitName);
+    },
   ),
 };
 
@@ -24817,6 +30732,24 @@ class TypeOrderItemQueryDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderItemQueryDataDTO? deepCopy(TypeOrderItemQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderItemQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderItemQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderItemQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -25038,7 +30971,11 @@ final FieldReflectInfo<TypeOrderItemQuerySumDTO> _TypeOrderItemQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.amount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.amount = copyer(oldData.amount);
+    },
   ),
   "commonAmount": (
     getter: (data) => data.commonAmount,
@@ -25050,7 +30987,11 @@ final FieldReflectInfo<TypeOrderItemQuerySumDTO> _TypeOrderItemQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.commonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.commonAmount = copyer(oldData.commonAmount);
+    },
   ),
   "costTotal": (
     getter: (data) => data.costTotal,
@@ -25062,7 +31003,11 @@ final FieldReflectInfo<TypeOrderItemQuerySumDTO> _TypeOrderItemQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.costTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.costTotal = copyer(oldData.costTotal);
+    },
   ),
   "count": (
     getter: (data) => data.count,
@@ -25074,7 +31019,11 @@ final FieldReflectInfo<TypeOrderItemQuerySumDTO> _TypeOrderItemQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "discountTotal": (
     getter: (data) => data.discountTotal,
@@ -25086,7 +31035,11 @@ final FieldReflectInfo<TypeOrderItemQuerySumDTO> _TypeOrderItemQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.discountTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.discountTotal = copyer(oldData.discountTotal);
+    },
   ),
   "doneExecuteAmount": (
     getter: (data) => data.doneExecuteAmount,
@@ -25098,7 +31051,11 @@ final FieldReflectInfo<TypeOrderItemQuerySumDTO> _TypeOrderItemQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.doneExecuteAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.doneExecuteAmount = copyer(oldData.doneExecuteAmount);
+    },
   ),
   "draftOrderCount": (
     getter: (data) => data.draftOrderCount,
@@ -25110,7 +31067,11 @@ final FieldReflectInfo<TypeOrderItemQuerySumDTO> _TypeOrderItemQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.draftOrderCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.draftOrderCount = copyer(oldData.draftOrderCount);
+    },
   ),
   "feeTotal": (
     getter: (data) => data.feeTotal,
@@ -25122,7 +31083,11 @@ final FieldReflectInfo<TypeOrderItemQuerySumDTO> _TypeOrderItemQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.feeTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.feeTotal = copyer(oldData.feeTotal);
+    },
   ),
   "normalOrderCount": (
     getter: (data) => data.normalOrderCount,
@@ -25134,7 +31099,11 @@ final FieldReflectInfo<TypeOrderItemQuerySumDTO> _TypeOrderItemQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.normalOrderCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.normalOrderCount = copyer(oldData.normalOrderCount);
+    },
   ),
   "orderCount": (
     getter: (data) => data.orderCount,
@@ -25146,7 +31115,11 @@ final FieldReflectInfo<TypeOrderItemQuerySumDTO> _TypeOrderItemQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderCount = copyer(oldData.orderCount);
+    },
   ),
   "preTaxTotal": (
     getter: (data) => data.preTaxTotal,
@@ -25158,7 +31131,11 @@ final FieldReflectInfo<TypeOrderItemQuerySumDTO> _TypeOrderItemQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.preTaxTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.preTaxTotal = copyer(oldData.preTaxTotal);
+    },
   ),
   "profitRate": (
     getter: (data) => data.profitRate,
@@ -25170,7 +31147,11 @@ final FieldReflectInfo<TypeOrderItemQuerySumDTO> _TypeOrderItemQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.profitRate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.profitRate = copyer(oldData.profitRate);
+    },
   ),
   "profitTotal": (
     getter: (data) => data.profitTotal,
@@ -25182,7 +31163,11 @@ final FieldReflectInfo<TypeOrderItemQuerySumDTO> _TypeOrderItemQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.profitTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.profitTotal = copyer(oldData.profitTotal);
+    },
   ),
   "returnOrderCount": (
     getter: (data) => data.returnOrderCount,
@@ -25194,7 +31179,11 @@ final FieldReflectInfo<TypeOrderItemQuerySumDTO> _TypeOrderItemQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.returnOrderCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.returnOrderCount = copyer(oldData.returnOrderCount);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -25206,7 +31195,11 @@ final FieldReflectInfo<TypeOrderItemQuerySumDTO> _TypeOrderItemQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
   "undoneExecuteAmount": (
     getter: (data) => data.undoneExecuteAmount,
@@ -25218,7 +31211,11 @@ final FieldReflectInfo<TypeOrderItemQuerySumDTO> _TypeOrderItemQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.undoneExecuteAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.undoneExecuteAmount = copyer(oldData.undoneExecuteAmount);
+    },
   ),
 };
 
@@ -25282,6 +31279,24 @@ class TypeOrderItemQuerySumDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderItemQuerySumDTO? deepCopy(TypeOrderItemQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderItemQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderItemQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderItemQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -25361,7 +31376,11 @@ final FieldReflectInfo<TypeOrderItemRemain> _TypeOrderItemRemain_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.basicAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.basicAmount = copyer(oldData.basicAmount);
+    },
   ),
   "costTotal": (
     getter: (data) => data.costTotal,
@@ -25373,7 +31392,11 @@ final FieldReflectInfo<TypeOrderItemRemain> _TypeOrderItemRemain_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.costTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.costTotal = copyer(oldData.costTotal);
+    },
   ),
   "stockRemainId": (
     getter: (data) => data.stockRemainId,
@@ -25385,7 +31408,11 @@ final FieldReflectInfo<TypeOrderItemRemain> _TypeOrderItemRemain_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.stockRemainId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.stockRemainId = copyer(oldData.stockRemainId);
+    },
   ),
   "stockRemainType": (
     getter: (data) => data.stockRemainType,
@@ -25397,7 +31424,11 @@ final FieldReflectInfo<TypeOrderItemRemain> _TypeOrderItemRemain_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderOrderItemStockRemainType.fromDynamic;
       data.stockRemainType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderOrderItemStockRemainType.deepCopy;
+      newData.stockRemainType = copyer(oldData.stockRemainType);
+    },
   ),
 };
 
@@ -25451,6 +31482,24 @@ class TypeOrderItemRemain extends IDataBasic implements IDataDynamic {
     return toDynamic(this)!;
   }
 
+  static TypeOrderItemRemain? deepCopy(TypeOrderItemRemain? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderItemRemain();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderItemRemain_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderItemRemain copy() {
+    return deepCopy(this)!;
+  }
+
   @override
   String toString() {
     return encodeDynamic().toString();
@@ -25502,7 +31551,11 @@ final FieldReflectInfo<TypeOrderNumberAndInsertId> _TypeOrderNumberAndInsertId_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.insertUniqueId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.insertUniqueId = copyer(oldData.insertUniqueId);
+    },
   ),
   "number": (
     getter: (data) => data.number,
@@ -25514,7 +31567,11 @@ final FieldReflectInfo<TypeOrderNumberAndInsertId> _TypeOrderNumberAndInsertId_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.number = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.number = copyer(oldData.number);
+    },
   ),
 };
 
@@ -25564,6 +31621,24 @@ class TypeOrderNumberAndInsertId extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderNumberAndInsertId? deepCopy(TypeOrderNumberAndInsertId? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderNumberAndInsertId();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderNumberAndInsertId_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderNumberAndInsertId copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -25637,7 +31712,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.adpChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.adpChange = copyer(oldData.adpChange);
+    },
   ),
   "adrChange": (
     getter: (data) => data.adrChange,
@@ -25649,7 +31728,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.adrChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.adrChange = copyer(oldData.adrChange);
+    },
   ),
   "apChange": (
     getter: (data) => data.apChange,
@@ -25661,7 +31744,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.apChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.apChange = copyer(oldData.apChange);
+    },
   ),
   "arChange": (
     getter: (data) => data.arChange,
@@ -25673,7 +31760,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.arChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.arChange = copyer(oldData.arChange);
+    },
   ),
   "businessOrderId": (
     getter: (data) => data.businessOrderId,
@@ -25685,7 +31776,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.businessOrderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.businessOrderId = copyer(oldData.businessOrderId);
+    },
   ),
   "cashChange": (
     getter: (data) => data.cashChange,
@@ -25697,7 +31792,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.cashChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.cashChange = copyer(oldData.cashChange);
+    },
   ),
   "cashCreditChange": (
     getter: (data) => data.cashCreditChange,
@@ -25709,7 +31808,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.cashCreditChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.cashCreditChange = copyer(oldData.cashCreditChange);
+    },
   ),
   "cashDebitChange": (
     getter: (data) => data.cashDebitChange,
@@ -25721,7 +31824,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.cashDebitChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.cashDebitChange = copyer(oldData.cashDebitChange);
+    },
   ),
   "contactId": (
     getter: (data) => data.contactId,
@@ -25733,7 +31840,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactId = copyer(oldData.contactId);
+    },
   ),
   "discount": (
     getter: (data) => data.discount,
@@ -25745,7 +31856,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.discount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.discount = copyer(oldData.discount);
+    },
   ),
   "drawEmployeeId": (
     getter: (data) => data.drawEmployeeId,
@@ -25757,7 +31872,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.drawEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.drawEmployeeId = copyer(oldData.drawEmployeeId);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -25769,7 +31888,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "manageEmployeeId": (
     getter: (data) => data.manageEmployeeId,
@@ -25781,7 +31904,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.manageEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.manageEmployeeId = copyer(oldData.manageEmployeeId);
+    },
   ),
   "netProfit": (
     getter: (data) => data.netProfit,
@@ -25793,7 +31920,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.netProfit = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.netProfit = copyer(oldData.netProfit);
+    },
   ),
   "otherExpense": (
     getter: (data) => data.otherExpense,
@@ -25805,7 +31936,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.otherExpense = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.otherExpense = copyer(oldData.otherExpense);
+    },
   ),
   "otherIncome": (
     getter: (data) => data.otherIncome,
@@ -25817,7 +31952,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.otherIncome = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.otherIncome = copyer(oldData.otherIncome);
+    },
   ),
   "salesCost": (
     getter: (data) => data.salesCost,
@@ -25829,7 +31968,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.salesCost = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.salesCost = copyer(oldData.salesCost);
+    },
   ),
   "salesIncome": (
     getter: (data) => data.salesIncome,
@@ -25841,7 +31984,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.salesIncome = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.salesIncome = copyer(oldData.salesIncome);
+    },
   ),
   "salesProfit": (
     getter: (data) => data.salesProfit,
@@ -25853,7 +32000,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.salesProfit = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.salesProfit = copyer(oldData.salesProfit);
+    },
   ),
   "salesProfitRate": (
     getter: (data) => data.salesProfitRate,
@@ -25865,7 +32016,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.salesProfitRate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.salesProfitRate = copyer(oldData.salesProfitRate);
+    },
   ),
   "spendAdvancePayable": (
     getter: (data) => data.spendAdvancePayable,
@@ -25877,7 +32032,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.spendAdvancePayable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.spendAdvancePayable = copyer(oldData.spendAdvancePayable);
+    },
   ),
   "spendAdvanceReceivable": (
     getter: (data) => data.spendAdvanceReceivable,
@@ -25889,7 +32048,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.spendAdvanceReceivable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.spendAdvanceReceivable = copyer(oldData.spendAdvanceReceivable);
+    },
   ),
   "stockChange": (
     getter: (data) => data.stockChange,
@@ -25901,7 +32064,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockChange = copyer(oldData.stockChange);
+    },
   ),
   "stockCreditChange": (
     getter: (data) => data.stockCreditChange,
@@ -25913,7 +32080,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockCreditChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockCreditChange = copyer(oldData.stockCreditChange);
+    },
   ),
   "stockDebitChange": (
     getter: (data) => data.stockDebitChange,
@@ -25925,7 +32096,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockDebitChange = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockDebitChange = copyer(oldData.stockDebitChange);
+    },
   ),
   "storeId": (
     getter: (data) => data.storeId,
@@ -25937,7 +32112,11 @@ final FieldReflectInfo<TypeOrderProfitFlow> _TypeOrderProfitFlow_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.storeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.storeId = copyer(oldData.storeId);
+    },
   ),
 };
 
@@ -26011,6 +32190,24 @@ class TypeOrderProfitFlow extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderProfitFlow? deepCopy(TypeOrderProfitFlow? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderProfitFlow();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderProfitFlow_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderProfitFlow copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -26116,7 +32313,14 @@ final FieldReflectInfo<TypeOrderQueryDTO> _TypeOrderQueryDTO_fields = {
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderQueryDataDTO>((single){
+        final handler = TypeOrderQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -26128,7 +32332,11 @@ final FieldReflectInfo<TypeOrderQueryDTO> _TypeOrderQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -26140,7 +32348,11 @@ final FieldReflectInfo<TypeOrderQueryDTO> _TypeOrderQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -26152,7 +32364,11 @@ final FieldReflectInfo<TypeOrderQueryDTO> _TypeOrderQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = TypeOrderQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeOrderQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -26204,6 +32420,24 @@ class TypeOrderQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderQueryDTO? deepCopy(TypeOrderQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -26330,7 +32564,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.accountDocumentOrderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.accountDocumentOrderId = copyer(oldData.accountDocumentOrderId);
+    },
   ),
   "billTotal": (
     getter: (data) => data.billTotal,
@@ -26342,7 +32580,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.billTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.billTotal = copyer(oldData.billTotal);
+    },
   ),
   "billType": (
     getter: (data) => data.billType,
@@ -26354,7 +32596,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderBillType.fromDynamic;
       data.billType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderBillType.deepCopy;
+      newData.billType = copyer(oldData.billType);
+    },
   ),
   "bomCostTotal": (
     getter: (data) => data.bomCostTotal,
@@ -26366,7 +32612,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.bomCostTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.bomCostTotal = copyer(oldData.bomCostTotal);
+    },
   ),
   "bomTotal": (
     getter: (data) => data.bomTotal,
@@ -26378,7 +32628,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.bomTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.bomTotal = copyer(oldData.bomTotal);
+    },
   ),
   "contactId": (
     getter: (data) => data.contactId,
@@ -26390,7 +32644,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactId = copyer(oldData.contactId);
+    },
   ),
   "contactName": (
     getter: (data) => data.contactName,
@@ -26402,7 +32660,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactName = copyer(oldData.contactName);
+    },
   ),
   "contactPersonAddress": (
     getter: (data) => data.contactPersonAddress,
@@ -26414,7 +32676,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactPersonAddress = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactPersonAddress = copyer(oldData.contactPersonAddress);
+    },
   ),
   "contactPersonName": (
     getter: (data) => data.contactPersonName,
@@ -26426,7 +32692,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactPersonName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactPersonName = copyer(oldData.contactPersonName);
+    },
   ),
   "contactPersonPhone": (
     getter: (data) => data.contactPersonPhone,
@@ -26438,7 +32708,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactPersonPhone = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactPersonPhone = copyer(oldData.contactPersonPhone);
+    },
   ),
   "costTotal": (
     getter: (data) => data.costTotal,
@@ -26450,7 +32724,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.costTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.costTotal = copyer(oldData.costTotal);
+    },
   ),
   "customField1": (
     getter: (data) => data.customField1,
@@ -26462,7 +32740,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField1 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField1 = copyer(oldData.customField1);
+    },
   ),
   "customField2": (
     getter: (data) => data.customField2,
@@ -26474,7 +32756,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField2 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField2 = copyer(oldData.customField2);
+    },
   ),
   "customField3": (
     getter: (data) => data.customField3,
@@ -26486,7 +32772,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField3 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField3 = copyer(oldData.customField3);
+    },
   ),
   "customField4": (
     getter: (data) => data.customField4,
@@ -26498,7 +32788,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField4 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField4 = copyer(oldData.customField4);
+    },
   ),
   "customField5": (
     getter: (data) => data.customField5,
@@ -26510,7 +32804,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField5 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField5 = copyer(oldData.customField5);
+    },
   ),
   "customField6": (
     getter: (data) => data.customField6,
@@ -26522,7 +32820,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField6 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField6 = copyer(oldData.customField6);
+    },
   ),
   "customField7": (
     getter: (data) => data.customField7,
@@ -26534,7 +32836,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField7 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField7 = copyer(oldData.customField7);
+    },
   ),
   "customField8": (
     getter: (data) => data.customField8,
@@ -26546,7 +32852,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.customField8 = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.customField8 = copyer(oldData.customField8);
+    },
   ),
   "discountTotal": (
     getter: (data) => data.discountTotal,
@@ -26558,7 +32868,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.discountTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.discountTotal = copyer(oldData.discountTotal);
+    },
   ),
   "documentType": (
     getter: (data) => data.documentType,
@@ -26570,7 +32884,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderDocumentType.fromDynamic;
       data.documentType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderDocumentType.deepCopy;
+      newData.documentType = copyer(oldData.documentType);
+    },
   ),
   "doneBillTotal": (
     getter: (data) => data.doneBillTotal,
@@ -26582,7 +32900,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.doneBillTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.doneBillTotal = copyer(oldData.doneBillTotal);
+    },
   ),
   "doneExecuteAmount": (
     getter: (data) => data.doneExecuteAmount,
@@ -26594,7 +32916,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.doneExecuteAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.doneExecuteAmount = copyer(oldData.doneExecuteAmount);
+    },
   ),
   "drawEmployeeId": (
     getter: (data) => data.drawEmployeeId,
@@ -26606,7 +32932,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.drawEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.drawEmployeeId = copyer(oldData.drawEmployeeId);
+    },
   ),
   "drawEmployeeName": (
     getter: (data) => data.drawEmployeeName,
@@ -26618,7 +32948,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.drawEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.drawEmployeeName = copyer(oldData.drawEmployeeName);
+    },
   ),
   "drawTime": (
     getter: (data) => data.drawTime,
@@ -26630,7 +32964,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.drawTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.drawTime = copyer(oldData.drawTime);
+    },
   ),
   "entryAccountEmployeeId": (
     getter: (data) => data.entryAccountEmployeeId,
@@ -26642,7 +32980,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.entryAccountEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.entryAccountEmployeeId = copyer(oldData.entryAccountEmployeeId);
+    },
   ),
   "entryAccountEmployeeName": (
     getter: (data) => data.entryAccountEmployeeName,
@@ -26654,7 +32996,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.entryAccountEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.entryAccountEmployeeName = copyer(oldData.entryAccountEmployeeName);
+    },
   ),
   "entryAccountTime": (
     getter: (data) => data.entryAccountTime,
@@ -26666,7 +33012,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.entryAccountTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.entryAccountTime = copyer(oldData.entryAccountTime);
+    },
   ),
   "feeTotal": (
     getter: (data) => data.feeTotal,
@@ -26678,7 +33028,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.feeTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.feeTotal = copyer(oldData.feeTotal);
+    },
   ),
   "hasBeenIssued": (
     getter: (data) => data.hasBeenIssued,
@@ -26690,7 +33044,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasBeenIssued = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasBeenIssued = copyer(oldData.hasBeenIssued);
+    },
   ),
   "hasBeenPurchased": (
     getter: (data) => data.hasBeenPurchased,
@@ -26702,7 +33060,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasBeenPurchased = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasBeenPurchased = copyer(oldData.hasBeenPurchased);
+    },
   ),
   "hasBeenUsed": (
     getter: (data) => data.hasBeenUsed,
@@ -26714,7 +33076,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasBeenUsed = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasBeenUsed = copyer(oldData.hasBeenUsed);
+    },
   ),
   "hasFinishBill": (
     getter: (data) => data.hasFinishBill,
@@ -26726,7 +33092,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasFinishBill = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasFinishBill = copyer(oldData.hasFinishBill);
+    },
   ),
   "hasStockExecute": (
     getter: (data) => data.hasStockExecute,
@@ -26738,7 +33108,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasStockExecute = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasStockExecute = copyer(oldData.hasStockExecute);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -26750,7 +33124,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "inStoreId": (
     getter: (data) => data.inStoreId,
@@ -26762,7 +33140,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.inStoreId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.inStoreId = copyer(oldData.inStoreId);
+    },
   ),
   "inStoreName": (
     getter: (data) => data.inStoreName,
@@ -26774,7 +33156,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.inStoreName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.inStoreName = copyer(oldData.inStoreName);
+    },
   ),
   "manageEmployeeId": (
     getter: (data) => data.manageEmployeeId,
@@ -26786,7 +33172,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.manageEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.manageEmployeeId = copyer(oldData.manageEmployeeId);
+    },
   ),
   "manageEmployeeName": (
     getter: (data) => data.manageEmployeeName,
@@ -26798,7 +33188,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.manageEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.manageEmployeeName = copyer(oldData.manageEmployeeName);
+    },
   ),
   "number": (
     getter: (data) => data.number,
@@ -26810,7 +33204,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.number = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.number = copyer(oldData.number);
+    },
   ),
   "orderDate": (
     getter: (data) => data.orderDate,
@@ -26822,7 +33220,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDate = copyer(oldData.orderDate);
+    },
   ),
   "outStoreId": (
     getter: (data) => data.outStoreId,
@@ -26834,7 +33236,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.outStoreId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.outStoreId = copyer(oldData.outStoreId);
+    },
   ),
   "outStoreName": (
     getter: (data) => data.outStoreName,
@@ -26846,7 +33252,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.outStoreName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.outStoreName = copyer(oldData.outStoreName);
+    },
   ),
   "payCashAccountId": (
     getter: (data) => data.payCashAccountId,
@@ -26858,7 +33268,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.payCashAccountId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.payCashAccountId = copyer(oldData.payCashAccountId);
+    },
   ),
   "payCashAccountName": (
     getter: (data) => data.payCashAccountName,
@@ -26870,7 +33284,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.payCashAccountName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.payCashAccountName = copyer(oldData.payCashAccountName);
+    },
   ),
   "payCashTotal": (
     getter: (data) => data.payCashTotal,
@@ -26882,7 +33300,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.payCashTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.payCashTotal = copyer(oldData.payCashTotal);
+    },
   ),
   "payDiscount": (
     getter: (data) => data.payDiscount,
@@ -26894,7 +33316,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.payDiscount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.payDiscount = copyer(oldData.payDiscount);
+    },
   ),
   "preTaxTotal": (
     getter: (data) => data.preTaxTotal,
@@ -26906,7 +33332,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.preTaxTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.preTaxTotal = copyer(oldData.preTaxTotal);
+    },
   ),
   "printTimes": (
     getter: (data) => data.printTimes,
@@ -26918,7 +33348,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.printTimes = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.printTimes = copyer(oldData.printTimes);
+    },
   ),
   "profitRate": (
     getter: (data) => data.profitRate,
@@ -26930,7 +33364,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.profitRate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.profitRate = copyer(oldData.profitRate);
+    },
   ),
   "profitTotal": (
     getter: (data) => data.profitTotal,
@@ -26942,7 +33380,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.profitTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.profitTotal = copyer(oldData.profitTotal);
+    },
   ),
   "receiveCashAccountId": (
     getter: (data) => data.receiveCashAccountId,
@@ -26954,7 +33396,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.receiveCashAccountId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.receiveCashAccountId = copyer(oldData.receiveCashAccountId);
+    },
   ),
   "receiveCashAccountName": (
     getter: (data) => data.receiveCashAccountName,
@@ -26966,7 +33412,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.receiveCashAccountName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.receiveCashAccountName = copyer(oldData.receiveCashAccountName);
+    },
   ),
   "receiveCashTotal": (
     getter: (data) => data.receiveCashTotal,
@@ -26978,7 +33428,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.receiveCashTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.receiveCashTotal = copyer(oldData.receiveCashTotal);
+    },
   ),
   "receiveDiscount": (
     getter: (data) => data.receiveDiscount,
@@ -26990,7 +33444,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.receiveDiscount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.receiveDiscount = copyer(oldData.receiveDiscount);
+    },
   ),
   "redReverseOrderId": (
     getter: (data) => data.redReverseOrderId,
@@ -27002,7 +33460,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.redReverseOrderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.redReverseOrderId = copyer(oldData.redReverseOrderId);
+    },
   ),
   "redState": (
     getter: (data) => data.redState,
@@ -27014,7 +33476,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderRedState.fromDynamic;
       data.redState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderRedState.deepCopy;
+      newData.redState = copyer(oldData.redState);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -27026,7 +33492,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "sourceOrderInfo": (
     getter: (data) => data.sourceOrderInfo,
@@ -27038,7 +33508,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.sourceOrderInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.sourceOrderInfo = copyer(oldData.sourceOrderInfo);
+    },
   ),
   "spendAdvancePayable": (
     getter: (data) => data.spendAdvancePayable,
@@ -27050,7 +33524,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.spendAdvancePayable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.spendAdvancePayable = copyer(oldData.spendAdvancePayable);
+    },
   ),
   "spendAdvanceReceivable": (
     getter: (data) => data.spendAdvanceReceivable,
@@ -27062,7 +33540,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.spendAdvanceReceivable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.spendAdvanceReceivable = copyer(oldData.spendAdvanceReceivable);
+    },
   ),
   "state": (
     getter: (data) => data.state,
@@ -27074,7 +33556,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderState.fromDynamic;
       data.state = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderState.deepCopy;
+      newData.state = copyer(oldData.state);
+    },
   ),
   "storeId": (
     getter: (data) => data.storeId,
@@ -27086,7 +33572,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.storeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.storeId = copyer(oldData.storeId);
+    },
   ),
   "storeName": (
     getter: (data) => data.storeName,
@@ -27098,7 +33588,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.storeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.storeName = copyer(oldData.storeName);
+    },
   ),
   "subType": (
     getter: (data) => data.subType,
@@ -27110,7 +33604,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderSubType.fromDynamic;
       data.subType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderSubType.deepCopy;
+      newData.subType = copyer(oldData.subType);
+    },
   ),
   "summaryRemark": (
     getter: (data) => data.summaryRemark,
@@ -27122,7 +33620,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.summaryRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.summaryRemark = copyer(oldData.summaryRemark);
+    },
   ),
   "targetOrderInfo": (
     getter: (data) => data.targetOrderInfo,
@@ -27134,7 +33636,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.targetOrderInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.targetOrderInfo = copyer(oldData.targetOrderInfo);
+    },
   ),
   "tax": (
     getter: (data) => data.tax,
@@ -27146,7 +33652,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.tax = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.tax = copyer(oldData.tax);
+    },
   ),
   "taxOnlyTotal": (
     getter: (data) => data.taxOnlyTotal,
@@ -27158,7 +33668,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.taxOnlyTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.taxOnlyTotal = copyer(oldData.taxOnlyTotal);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -27170,7 +33684,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
   "totalAmount": (
     getter: (data) => data.totalAmount,
@@ -27182,7 +33700,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.totalAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.totalAmount = copyer(oldData.totalAmount);
+    },
   ),
   "type": (
     getter: (data) => data.type,
@@ -27194,7 +33716,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.type = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.type = copyer(oldData.type);
+    },
   ),
   "undoneBillTotal": (
     getter: (data) => data.undoneBillTotal,
@@ -27206,7 +33732,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.undoneBillTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.undoneBillTotal = copyer(oldData.undoneBillTotal);
+    },
   ),
   "undoneExecuteAmount": (
     getter: (data) => data.undoneExecuteAmount,
@@ -27218,7 +33748,11 @@ final FieldReflectInfo<TypeOrderQueryDataDTO> _TypeOrderQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.undoneExecuteAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.undoneExecuteAmount = copyer(oldData.undoneExecuteAmount);
+    },
   ),
 };
 
@@ -27341,6 +33875,24 @@ class TypeOrderQueryDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderQueryDataDTO? deepCopy(TypeOrderQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -27555,7 +34107,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.billTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.billTotal = copyer(oldData.billTotal);
+    },
   ),
   "costTotal": (
     getter: (data) => data.costTotal,
@@ -27567,7 +34123,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.costTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.costTotal = copyer(oldData.costTotal);
+    },
   ),
   "count": (
     getter: (data) => data.count,
@@ -27579,7 +34139,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "discountTotal": (
     getter: (data) => data.discountTotal,
@@ -27591,7 +34155,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.discountTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.discountTotal = copyer(oldData.discountTotal);
+    },
   ),
   "doneBillTotal": (
     getter: (data) => data.doneBillTotal,
@@ -27603,7 +34171,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.doneBillTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.doneBillTotal = copyer(oldData.doneBillTotal);
+    },
   ),
   "doneExecuteAmount": (
     getter: (data) => data.doneExecuteAmount,
@@ -27615,7 +34187,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.doneExecuteAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.doneExecuteAmount = copyer(oldData.doneExecuteAmount);
+    },
   ),
   "hasFinishBillCount": (
     getter: (data) => data.hasFinishBillCount,
@@ -27627,7 +34203,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasFinishBillCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasFinishBillCount = copyer(oldData.hasFinishBillCount);
+    },
   ),
   "hasNotFinishBillCount": (
     getter: (data) => data.hasNotFinishBillCount,
@@ -27639,7 +34219,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasNotFinishBillCount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasNotFinishBillCount = copyer(oldData.hasNotFinishBillCount);
+    },
   ),
   "payCashTotal": (
     getter: (data) => data.payCashTotal,
@@ -27651,7 +34235,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.payCashTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.payCashTotal = copyer(oldData.payCashTotal);
+    },
   ),
   "payDiscount": (
     getter: (data) => data.payDiscount,
@@ -27663,7 +34251,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.payDiscount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.payDiscount = copyer(oldData.payDiscount);
+    },
   ),
   "preTaxTotal": (
     getter: (data) => data.preTaxTotal,
@@ -27675,7 +34267,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.preTaxTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.preTaxTotal = copyer(oldData.preTaxTotal);
+    },
   ),
   "profitRate": (
     getter: (data) => data.profitRate,
@@ -27687,7 +34283,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.profitRate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.profitRate = copyer(oldData.profitRate);
+    },
   ),
   "profitTotal": (
     getter: (data) => data.profitTotal,
@@ -27699,7 +34299,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.profitTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.profitTotal = copyer(oldData.profitTotal);
+    },
   ),
   "receiveCashTotal": (
     getter: (data) => data.receiveCashTotal,
@@ -27711,7 +34315,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.receiveCashTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.receiveCashTotal = copyer(oldData.receiveCashTotal);
+    },
   ),
   "receiveDiscount": (
     getter: (data) => data.receiveDiscount,
@@ -27723,7 +34331,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.receiveDiscount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.receiveDiscount = copyer(oldData.receiveDiscount);
+    },
   ),
   "spendAdvancePayable": (
     getter: (data) => data.spendAdvancePayable,
@@ -27735,7 +34347,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.spendAdvancePayable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.spendAdvancePayable = copyer(oldData.spendAdvancePayable);
+    },
   ),
   "spendAdvanceReceivable": (
     getter: (data) => data.spendAdvanceReceivable,
@@ -27747,7 +34363,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.spendAdvanceReceivable = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.spendAdvanceReceivable = copyer(oldData.spendAdvanceReceivable);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -27759,7 +34379,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
   "totalAmount": (
     getter: (data) => data.totalAmount,
@@ -27771,7 +34395,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.totalAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.totalAmount = copyer(oldData.totalAmount);
+    },
   ),
   "undoneBillTotal": (
     getter: (data) => data.undoneBillTotal,
@@ -27783,7 +34411,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.undoneBillTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.undoneBillTotal = copyer(oldData.undoneBillTotal);
+    },
   ),
   "undoneExecuteAmount": (
     getter: (data) => data.undoneExecuteAmount,
@@ -27795,7 +34427,11 @@ final FieldReflectInfo<TypeOrderQuerySumDTO> _TypeOrderQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.undoneExecuteAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.undoneExecuteAmount = copyer(oldData.undoneExecuteAmount);
+    },
   ),
 };
 
@@ -27864,6 +34500,24 @@ class TypeOrderQuerySumDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderQuerySumDTO? deepCopy(TypeOrderQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -27952,7 +34606,11 @@ final FieldReflectInfo<TypeOrderSourceOrderItem> _TypeOrderSourceOrderItem_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderId = copyer(oldData.orderId);
+    },
   ),
   "orderNumber": (
     getter: (data) => data.orderNumber,
@@ -27964,7 +34622,11 @@ final FieldReflectInfo<TypeOrderSourceOrderItem> _TypeOrderSourceOrderItem_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderNumber = copyer(oldData.orderNumber);
+    },
   ),
   "orderType": (
     getter: (data) => data.orderType,
@@ -27976,7 +34638,11 @@ final FieldReflectInfo<TypeOrderSourceOrderItem> _TypeOrderSourceOrderItem_field
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.orderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.orderType = copyer(oldData.orderType);
+    },
   ),
 };
 
@@ -28027,6 +34693,24 @@ class TypeOrderSourceOrderItem extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderSourceOrderItem? deepCopy(TypeOrderSourceOrderItem? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderSourceOrderItem();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderSourceOrderItem_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderSourceOrderItem copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -28087,7 +34771,11 @@ final FieldReflectInfo<TypeOrderSubOrder> _TypeOrderSubOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.billTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.billTotal = copyer(oldData.billTotal);
+    },
   ),
   "discountBill": (
     getter: (data) => data.discountBill,
@@ -28099,7 +34787,11 @@ final FieldReflectInfo<TypeOrderSubOrder> _TypeOrderSubOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.discountBill = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.discountBill = copyer(oldData.discountBill);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -28111,7 +34803,11 @@ final FieldReflectInfo<TypeOrderSubOrder> _TypeOrderSubOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "moneyBill": (
     getter: (data) => data.moneyBill,
@@ -28123,7 +34819,11 @@ final FieldReflectInfo<TypeOrderSubOrder> _TypeOrderSubOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.moneyBill = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.moneyBill = copyer(oldData.moneyBill);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -28135,7 +34835,11 @@ final FieldReflectInfo<TypeOrderSubOrder> _TypeOrderSubOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "subOrderBillType": (
     getter: (data) => data.subOrderBillType,
@@ -28147,7 +34851,11 @@ final FieldReflectInfo<TypeOrderSubOrder> _TypeOrderSubOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderBillType.fromDynamic;
       data.subOrderBillType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderBillType.deepCopy;
+      newData.subOrderBillType = copyer(oldData.subOrderBillType);
+    },
   ),
   "subOrderContactId": (
     getter: (data) => data.subOrderContactId,
@@ -28159,7 +34867,11 @@ final FieldReflectInfo<TypeOrderSubOrder> _TypeOrderSubOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.subOrderContactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.subOrderContactId = copyer(oldData.subOrderContactId);
+    },
   ),
   "subOrderId": (
     getter: (data) => data.subOrderId,
@@ -28171,7 +34883,11 @@ final FieldReflectInfo<TypeOrderSubOrder> _TypeOrderSubOrder_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.subOrderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.subOrderId = copyer(oldData.subOrderId);
+    },
   ),
   "subOrderInfo": (
     getter: (data) => data.subOrderInfo,
@@ -28183,7 +34899,11 @@ final FieldReflectInfo<TypeOrderSubOrder> _TypeOrderSubOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeAutoInjectLiteOrder.fromDynamic;
       data.subOrderInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeAutoInjectLiteOrder.deepCopy;
+      newData.subOrderInfo = copyer(oldData.subOrderInfo);
+    },
   ),
   "subOrderNumber": (
     getter: (data) => data.subOrderNumber,
@@ -28195,7 +34915,11 @@ final FieldReflectInfo<TypeOrderSubOrder> _TypeOrderSubOrder_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.subOrderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.subOrderNumber = copyer(oldData.subOrderNumber);
+    },
   ),
   "subOrderType": (
     getter: (data) => data.subOrderType,
@@ -28207,7 +34931,11 @@ final FieldReflectInfo<TypeOrderSubOrder> _TypeOrderSubOrder_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.subOrderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.subOrderType = copyer(oldData.subOrderType);
+    },
   ),
 };
 
@@ -28266,6 +34994,24 @@ class TypeOrderSubOrder extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderSubOrder? deepCopy(TypeOrderSubOrder? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderSubOrder();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderSubOrder_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderSubOrder copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -28341,7 +35087,14 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDTO> _TypeOrderSubOrderQueryDTO_fie
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOrderSubOrderQueryDataDTO>((single){
+        final handler = TypeOrderSubOrderQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -28353,7 +35106,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDTO> _TypeOrderSubOrderQueryDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -28365,7 +35122,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDTO> _TypeOrderSubOrderQueryDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -28377,7 +35138,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDTO> _TypeOrderSubOrderQueryDTO_fie
     fromDynamic: (data, value) {
       final parser = TypeOrderSubOrderQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeOrderSubOrderQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -28429,6 +35194,24 @@ class TypeOrderSubOrderQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderSubOrderQueryDTO? deepCopy(TypeOrderSubOrderQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderSubOrderQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderSubOrderQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderSubOrderQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -28515,7 +35298,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.billTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.billTotal = copyer(oldData.billTotal);
+    },
   ),
   "discountBill": (
     getter: (data) => data.discountBill,
@@ -28527,7 +35314,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.discountBill = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.discountBill = copyer(oldData.discountBill);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -28539,7 +35330,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "moneyBill": (
     getter: (data) => data.moneyBill,
@@ -28551,7 +35346,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.moneyBill = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.moneyBill = copyer(oldData.moneyBill);
+    },
   ),
   "orderBillType": (
     getter: (data) => data.orderBillType,
@@ -28563,7 +35362,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderBillType.fromDynamic;
       data.orderBillType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderBillType.deepCopy;
+      newData.orderBillType = copyer(oldData.orderBillType);
+    },
   ),
   "orderContactId": (
     getter: (data) => data.orderContactId,
@@ -28575,7 +35378,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderContactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderContactId = copyer(oldData.orderContactId);
+    },
   ),
   "orderContactName": (
     getter: (data) => data.orderContactName,
@@ -28587,7 +35394,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderContactName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderContactName = copyer(oldData.orderContactName);
+    },
   ),
   "orderDate": (
     getter: (data) => data.orderDate,
@@ -28599,7 +35410,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDate = copyer(oldData.orderDate);
+    },
   ),
   "orderDrawEmployeeId": (
     getter: (data) => data.orderDrawEmployeeId,
@@ -28611,7 +35426,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderDrawEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderDrawEmployeeId = copyer(oldData.orderDrawEmployeeId);
+    },
   ),
   "orderDrawEmployeeName": (
     getter: (data) => data.orderDrawEmployeeName,
@@ -28623,7 +35442,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDrawEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDrawEmployeeName = copyer(oldData.orderDrawEmployeeName);
+    },
   ),
   "orderDrawTime": (
     getter: (data) => data.orderDrawTime,
@@ -28635,7 +35458,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDrawTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDrawTime = copyer(oldData.orderDrawTime);
+    },
   ),
   "orderEntryAccountEmployeeId": (
     getter: (data) => data.orderEntryAccountEmployeeId,
@@ -28647,7 +35474,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderEntryAccountEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderEntryAccountEmployeeId = copyer(oldData.orderEntryAccountEmployeeId);
+    },
   ),
   "orderEntryAccountEmployeeName": (
     getter: (data) => data.orderEntryAccountEmployeeName,
@@ -28659,7 +35490,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderEntryAccountEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderEntryAccountEmployeeName = copyer(oldData.orderEntryAccountEmployeeName);
+    },
   ),
   "orderEntryAccountTime": (
     getter: (data) => data.orderEntryAccountTime,
@@ -28671,7 +35506,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderEntryAccountTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderEntryAccountTime = copyer(oldData.orderEntryAccountTime);
+    },
   ),
   "orderId": (
     getter: (data) => data.orderId,
@@ -28683,7 +35522,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderId = copyer(oldData.orderId);
+    },
   ),
   "orderManageEmployeeId": (
     getter: (data) => data.orderManageEmployeeId,
@@ -28695,7 +35538,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderManageEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderManageEmployeeId = copyer(oldData.orderManageEmployeeId);
+    },
   ),
   "orderManageEmployeeName": (
     getter: (data) => data.orderManageEmployeeName,
@@ -28707,7 +35554,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderManageEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderManageEmployeeName = copyer(oldData.orderManageEmployeeName);
+    },
   ),
   "orderNumber": (
     getter: (data) => data.orderNumber,
@@ -28719,7 +35570,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderNumber = copyer(oldData.orderNumber);
+    },
   ),
   "orderPayCashAccountId": (
     getter: (data) => data.orderPayCashAccountId,
@@ -28731,7 +35586,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderPayCashAccountId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderPayCashAccountId = copyer(oldData.orderPayCashAccountId);
+    },
   ),
   "orderPayCashAccountName": (
     getter: (data) => data.orderPayCashAccountName,
@@ -28743,7 +35602,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderPayCashAccountName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderPayCashAccountName = copyer(oldData.orderPayCashAccountName);
+    },
   ),
   "orderReceiveCashAccountId": (
     getter: (data) => data.orderReceiveCashAccountId,
@@ -28755,7 +35618,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderReceiveCashAccountId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderReceiveCashAccountId = copyer(oldData.orderReceiveCashAccountId);
+    },
   ),
   "orderReceiveCashAccountName": (
     getter: (data) => data.orderReceiveCashAccountName,
@@ -28767,7 +35634,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderReceiveCashAccountName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderReceiveCashAccountName = copyer(oldData.orderReceiveCashAccountName);
+    },
   ),
   "orderRedState": (
     getter: (data) => data.orderRedState,
@@ -28779,7 +35650,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderRedState.fromDynamic;
       data.orderRedState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderRedState.deepCopy;
+      newData.orderRedState = copyer(oldData.orderRedState);
+    },
   ),
   "orderRemark": (
     getter: (data) => data.orderRemark,
@@ -28791,7 +35666,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderRemark = copyer(oldData.orderRemark);
+    },
   ),
   "orderState": (
     getter: (data) => data.orderState,
@@ -28803,7 +35682,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderState.fromDynamic;
       data.orderState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderState.deepCopy;
+      newData.orderState = copyer(oldData.orderState);
+    },
   ),
   "orderType": (
     getter: (data) => data.orderType,
@@ -28815,7 +35698,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.orderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.orderType = copyer(oldData.orderType);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -28827,7 +35714,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "subOrderBillTotal": (
     getter: (data) => data.subOrderBillTotal,
@@ -28839,7 +35730,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.subOrderBillTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.subOrderBillTotal = copyer(oldData.subOrderBillTotal);
+    },
   ),
   "subOrderDoneBillTotal": (
     getter: (data) => data.subOrderDoneBillTotal,
@@ -28851,7 +35746,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.subOrderDoneBillTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.subOrderDoneBillTotal = copyer(oldData.subOrderDoneBillTotal);
+    },
   ),
   "subOrderId": (
     getter: (data) => data.subOrderId,
@@ -28863,7 +35762,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.subOrderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.subOrderId = copyer(oldData.subOrderId);
+    },
   ),
   "subOrderNumber": (
     getter: (data) => data.subOrderNumber,
@@ -28875,7 +35778,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.subOrderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.subOrderNumber = copyer(oldData.subOrderNumber);
+    },
   ),
   "subOrderStoreId": (
     getter: (data) => data.subOrderStoreId,
@@ -28887,7 +35794,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.subOrderStoreId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.subOrderStoreId = copyer(oldData.subOrderStoreId);
+    },
   ),
   "subOrderStoreName": (
     getter: (data) => data.subOrderStoreName,
@@ -28899,7 +35810,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.subOrderStoreName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.subOrderStoreName = copyer(oldData.subOrderStoreName);
+    },
   ),
   "subOrderType": (
     getter: (data) => data.subOrderType,
@@ -28911,7 +35826,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.subOrderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.subOrderType = copyer(oldData.subOrderType);
+    },
   ),
   "subOrderUnDoneBillTotal": (
     getter: (data) => data.subOrderUnDoneBillTotal,
@@ -28923,7 +35842,11 @@ final FieldReflectInfo<TypeOrderSubOrderQueryDataDTO> _TypeOrderSubOrderQueryDat
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.subOrderUnDoneBillTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.subOrderUnDoneBillTotal = copyer(oldData.subOrderUnDoneBillTotal);
+    },
   ),
 };
 
@@ -29006,6 +35929,24 @@ class TypeOrderSubOrderQueryDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderSubOrderQueryDataDTO? deepCopy(TypeOrderSubOrderQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderSubOrderQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderSubOrderQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderSubOrderQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -29123,7 +36064,11 @@ final FieldReflectInfo<TypeOrderSubOrderQuerySumDTO> _TypeOrderSubOrderQuerySumD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.billTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.billTotal = copyer(oldData.billTotal);
+    },
   ),
   "count": (
     getter: (data) => data.count,
@@ -29135,7 +36080,11 @@ final FieldReflectInfo<TypeOrderSubOrderQuerySumDTO> _TypeOrderSubOrderQuerySumD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "discountBill": (
     getter: (data) => data.discountBill,
@@ -29147,7 +36096,11 @@ final FieldReflectInfo<TypeOrderSubOrderQuerySumDTO> _TypeOrderSubOrderQuerySumD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.discountBill = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.discountBill = copyer(oldData.discountBill);
+    },
   ),
   "moneyBill": (
     getter: (data) => data.moneyBill,
@@ -29159,7 +36112,11 @@ final FieldReflectInfo<TypeOrderSubOrderQuerySumDTO> _TypeOrderSubOrderQuerySumD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.moneyBill = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.moneyBill = copyer(oldData.moneyBill);
+    },
   ),
 };
 
@@ -29211,6 +36168,24 @@ class TypeOrderSubOrderQuerySumDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderSubOrderQuerySumDTO? deepCopy(TypeOrderSubOrderQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderSubOrderQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderSubOrderQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderSubOrderQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -29273,7 +36248,11 @@ final FieldReflectInfo<TypeOrderSubject> _TypeOrderSubject_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.accountId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.accountId = copyer(oldData.accountId);
+    },
   ),
   "accountInfo": (
     getter: (data) => data.accountInfo,
@@ -29285,7 +36264,11 @@ final FieldReflectInfo<TypeOrderSubject> _TypeOrderSubject_fields = {
     fromDynamic: (data, value) {
       final parser = TypeAccount.fromDynamic;
       data.accountInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeAccount.deepCopy;
+      newData.accountInfo = copyer(oldData.accountInfo);
+    },
   ),
   "auxiliaryContactId": (
     getter: (data) => data.auxiliaryContactId,
@@ -29297,7 +36280,11 @@ final FieldReflectInfo<TypeOrderSubject> _TypeOrderSubject_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.auxiliaryContactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.auxiliaryContactId = copyer(oldData.auxiliaryContactId);
+    },
   ),
   "auxiliaryContactInfo": (
     getter: (data) => data.auxiliaryContactInfo,
@@ -29309,7 +36296,11 @@ final FieldReflectInfo<TypeOrderSubject> _TypeOrderSubject_fields = {
     fromDynamic: (data, value) {
       final parser = TypeContact.fromDynamic;
       data.auxiliaryContactInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeContact.deepCopy;
+      newData.auxiliaryContactInfo = copyer(oldData.auxiliaryContactInfo);
+    },
   ),
   "auxiliaryEmployeeId": (
     getter: (data) => data.auxiliaryEmployeeId,
@@ -29321,7 +36312,11 @@ final FieldReflectInfo<TypeOrderSubject> _TypeOrderSubject_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.auxiliaryEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.auxiliaryEmployeeId = copyer(oldData.auxiliaryEmployeeId);
+    },
   ),
   "auxiliaryEmployeeInfo": (
     getter: (data) => data.auxiliaryEmployeeInfo,
@@ -29333,7 +36328,11 @@ final FieldReflectInfo<TypeOrderSubject> _TypeOrderSubject_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEmployee.fromDynamic;
       data.auxiliaryEmployeeInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEmployee.deepCopy;
+      newData.auxiliaryEmployeeInfo = copyer(oldData.auxiliaryEmployeeInfo);
+    },
   ),
   "auxiliaryStoreId": (
     getter: (data) => data.auxiliaryStoreId,
@@ -29345,7 +36344,11 @@ final FieldReflectInfo<TypeOrderSubject> _TypeOrderSubject_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.auxiliaryStoreId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.auxiliaryStoreId = copyer(oldData.auxiliaryStoreId);
+    },
   ),
   "auxiliaryStoreInfo": (
     getter: (data) => data.auxiliaryStoreInfo,
@@ -29357,7 +36360,11 @@ final FieldReflectInfo<TypeOrderSubject> _TypeOrderSubject_fields = {
     fromDynamic: (data, value) {
       final parser = TypeStore.fromDynamic;
       data.auxiliaryStoreInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeStore.deepCopy;
+      newData.auxiliaryStoreInfo = copyer(oldData.auxiliaryStoreInfo);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -29369,7 +36376,11 @@ final FieldReflectInfo<TypeOrderSubject> _TypeOrderSubject_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -29381,7 +36392,11 @@ final FieldReflectInfo<TypeOrderSubject> _TypeOrderSubject_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -29393,7 +36408,11 @@ final FieldReflectInfo<TypeOrderSubject> _TypeOrderSubject_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
 };
 
@@ -29452,6 +36471,24 @@ class TypeOrderSubject extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeOrderSubject? deepCopy(TypeOrderSubject? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOrderSubject();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOrderSubject_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOrderSubject copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -29525,7 +36562,14 @@ final FieldReflectInfo<TypeOutput> _TypeOutput_fields = {
         return handler(single)!;
       });
       data.constraints = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeCombineConstraint>((single){
+        final handler = TypeCombineConstraint.deepCopy;
+        return handler(single)!;
+      });
+      newData.constraints = copyer(oldData.constraints);
+    },
   ),
   "state": (
     getter: (data) => data.state,
@@ -29537,7 +36581,11 @@ final FieldReflectInfo<TypeOutput> _TypeOutput_fields = {
     fromDynamic: (data, value) {
       final parser = TypeColumnState.fromDynamic;
       data.state = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeColumnState.deepCopy;
+      newData.state = copyer(oldData.state);
+    },
   ),
 };
 
@@ -29589,6 +36637,24 @@ class TypeOutput extends IDataBasic implements IDataDynamic {
     return toDynamic(this)!;
   }
 
+  static TypeOutput? deepCopy(TypeOutput? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeOutput();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeOutput_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeOutput copy() {
+    return deepCopy(this)!;
+  }
+
   @override
   String toString() {
     return encodeDynamic().toString();
@@ -29638,7 +36704,11 @@ final FieldReflectInfo<TypePageListAccount> _TypePageListAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "data": (
     getter: (data) => data.data,
@@ -29656,7 +36726,14 @@ final FieldReflectInfo<TypePageListAccount> _TypePageListAccount_fields = {
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeAccount>((single){
+        final handler = TypeAccount.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -29668,7 +36745,11 @@ final FieldReflectInfo<TypePageListAccount> _TypePageListAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -29680,7 +36761,11 @@ final FieldReflectInfo<TypePageListAccount> _TypePageListAccount_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
 };
 
@@ -29732,6 +36817,24 @@ class TypePageListAccount extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypePageListAccount? deepCopy(TypePageListAccount? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypePageListAccount();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypePageListAccount_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypePageListAccount copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -29787,7 +36890,11 @@ final FieldReflectInfo<TypePageListAssembleTemplate> _TypePageListAssembleTempla
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "data": (
     getter: (data) => data.data,
@@ -29805,7 +36912,14 @@ final FieldReflectInfo<TypePageListAssembleTemplate> _TypePageListAssembleTempla
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeAssembleTemplate>((single){
+        final handler = TypeAssembleTemplate.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -29817,7 +36931,11 @@ final FieldReflectInfo<TypePageListAssembleTemplate> _TypePageListAssembleTempla
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -29829,7 +36947,11 @@ final FieldReflectInfo<TypePageListAssembleTemplate> _TypePageListAssembleTempla
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
 };
 
@@ -29881,6 +37003,24 @@ class TypePageListAssembleTemplate extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypePageListAssembleTemplate? deepCopy(TypePageListAssembleTemplate? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypePageListAssembleTemplate();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypePageListAssembleTemplate_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypePageListAssembleTemplate copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -29936,7 +37076,11 @@ final FieldReflectInfo<TypePageListAttachment> _TypePageListAttachment_fields = 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "data": (
     getter: (data) => data.data,
@@ -29954,7 +37098,14 @@ final FieldReflectInfo<TypePageListAttachment> _TypePageListAttachment_fields = 
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeAttachment>((single){
+        final handler = TypeAttachment.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -29966,7 +37117,11 @@ final FieldReflectInfo<TypePageListAttachment> _TypePageListAttachment_fields = 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -29978,7 +37133,11 @@ final FieldReflectInfo<TypePageListAttachment> _TypePageListAttachment_fields = 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
 };
 
@@ -30030,6 +37189,24 @@ class TypePageListAttachment extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypePageListAttachment? deepCopy(TypePageListAttachment? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypePageListAttachment();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypePageListAttachment_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypePageListAttachment copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -30085,7 +37262,11 @@ final FieldReflectInfo<TypePageListBackendTask> _TypePageListBackendTask_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "data": (
     getter: (data) => data.data,
@@ -30103,7 +37284,14 @@ final FieldReflectInfo<TypePageListBackendTask> _TypePageListBackendTask_fields 
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeBackendTask>((single){
+        final handler = TypeBackendTask.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -30115,7 +37303,11 @@ final FieldReflectInfo<TypePageListBackendTask> _TypePageListBackendTask_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -30127,7 +37319,11 @@ final FieldReflectInfo<TypePageListBackendTask> _TypePageListBackendTask_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
 };
 
@@ -30179,6 +37375,24 @@ class TypePageListBackendTask extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypePageListBackendTask? deepCopy(TypePageListBackendTask? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypePageListBackendTask();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypePageListBackendTask_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypePageListBackendTask copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -30234,7 +37448,11 @@ final FieldReflectInfo<TypePageListContact> _TypePageListContact_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "data": (
     getter: (data) => data.data,
@@ -30252,7 +37470,14 @@ final FieldReflectInfo<TypePageListContact> _TypePageListContact_fields = {
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeContact>((single){
+        final handler = TypeContact.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -30264,7 +37489,11 @@ final FieldReflectInfo<TypePageListContact> _TypePageListContact_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -30276,7 +37505,11 @@ final FieldReflectInfo<TypePageListContact> _TypePageListContact_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
 };
 
@@ -30328,6 +37561,24 @@ class TypePageListContact extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypePageListContact? deepCopy(TypePageListContact? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypePageListContact();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypePageListContact_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypePageListContact copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -30383,7 +37634,11 @@ final FieldReflectInfo<TypePageListEmployee> _TypePageListEmployee_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "data": (
     getter: (data) => data.data,
@@ -30401,7 +37656,14 @@ final FieldReflectInfo<TypePageListEmployee> _TypePageListEmployee_fields = {
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeEmployee>((single){
+        final handler = TypeEmployee.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -30413,7 +37675,11 @@ final FieldReflectInfo<TypePageListEmployee> _TypePageListEmployee_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -30425,7 +37691,11 @@ final FieldReflectInfo<TypePageListEmployee> _TypePageListEmployee_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
 };
 
@@ -30477,6 +37747,24 @@ class TypePageListEmployee extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypePageListEmployee? deepCopy(TypePageListEmployee? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypePageListEmployee();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypePageListEmployee_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypePageListEmployee copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -30532,7 +37820,11 @@ final FieldReflectInfo<TypePageListItem> _TypePageListItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "data": (
     getter: (data) => data.data,
@@ -30550,7 +37842,14 @@ final FieldReflectInfo<TypePageListItem> _TypePageListItem_fields = {
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeItem>((single){
+        final handler = TypeItem.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -30562,7 +37861,11 @@ final FieldReflectInfo<TypePageListItem> _TypePageListItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -30574,7 +37877,11 @@ final FieldReflectInfo<TypePageListItem> _TypePageListItem_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
 };
 
@@ -30626,6 +37933,24 @@ class TypePageListItem extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypePageListItem? deepCopy(TypePageListItem? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypePageListItem();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypePageListItem_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypePageListItem copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -30681,7 +38006,11 @@ final FieldReflectInfo<TypePageListOperator> _TypePageListOperator_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "data": (
     getter: (data) => data.data,
@@ -30699,7 +38028,14 @@ final FieldReflectInfo<TypePageListOperator> _TypePageListOperator_fields = {
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeOperator>((single){
+        final handler = TypeOperator.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -30711,7 +38047,11 @@ final FieldReflectInfo<TypePageListOperator> _TypePageListOperator_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -30723,7 +38063,11 @@ final FieldReflectInfo<TypePageListOperator> _TypePageListOperator_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
 };
 
@@ -30775,6 +38119,24 @@ class TypePageListOperator extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypePageListOperator? deepCopy(TypePageListOperator? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypePageListOperator();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypePageListOperator_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypePageListOperator copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -30830,7 +38192,11 @@ final FieldReflectInfo<TypePageListStore> _TypePageListStore_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "data": (
     getter: (data) => data.data,
@@ -30848,7 +38214,14 @@ final FieldReflectInfo<TypePageListStore> _TypePageListStore_fields = {
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeStore>((single){
+        final handler = TypeStore.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -30860,7 +38233,11 @@ final FieldReflectInfo<TypePageListStore> _TypePageListStore_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -30872,7 +38249,11 @@ final FieldReflectInfo<TypePageListStore> _TypePageListStore_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
 };
 
@@ -30924,6 +38305,24 @@ class TypePageListStore extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypePageListStore? deepCopy(TypePageListStore? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypePageListStore();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypePageListStore_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypePageListStore copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -30979,7 +38378,11 @@ final FieldReflectInfo<TypePageListUnit> _TypePageListUnit_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "data": (
     getter: (data) => data.data,
@@ -30997,7 +38400,14 @@ final FieldReflectInfo<TypePageListUnit> _TypePageListUnit_fields = {
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeUnit>((single){
+        final handler = TypeUnit.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -31009,7 +38419,11 @@ final FieldReflectInfo<TypePageListUnit> _TypePageListUnit_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -31021,7 +38435,11 @@ final FieldReflectInfo<TypePageListUnit> _TypePageListUnit_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
 };
 
@@ -31073,6 +38491,24 @@ class TypePageListUnit extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypePageListUnit? deepCopy(TypePageListUnit? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypePageListUnit();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypePageListUnit_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypePageListUnit copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -31135,7 +38571,11 @@ final FieldReflectInfo<TypePriceTrack> _TypePriceTrack_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactId = copyer(oldData.contactId);
+    },
   ),
   "createTime": (
     getter: (data) => data.createTime,
@@ -31147,7 +38587,11 @@ final FieldReflectInfo<TypePriceTrack> _TypePriceTrack_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -31159,7 +38603,11 @@ final FieldReflectInfo<TypePriceTrack> _TypePriceTrack_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -31171,7 +38619,11 @@ final FieldReflectInfo<TypePriceTrack> _TypePriceTrack_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "lastTrackPrice": (
     getter: (data) => data.lastTrackPrice,
@@ -31183,7 +38635,11 @@ final FieldReflectInfo<TypePriceTrack> _TypePriceTrack_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.lastTrackPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.lastTrackPrice = copyer(oldData.lastTrackPrice);
+    },
   ),
   "lastTrackTime": (
     getter: (data) => data.lastTrackTime,
@@ -31195,7 +38651,11 @@ final FieldReflectInfo<TypePriceTrack> _TypePriceTrack_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.lastTrackTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.lastTrackTime = copyer(oldData.lastTrackTime);
+    },
   ),
   "mode": (
     getter: (data) => data.mode,
@@ -31207,7 +38667,11 @@ final FieldReflectInfo<TypePriceTrack> _TypePriceTrack_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.mode = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.mode = copyer(oldData.mode);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -31219,7 +38683,11 @@ final FieldReflectInfo<TypePriceTrack> _TypePriceTrack_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "sourceOrderId": (
     getter: (data) => data.sourceOrderId,
@@ -31231,7 +38699,11 @@ final FieldReflectInfo<TypePriceTrack> _TypePriceTrack_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.sourceOrderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.sourceOrderId = copyer(oldData.sourceOrderId);
+    },
   ),
   "sourceOrderNumber": (
     getter: (data) => data.sourceOrderNumber,
@@ -31243,7 +38715,11 @@ final FieldReflectInfo<TypePriceTrack> _TypePriceTrack_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.sourceOrderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.sourceOrderNumber = copyer(oldData.sourceOrderNumber);
+    },
   ),
   "sourceOrderType": (
     getter: (data) => data.sourceOrderType,
@@ -31255,7 +38731,11 @@ final FieldReflectInfo<TypePriceTrack> _TypePriceTrack_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.sourceOrderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.sourceOrderType = copyer(oldData.sourceOrderType);
+    },
   ),
 };
 
@@ -31314,6 +38794,24 @@ class TypePriceTrack extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypePriceTrack? deepCopy(TypePriceTrack? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypePriceTrack();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypePriceTrack_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypePriceTrack copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -31389,7 +38887,14 @@ final FieldReflectInfo<TypePriceTrackQueryDTO> _TypePriceTrackQueryDTO_fields = 
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypePriceTrackQueryDataDTO>((single){
+        final handler = TypePriceTrackQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -31401,7 +38906,11 @@ final FieldReflectInfo<TypePriceTrackQueryDTO> _TypePriceTrackQueryDTO_fields = 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -31413,7 +38922,11 @@ final FieldReflectInfo<TypePriceTrackQueryDTO> _TypePriceTrackQueryDTO_fields = 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -31425,7 +38938,11 @@ final FieldReflectInfo<TypePriceTrackQueryDTO> _TypePriceTrackQueryDTO_fields = 
     fromDynamic: (data, value) {
       final parser = TypePriceTrackQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypePriceTrackQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -31477,6 +38994,24 @@ class TypePriceTrackQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypePriceTrackQueryDTO? deepCopy(TypePriceTrackQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypePriceTrackQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypePriceTrackQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypePriceTrackQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -31550,7 +39085,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactId = copyer(oldData.contactId);
+    },
   ),
   "contactName": (
     getter: (data) => data.contactName,
@@ -31562,7 +39101,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactName = copyer(oldData.contactName);
+    },
   ),
   "contactNumber": (
     getter: (data) => data.contactNumber,
@@ -31574,7 +39117,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactNumber = copyer(oldData.contactNumber);
+    },
   ),
   "contactParentId": (
     getter: (data) => data.contactParentId,
@@ -31586,7 +39133,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactParentId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactParentId = copyer(oldData.contactParentId);
+    },
   ),
   "contactParentName": (
     getter: (data) => data.contactParentName,
@@ -31598,7 +39149,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactParentName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactParentName = copyer(oldData.contactParentName);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -31610,7 +39165,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "itemCommonUnitConvert": (
     getter: (data) => data.itemCommonUnitConvert,
@@ -31622,7 +39181,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemCommonUnitConvert = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemCommonUnitConvert = copyer(oldData.itemCommonUnitConvert);
+    },
   ),
   "itemCommonUnitId": (
     getter: (data) => data.itemCommonUnitId,
@@ -31634,7 +39197,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemCommonUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemCommonUnitId = copyer(oldData.itemCommonUnitId);
+    },
   ),
   "itemCommonUnitName": (
     getter: (data) => data.itemCommonUnitName,
@@ -31646,7 +39213,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemCommonUnitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemCommonUnitName = copyer(oldData.itemCommonUnitName);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -31658,7 +39229,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "itemIsEnabled": (
     getter: (data) => data.itemIsEnabled,
@@ -31670,7 +39245,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemIsEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemIsEnabled = copyer(oldData.itemIsEnabled);
+    },
   ),
   "itemModelRemark": (
     getter: (data) => data.itemModelRemark,
@@ -31682,7 +39261,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemModelRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemModelRemark = copyer(oldData.itemModelRemark);
+    },
   ),
   "itemName": (
     getter: (data) => data.itemName,
@@ -31694,7 +39277,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemName = copyer(oldData.itemName);
+    },
   ),
   "itemNumber": (
     getter: (data) => data.itemNumber,
@@ -31706,7 +39293,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemNumber = copyer(oldData.itemNumber);
+    },
   ),
   "itemRemark": (
     getter: (data) => data.itemRemark,
@@ -31718,7 +39309,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemRemark = copyer(oldData.itemRemark);
+    },
   ),
   "itemSpecsRemark": (
     getter: (data) => data.itemSpecsRemark,
@@ -31730,7 +39325,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemSpecsRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemSpecsRemark = copyer(oldData.itemSpecsRemark);
+    },
   ),
   "itemUnitConvertDesc": (
     getter: (data) => data.itemUnitConvertDesc,
@@ -31742,7 +39341,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemUnitConvertDesc = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemUnitConvertDesc = copyer(oldData.itemUnitConvertDesc);
+    },
   ),
   "lastTrackPrice": (
     getter: (data) => data.lastTrackPrice,
@@ -31754,7 +39357,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.lastTrackPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.lastTrackPrice = copyer(oldData.lastTrackPrice);
+    },
   ),
   "lastTrackTime": (
     getter: (data) => data.lastTrackTime,
@@ -31766,7 +39373,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.lastTrackTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.lastTrackTime = copyer(oldData.lastTrackTime);
+    },
   ),
   "sourceOrderId": (
     getter: (data) => data.sourceOrderId,
@@ -31778,7 +39389,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.sourceOrderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.sourceOrderId = copyer(oldData.sourceOrderId);
+    },
   ),
   "sourceOrderNumber": (
     getter: (data) => data.sourceOrderNumber,
@@ -31790,7 +39405,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.sourceOrderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.sourceOrderNumber = copyer(oldData.sourceOrderNumber);
+    },
   ),
   "sourceOrderType": (
     getter: (data) => data.sourceOrderType,
@@ -31802,7 +39421,11 @@ final FieldReflectInfo<TypePriceTrackQueryDataDTO> _TypePriceTrackQueryDataDTO_f
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.sourceOrderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.sourceOrderType = copyer(oldData.sourceOrderType);
+    },
   ),
 };
 
@@ -31872,6 +39495,24 @@ class TypePriceTrackQueryDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypePriceTrackQueryDataDTO? deepCopy(TypePriceTrackQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypePriceTrackQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypePriceTrackQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypePriceTrackQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -31960,7 +39601,11 @@ final FieldReflectInfo<TypePriceTrackQuerySumDTO> _TypePriceTrackQuerySumDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
 };
 
@@ -32009,6 +39654,24 @@ class TypePriceTrackQuerySumDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypePriceTrackQuerySumDTO? deepCopy(TypePriceTrackQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypePriceTrackQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypePriceTrackQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypePriceTrackQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -32062,7 +39725,11 @@ final FieldReflectInfo<TypePrintTemplate> _TypePrintTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -32074,7 +39741,11 @@ final FieldReflectInfo<TypePrintTemplate> _TypePrintTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -32086,7 +39757,11 @@ final FieldReflectInfo<TypePrintTemplate> _TypePrintTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -32098,7 +39773,11 @@ final FieldReflectInfo<TypePrintTemplate> _TypePrintTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "printScript": (
     getter: (data) => data.printScript,
@@ -32110,7 +39789,11 @@ final FieldReflectInfo<TypePrintTemplate> _TypePrintTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.printScript = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.printScript = copyer(oldData.printScript);
+    },
   ),
   "sceneId": (
     getter: (data) => data.sceneId,
@@ -32122,7 +39805,11 @@ final FieldReflectInfo<TypePrintTemplate> _TypePrintTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.sceneId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.sceneId = copyer(oldData.sceneId);
+    },
   ),
   "sortWeight": (
     getter: (data) => data.sortWeight,
@@ -32134,7 +39821,11 @@ final FieldReflectInfo<TypePrintTemplate> _TypePrintTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.sortWeight = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.sortWeight = copyer(oldData.sortWeight);
+    },
   ),
   "templateScript": (
     getter: (data) => data.templateScript,
@@ -32146,7 +39837,11 @@ final FieldReflectInfo<TypePrintTemplate> _TypePrintTemplate_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.templateScript = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.templateScript = copyer(oldData.templateScript);
+    },
   ),
 };
 
@@ -32202,6 +39897,24 @@ class TypePrintTemplate extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypePrintTemplate? deepCopy(TypePrintTemplate? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypePrintTemplate();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypePrintTemplate_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypePrintTemplate copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -32264,7 +39977,11 @@ final FieldReflectInfo<TypeQueryCrossTabColumn> _TypeQueryCrossTabColumn_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.field = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.field = copyer(oldData.field);
+    },
   ),
   "groupId": (
     getter: (data) => data.groupId,
@@ -32276,7 +39993,11 @@ final FieldReflectInfo<TypeQueryCrossTabColumn> _TypeQueryCrossTabColumn_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.groupId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.groupId = copyer(oldData.groupId);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -32288,7 +40009,11 @@ final FieldReflectInfo<TypeQueryCrossTabColumn> _TypeQueryCrossTabColumn_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
 };
 
@@ -32339,6 +40064,24 @@ class TypeQueryCrossTabColumn extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeQueryCrossTabColumn? deepCopy(TypeQueryCrossTabColumn? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeQueryCrossTabColumn();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeQueryCrossTabColumn_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeQueryCrossTabColumn copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -32392,7 +40135,11 @@ final FieldReflectInfo<TypeQueryCrossTabGroupColumn> _TypeQueryCrossTabGroupColu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.beginDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.beginDate = copyer(oldData.beginDate);
+    },
   ),
   "endDate": (
     getter: (data) => data.endDate,
@@ -32404,7 +40151,11 @@ final FieldReflectInfo<TypeQueryCrossTabGroupColumn> _TypeQueryCrossTabGroupColu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.endDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.endDate = copyer(oldData.endDate);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -32416,7 +40167,11 @@ final FieldReflectInfo<TypeQueryCrossTabGroupColumn> _TypeQueryCrossTabGroupColu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -32428,7 +40183,11 @@ final FieldReflectInfo<TypeQueryCrossTabGroupColumn> _TypeQueryCrossTabGroupColu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
 };
 
@@ -32480,6 +40239,24 @@ class TypeQueryCrossTabGroupColumn extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeQueryCrossTabGroupColumn? deepCopy(TypeQueryCrossTabGroupColumn? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeQueryCrossTabGroupColumn();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeQueryCrossTabGroupColumn_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeQueryCrossTabGroupColumn copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -32539,7 +40316,11 @@ final FieldReflectInfo<TypeQueryCrossTabResult> _TypeQueryCrossTabResult_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.beginDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.beginDate = copyer(oldData.beginDate);
+    },
   ),
   "cells": (
     getter: (data) => data.cells,
@@ -32563,7 +40344,17 @@ final FieldReflectInfo<TypeQueryCrossTabResult> _TypeQueryCrossTabResult_fields 
         return handler(single)!;
       });
       data.cells = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<List<Object>>((single){
+        final handler = ListHelper.wrapDeepCopy<Object>((single){
+          final handler = ObjectHelper.deepCopy;
+          return handler(single)!;
+        });
+        return handler(single)!;
+      });
+      newData.cells = copyer(oldData.cells);
+    },
   ),
   "columns": (
     getter: (data) => data.columns,
@@ -32581,7 +40372,14 @@ final FieldReflectInfo<TypeQueryCrossTabResult> _TypeQueryCrossTabResult_fields 
         return handler(single)!;
       });
       data.columns = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeQueryCrossTabColumn>((single){
+        final handler = TypeQueryCrossTabColumn.deepCopy;
+        return handler(single)!;
+      });
+      newData.columns = copyer(oldData.columns);
+    },
   ),
   "endDate": (
     getter: (data) => data.endDate,
@@ -32593,7 +40391,11 @@ final FieldReflectInfo<TypeQueryCrossTabResult> _TypeQueryCrossTabResult_fields 
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.endDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.endDate = copyer(oldData.endDate);
+    },
   ),
   "groups": (
     getter: (data) => data.groups,
@@ -32611,7 +40413,14 @@ final FieldReflectInfo<TypeQueryCrossTabResult> _TypeQueryCrossTabResult_fields 
         return handler(single)!;
       });
       data.groups = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeQueryCrossTabGroupColumn>((single){
+        final handler = TypeQueryCrossTabGroupColumn.deepCopy;
+        return handler(single)!;
+      });
+      newData.groups = copyer(oldData.groups);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -32623,7 +40432,11 @@ final FieldReflectInfo<TypeQueryCrossTabResult> _TypeQueryCrossTabResult_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -32635,7 +40448,11 @@ final FieldReflectInfo<TypeQueryCrossTabResult> _TypeQueryCrossTabResult_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -32653,7 +40470,14 @@ final FieldReflectInfo<TypeQueryCrossTabResult> _TypeQueryCrossTabResult_fields 
         return handler(single)!;
       });
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<Object>((single){
+        final handler = ObjectHelper.deepCopy;
+        return handler(single)!;
+      });
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -32709,6 +40533,24 @@ class TypeQueryCrossTabResult extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeQueryCrossTabResult? deepCopy(TypeQueryCrossTabResult? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeQueryCrossTabResult();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeQueryCrossTabResult_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeQueryCrossTabResult copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -32787,7 +40629,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.bookAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.bookAmount = copyer(oldData.bookAmount);
+    },
   ),
   "bookTotal": (
     getter: (data) => data.bookTotal,
@@ -32799,7 +40645,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.bookTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.bookTotal = copyer(oldData.bookTotal);
+    },
   ),
   "createTime": (
     getter: (data) => data.createTime,
@@ -32811,7 +40661,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "hasBusinessLink": (
     getter: (data) => data.hasBusinessLink,
@@ -32823,7 +40677,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasBusinessLink = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasBusinessLink = copyer(oldData.hasBusinessLink);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -32835,7 +40693,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "initialAmount": (
     getter: (data) => data.initialAmount,
@@ -32847,7 +40709,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.initialAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.initialAmount = copyer(oldData.initialAmount);
+    },
   ),
   "initialPrice": (
     getter: (data) => data.initialPrice,
@@ -32859,7 +40725,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.initialPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.initialPrice = copyer(oldData.initialPrice);
+    },
   ),
   "initialUnitId": (
     getter: (data) => data.initialUnitId,
@@ -32871,7 +40741,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.initialUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.initialUnitId = copyer(oldData.initialUnitId);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -32883,7 +40757,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "locations": (
     getter: (data) => data.locations,
@@ -32901,7 +40779,14 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
         return handler(single)!;
       });
       data.locations = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeStockLocationDTO>((single){
+        final handler = TypeStockLocationDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.locations = copyer(oldData.locations);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -32913,7 +40798,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "price": (
     getter: (data) => data.price,
@@ -32925,7 +40814,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.price = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.price = copyer(oldData.price);
+    },
   ),
   "purchaseTransitAmount": (
     getter: (data) => data.purchaseTransitAmount,
@@ -32937,7 +40830,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.purchaseTransitAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.purchaseTransitAmount = copyer(oldData.purchaseTransitAmount);
+    },
   ),
   "purchaseTransitRemark": (
     getter: (data) => data.purchaseTransitRemark,
@@ -32949,7 +40846,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.purchaseTransitRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.purchaseTransitRemark = copyer(oldData.purchaseTransitRemark);
+    },
   ),
   "remainAge": (
     getter: (data) => data.remainAge,
@@ -32961,7 +40862,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remainAge = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remainAge = copyer(oldData.remainAge);
+    },
   ),
   "remainAgeSum": (
     getter: (data) => data.remainAgeSum,
@@ -32973,7 +40878,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = DoubleHelper.fromDynamic;
       data.remainAgeSum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = DoubleHelper.deepCopy;
+      newData.remainAgeSum = copyer(oldData.remainAgeSum);
+    },
   ),
   "storeId": (
     getter: (data) => data.storeId,
@@ -32985,7 +40894,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.storeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.storeId = copyer(oldData.storeId);
+    },
   ),
   "waitingInAmount": (
     getter: (data) => data.waitingInAmount,
@@ -32997,7 +40910,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.waitingInAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.waitingInAmount = copyer(oldData.waitingInAmount);
+    },
   ),
   "waitingOutAmount": (
     getter: (data) => data.waitingOutAmount,
@@ -33009,7 +40926,11 @@ final FieldReflectInfo<TypeStock> _TypeStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.waitingOutAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.waitingOutAmount = copyer(oldData.waitingOutAmount);
+    },
   ),
 };
 
@@ -33076,6 +40997,24 @@ class TypeStock extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStock? deepCopy(TypeStock? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStock();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStock_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStock copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -33167,7 +41106,14 @@ final FieldReflectInfo<TypeStockDetailQueryDTO> _TypeStockDetailQueryDTO_fields 
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeStockDetailQueryDataDTO>((single){
+        final handler = TypeStockDetailQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -33179,7 +41125,11 @@ final FieldReflectInfo<TypeStockDetailQueryDTO> _TypeStockDetailQueryDTO_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -33191,7 +41141,11 @@ final FieldReflectInfo<TypeStockDetailQueryDTO> _TypeStockDetailQueryDTO_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -33203,7 +41157,11 @@ final FieldReflectInfo<TypeStockDetailQueryDTO> _TypeStockDetailQueryDTO_fields 
     fromDynamic: (data, value) {
       final parser = TypeStockDetailQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeStockDetailQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -33255,6 +41213,24 @@ class TypeStockDetailQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockDetailQueryDTO? deepCopy(TypeStockDetailQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockDetailQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockDetailQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockDetailQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -33337,7 +41313,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.commonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.commonAmount = copyer(oldData.commonAmount);
+    },
   ),
   "commonPrice": (
     getter: (data) => data.commonPrice,
@@ -33349,7 +41329,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.commonPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.commonPrice = copyer(oldData.commonPrice);
+    },
   ),
   "commonUnitId": (
     getter: (data) => data.commonUnitId,
@@ -33361,7 +41345,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.commonUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.commonUnitId = copyer(oldData.commonUnitId);
+    },
   ),
   "commonUnitName": (
     getter: (data) => data.commonUnitName,
@@ -33373,7 +41361,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.commonUnitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.commonUnitName = copyer(oldData.commonUnitName);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -33385,7 +41377,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -33397,7 +41393,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "itemModelRemark": (
     getter: (data) => data.itemModelRemark,
@@ -33409,7 +41409,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemModelRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemModelRemark = copyer(oldData.itemModelRemark);
+    },
   ),
   "itemName": (
     getter: (data) => data.itemName,
@@ -33421,7 +41425,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemName = copyer(oldData.itemName);
+    },
   ),
   "itemSpecsRemark": (
     getter: (data) => data.itemSpecsRemark,
@@ -33433,7 +41441,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemSpecsRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemSpecsRemark = copyer(oldData.itemSpecsRemark);
+    },
   ),
   "itemsOrder": (
     getter: (data) => data.itemsOrder,
@@ -33445,7 +41457,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemsOrder = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemsOrder = copyer(oldData.itemsOrder);
+    },
   ),
   "orderContactId": (
     getter: (data) => data.orderContactId,
@@ -33457,7 +41473,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderContactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderContactId = copyer(oldData.orderContactId);
+    },
   ),
   "orderContactName": (
     getter: (data) => data.orderContactName,
@@ -33469,7 +41489,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderContactName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderContactName = copyer(oldData.orderContactName);
+    },
   ),
   "orderDate": (
     getter: (data) => data.orderDate,
@@ -33481,7 +41505,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDate = copyer(oldData.orderDate);
+    },
   ),
   "orderDrawEmployeeId": (
     getter: (data) => data.orderDrawEmployeeId,
@@ -33493,7 +41521,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderDrawEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderDrawEmployeeId = copyer(oldData.orderDrawEmployeeId);
+    },
   ),
   "orderDrawEmployeeName": (
     getter: (data) => data.orderDrawEmployeeName,
@@ -33505,7 +41537,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDrawEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDrawEmployeeName = copyer(oldData.orderDrawEmployeeName);
+    },
   ),
   "orderDrawTime": (
     getter: (data) => data.orderDrawTime,
@@ -33517,7 +41553,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDrawTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDrawTime = copyer(oldData.orderDrawTime);
+    },
   ),
   "orderEntryAccountEmployeeId": (
     getter: (data) => data.orderEntryAccountEmployeeId,
@@ -33529,7 +41569,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderEntryAccountEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderEntryAccountEmployeeId = copyer(oldData.orderEntryAccountEmployeeId);
+    },
   ),
   "orderEntryAccountEmployeeName": (
     getter: (data) => data.orderEntryAccountEmployeeName,
@@ -33541,7 +41585,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderEntryAccountEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderEntryAccountEmployeeName = copyer(oldData.orderEntryAccountEmployeeName);
+    },
   ),
   "orderEntryAccountTime": (
     getter: (data) => data.orderEntryAccountTime,
@@ -33553,7 +41601,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderEntryAccountTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderEntryAccountTime = copyer(oldData.orderEntryAccountTime);
+    },
   ),
   "orderId": (
     getter: (data) => data.orderId,
@@ -33565,7 +41617,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderId = copyer(oldData.orderId);
+    },
   ),
   "orderManageEmployeeId": (
     getter: (data) => data.orderManageEmployeeId,
@@ -33577,7 +41633,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderManageEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderManageEmployeeId = copyer(oldData.orderManageEmployeeId);
+    },
   ),
   "orderManageEmployeeName": (
     getter: (data) => data.orderManageEmployeeName,
@@ -33589,7 +41649,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderManageEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderManageEmployeeName = copyer(oldData.orderManageEmployeeName);
+    },
   ),
   "orderNumber": (
     getter: (data) => data.orderNumber,
@@ -33601,7 +41665,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderNumber = copyer(oldData.orderNumber);
+    },
   ),
   "orderRedState": (
     getter: (data) => data.orderRedState,
@@ -33613,7 +41681,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderRedState.fromDynamic;
       data.orderRedState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderRedState.deepCopy;
+      newData.orderRedState = copyer(oldData.orderRedState);
+    },
   ),
   "orderState": (
     getter: (data) => data.orderState,
@@ -33625,7 +41697,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderState.fromDynamic;
       data.orderState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderState.deepCopy;
+      newData.orderState = copyer(oldData.orderState);
+    },
   ),
   "orderStockType": (
     getter: (data) => data.orderStockType,
@@ -33637,7 +41713,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderStockType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderStockType = copyer(oldData.orderStockType);
+    },
   ),
   "orderType": (
     getter: (data) => data.orderType,
@@ -33649,7 +41729,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.orderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.orderType = copyer(oldData.orderType);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -33661,7 +41745,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "storeId": (
     getter: (data) => data.storeId,
@@ -33673,7 +41761,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.storeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.storeId = copyer(oldData.storeId);
+    },
   ),
   "storeName": (
     getter: (data) => data.storeName,
@@ -33685,7 +41777,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.storeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.storeName = copyer(oldData.storeName);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -33697,7 +41793,11 @@ final FieldReflectInfo<TypeStockDetailQueryDataDTO> _TypeStockDetailQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
 };
 
@@ -33776,6 +41876,24 @@ class TypeStockDetailQueryDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockDetailQueryDataDTO? deepCopy(TypeStockDetailQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockDetailQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockDetailQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockDetailQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -33884,7 +42002,11 @@ final FieldReflectInfo<TypeStockDetailQuerySumDTO> _TypeStockDetailQuerySumDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.commonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.commonAmount = copyer(oldData.commonAmount);
+    },
   ),
   "count": (
     getter: (data) => data.count,
@@ -33896,7 +42018,11 @@ final FieldReflectInfo<TypeStockDetailQuerySumDTO> _TypeStockDetailQuerySumDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -33908,7 +42034,11 @@ final FieldReflectInfo<TypeStockDetailQuerySumDTO> _TypeStockDetailQuerySumDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
 };
 
@@ -33959,6 +42089,24 @@ class TypeStockDetailQuerySumDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockDetailQuerySumDTO? deepCopy(TypeStockDetailQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockDetailQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockDetailQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockDetailQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -34018,7 +42166,14 @@ final FieldReflectInfo<TypeStockFlowQueryDTO> _TypeStockFlowQueryDTO_fields = {
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeStockFlowQueryDataDTO>((single){
+        final handler = TypeStockFlowQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -34030,7 +42185,11 @@ final FieldReflectInfo<TypeStockFlowQueryDTO> _TypeStockFlowQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -34042,7 +42201,11 @@ final FieldReflectInfo<TypeStockFlowQueryDTO> _TypeStockFlowQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -34054,7 +42217,11 @@ final FieldReflectInfo<TypeStockFlowQueryDTO> _TypeStockFlowQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = TypeStockFlowQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeStockFlowQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -34106,6 +42273,24 @@ class TypeStockFlowQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockFlowQueryDTO? deepCopy(TypeStockFlowQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockFlowQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockFlowQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockFlowQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -34191,7 +42376,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.commonUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.commonUnitId = copyer(oldData.commonUnitId);
+    },
   ),
   "commonUnitName": (
     getter: (data) => data.commonUnitName,
@@ -34203,7 +42392,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.commonUnitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.commonUnitName = copyer(oldData.commonUnitName);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -34215,7 +42408,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "inboundCommonAmount": (
     getter: (data) => data.inboundCommonAmount,
@@ -34227,7 +42424,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.inboundCommonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.inboundCommonAmount = copyer(oldData.inboundCommonAmount);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -34239,7 +42440,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "itemModelRemark": (
     getter: (data) => data.itemModelRemark,
@@ -34251,7 +42456,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemModelRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemModelRemark = copyer(oldData.itemModelRemark);
+    },
   ),
   "itemName": (
     getter: (data) => data.itemName,
@@ -34263,7 +42472,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemName = copyer(oldData.itemName);
+    },
   ),
   "itemSpecsRemark": (
     getter: (data) => data.itemSpecsRemark,
@@ -34275,7 +42488,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemSpecsRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemSpecsRemark = copyer(oldData.itemSpecsRemark);
+    },
   ),
   "orderContactId": (
     getter: (data) => data.orderContactId,
@@ -34287,7 +42504,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderContactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderContactId = copyer(oldData.orderContactId);
+    },
   ),
   "orderContactName": (
     getter: (data) => data.orderContactName,
@@ -34299,7 +42520,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderContactName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderContactName = copyer(oldData.orderContactName);
+    },
   ),
   "orderDate": (
     getter: (data) => data.orderDate,
@@ -34311,7 +42536,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDate = copyer(oldData.orderDate);
+    },
   ),
   "orderDrawEmployeeId": (
     getter: (data) => data.orderDrawEmployeeId,
@@ -34323,7 +42552,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderDrawEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderDrawEmployeeId = copyer(oldData.orderDrawEmployeeId);
+    },
   ),
   "orderDrawEmployeeName": (
     getter: (data) => data.orderDrawEmployeeName,
@@ -34335,7 +42568,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDrawEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDrawEmployeeName = copyer(oldData.orderDrawEmployeeName);
+    },
   ),
   "orderDrawTime": (
     getter: (data) => data.orderDrawTime,
@@ -34347,7 +42584,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDrawTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDrawTime = copyer(oldData.orderDrawTime);
+    },
   ),
   "orderEntryAccountEmployeeId": (
     getter: (data) => data.orderEntryAccountEmployeeId,
@@ -34359,7 +42600,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderEntryAccountEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderEntryAccountEmployeeId = copyer(oldData.orderEntryAccountEmployeeId);
+    },
   ),
   "orderEntryAccountEmployeeName": (
     getter: (data) => data.orderEntryAccountEmployeeName,
@@ -34371,7 +42616,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderEntryAccountEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderEntryAccountEmployeeName = copyer(oldData.orderEntryAccountEmployeeName);
+    },
   ),
   "orderEntryAccountTime": (
     getter: (data) => data.orderEntryAccountTime,
@@ -34383,7 +42632,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderEntryAccountTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderEntryAccountTime = copyer(oldData.orderEntryAccountTime);
+    },
   ),
   "orderId": (
     getter: (data) => data.orderId,
@@ -34395,7 +42648,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderId = copyer(oldData.orderId);
+    },
   ),
   "orderManageEmployeeId": (
     getter: (data) => data.orderManageEmployeeId,
@@ -34407,7 +42664,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderManageEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderManageEmployeeId = copyer(oldData.orderManageEmployeeId);
+    },
   ),
   "orderManageEmployeeName": (
     getter: (data) => data.orderManageEmployeeName,
@@ -34419,7 +42680,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderManageEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderManageEmployeeName = copyer(oldData.orderManageEmployeeName);
+    },
   ),
   "orderNumber": (
     getter: (data) => data.orderNumber,
@@ -34431,7 +42696,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderNumber = copyer(oldData.orderNumber);
+    },
   ),
   "orderRedState": (
     getter: (data) => data.orderRedState,
@@ -34443,7 +42712,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderRedState.fromDynamic;
       data.orderRedState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderRedState.deepCopy;
+      newData.orderRedState = copyer(oldData.orderRedState);
+    },
   ),
   "orderState": (
     getter: (data) => data.orderState,
@@ -34455,7 +42728,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderState.fromDynamic;
       data.orderState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderState.deepCopy;
+      newData.orderState = copyer(oldData.orderState);
+    },
   ),
   "orderStockType": (
     getter: (data) => data.orderStockType,
@@ -34467,7 +42744,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderStockType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderStockType = copyer(oldData.orderStockType);
+    },
   ),
   "orderType": (
     getter: (data) => data.orderType,
@@ -34479,7 +42760,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.orderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.orderType = copyer(oldData.orderType);
+    },
   ),
   "outboundCommonAmount": (
     getter: (data) => data.outboundCommonAmount,
@@ -34491,7 +42776,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.outboundCommonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.outboundCommonAmount = copyer(oldData.outboundCommonAmount);
+    },
   ),
   "previousCommonAmount": (
     getter: (data) => data.previousCommonAmount,
@@ -34503,7 +42792,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.previousCommonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.previousCommonAmount = copyer(oldData.previousCommonAmount);
+    },
   ),
   "previousPrice": (
     getter: (data) => data.previousPrice,
@@ -34515,7 +42808,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.previousPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.previousPrice = copyer(oldData.previousPrice);
+    },
   ),
   "previousTotal": (
     getter: (data) => data.previousTotal,
@@ -34527,7 +42824,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.previousTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.previousTotal = copyer(oldData.previousTotal);
+    },
   ),
   "price": (
     getter: (data) => data.price,
@@ -34539,7 +42840,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.price = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.price = copyer(oldData.price);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -34551,7 +42856,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "storeId": (
     getter: (data) => data.storeId,
@@ -34563,7 +42872,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.storeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.storeId = copyer(oldData.storeId);
+    },
   ),
   "storeName": (
     getter: (data) => data.storeName,
@@ -34575,7 +42888,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.storeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.storeName = copyer(oldData.storeName);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -34587,7 +42904,11 @@ final FieldReflectInfo<TypeStockFlowQueryDataDTO> _TypeStockFlowQueryDataDTO_fie
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
 };
 
@@ -34669,6 +42990,24 @@ class TypeStockFlowQueryDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockFlowQueryDataDTO? deepCopy(TypeStockFlowQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockFlowQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockFlowQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockFlowQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -34784,7 +43123,11 @@ final FieldReflectInfo<TypeStockFlowQuerySumDTO> _TypeStockFlowQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "inboundCommonAmount": (
     getter: (data) => data.inboundCommonAmount,
@@ -34796,7 +43139,11 @@ final FieldReflectInfo<TypeStockFlowQuerySumDTO> _TypeStockFlowQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.inboundCommonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.inboundCommonAmount = copyer(oldData.inboundCommonAmount);
+    },
   ),
   "outboundCommonAmount": (
     getter: (data) => data.outboundCommonAmount,
@@ -34808,7 +43155,11 @@ final FieldReflectInfo<TypeStockFlowQuerySumDTO> _TypeStockFlowQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.outboundCommonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.outboundCommonAmount = copyer(oldData.outboundCommonAmount);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -34820,7 +43171,11 @@ final FieldReflectInfo<TypeStockFlowQuerySumDTO> _TypeStockFlowQuerySumDTO_field
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
 };
 
@@ -34874,6 +43229,24 @@ class TypeStockFlowQuerySumDTO extends IDataBasic implements IDataDynamic {
     return toDynamic(this)!;
   }
 
+  static TypeStockFlowQuerySumDTO? deepCopy(TypeStockFlowQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockFlowQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockFlowQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockFlowQuerySumDTO copy() {
+    return deepCopy(this)!;
+  }
+
   @override
   String toString() {
     return encodeDynamic().toString();
@@ -34925,7 +43298,11 @@ final FieldReflectInfo<TypeStockLocationDTO> _TypeStockLocationDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasStock = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasStock = copyer(oldData.hasStock);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -34937,7 +43314,11 @@ final FieldReflectInfo<TypeStockLocationDTO> _TypeStockLocationDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
 };
 
@@ -34987,6 +43368,24 @@ class TypeStockLocationDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockLocationDTO? deepCopy(TypeStockLocationDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockLocationDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockLocationDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockLocationDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -35041,7 +43440,11 @@ final FieldReflectInfo<TypeStockPrice> _TypeStockPrice_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "latestRemainContactId": (
     getter: (data) => data.latestRemainContactId,
@@ -35053,7 +43456,11 @@ final FieldReflectInfo<TypeStockPrice> _TypeStockPrice_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.latestRemainContactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.latestRemainContactId = copyer(oldData.latestRemainContactId);
+    },
   ),
   "latestRemainContactName": (
     getter: (data) => data.latestRemainContactName,
@@ -35065,7 +43472,11 @@ final FieldReflectInfo<TypeStockPrice> _TypeStockPrice_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.latestRemainContactName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.latestRemainContactName = copyer(oldData.latestRemainContactName);
+    },
   ),
   "latestRemainPrice": (
     getter: (data) => data.latestRemainPrice,
@@ -35077,7 +43488,11 @@ final FieldReflectInfo<TypeStockPrice> _TypeStockPrice_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.latestRemainPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.latestRemainPrice = copyer(oldData.latestRemainPrice);
+    },
   ),
   "locations": (
     getter: (data) => data.locations,
@@ -35089,7 +43504,11 @@ final FieldReflectInfo<TypeStockPrice> _TypeStockPrice_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.locations = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.locations = copyer(oldData.locations);
+    },
   ),
   "stockAmount": (
     getter: (data) => data.stockAmount,
@@ -35101,7 +43520,11 @@ final FieldReflectInfo<TypeStockPrice> _TypeStockPrice_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockAmount = copyer(oldData.stockAmount);
+    },
   ),
   "stockAveragePrice": (
     getter: (data) => data.stockAveragePrice,
@@ -35113,7 +43536,11 @@ final FieldReflectInfo<TypeStockPrice> _TypeStockPrice_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockAveragePrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockAveragePrice = copyer(oldData.stockAveragePrice);
+    },
   ),
 };
 
@@ -35168,6 +43595,24 @@ class TypeStockPrice extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockPrice? deepCopy(TypeStockPrice? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockPrice();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockPrice_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockPrice copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -35235,7 +43680,14 @@ final FieldReflectInfo<TypeStockQueryDTO> _TypeStockQueryDTO_fields = {
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeStockQueryDataDTO>((single){
+        final handler = TypeStockQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -35247,7 +43699,11 @@ final FieldReflectInfo<TypeStockQueryDTO> _TypeStockQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -35259,7 +43715,11 @@ final FieldReflectInfo<TypeStockQueryDTO> _TypeStockQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -35271,7 +43731,11 @@ final FieldReflectInfo<TypeStockQueryDTO> _TypeStockQueryDTO_fields = {
     fromDynamic: (data, value) {
       final parser = TypeStockQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeStockQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -35323,6 +43787,24 @@ class TypeStockQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockQueryDTO? deepCopy(TypeStockQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -35412,7 +43894,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.availableAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.availableAmount = copyer(oldData.availableAmount);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -35424,7 +43910,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "itemBasicUnitId": (
     getter: (data) => data.itemBasicUnitId,
@@ -35436,7 +43926,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemBasicUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemBasicUnitId = copyer(oldData.itemBasicUnitId);
+    },
   ),
   "itemBasicUnitName": (
     getter: (data) => data.itemBasicUnitName,
@@ -35448,7 +43942,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemBasicUnitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemBasicUnitName = copyer(oldData.itemBasicUnitName);
+    },
   ),
   "itemCommonUnitConvert": (
     getter: (data) => data.itemCommonUnitConvert,
@@ -35460,7 +43958,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemCommonUnitConvert = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemCommonUnitConvert = copyer(oldData.itemCommonUnitConvert);
+    },
   ),
   "itemCommonUnitId": (
     getter: (data) => data.itemCommonUnitId,
@@ -35472,7 +43974,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemCommonUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemCommonUnitId = copyer(oldData.itemCommonUnitId);
+    },
   ),
   "itemCommonUnitName": (
     getter: (data) => data.itemCommonUnitName,
@@ -35484,7 +43990,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemCommonUnitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemCommonUnitName = copyer(oldData.itemCommonUnitName);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -35496,7 +44006,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "itemIsEnabled": (
     getter: (data) => data.itemIsEnabled,
@@ -35508,7 +44022,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemIsEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemIsEnabled = copyer(oldData.itemIsEnabled);
+    },
   ),
   "itemModelRemark": (
     getter: (data) => data.itemModelRemark,
@@ -35520,7 +44038,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemModelRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemModelRemark = copyer(oldData.itemModelRemark);
+    },
   ),
   "itemName": (
     getter: (data) => data.itemName,
@@ -35532,7 +44054,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemName = copyer(oldData.itemName);
+    },
   ),
   "itemNumber": (
     getter: (data) => data.itemNumber,
@@ -35544,7 +44070,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemNumber = copyer(oldData.itemNumber);
+    },
   ),
   "itemParentId": (
     getter: (data) => data.itemParentId,
@@ -35556,7 +44086,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemParentId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemParentId = copyer(oldData.itemParentId);
+    },
   ),
   "itemParentName": (
     getter: (data) => data.itemParentName,
@@ -35568,7 +44102,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemParentName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemParentName = copyer(oldData.itemParentName);
+    },
   ),
   "itemRemark": (
     getter: (data) => data.itemRemark,
@@ -35580,7 +44118,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemRemark = copyer(oldData.itemRemark);
+    },
   ),
   "itemSortWeight": (
     getter: (data) => data.itemSortWeight,
@@ -35592,7 +44134,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemSortWeight = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemSortWeight = copyer(oldData.itemSortWeight);
+    },
   ),
   "itemSpecsRemark": (
     getter: (data) => data.itemSpecsRemark,
@@ -35604,7 +44150,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemSpecsRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemSpecsRemark = copyer(oldData.itemSpecsRemark);
+    },
   ),
   "itemTreePath": (
     getter: (data) => data.itemTreePath,
@@ -35616,7 +44166,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemTreePath = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemTreePath = copyer(oldData.itemTreePath);
+    },
   ),
   "itemUnitConvertDesc": (
     getter: (data) => data.itemUnitConvertDesc,
@@ -35628,7 +44182,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemUnitConvertDesc = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemUnitConvertDesc = copyer(oldData.itemUnitConvertDesc);
+    },
   ),
   "itemUnitConverts": (
     getter: (data) => data.itemUnitConverts,
@@ -35646,7 +44204,14 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
         return handler(single)!;
       });
       data.itemUnitConverts = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeAutoInjectLiteItemUnitConvert>((single){
+        final handler = TypeAutoInjectLiteItemUnitConvert.deepCopy;
+        return handler(single)!;
+      });
+      newData.itemUnitConverts = copyer(oldData.itemUnitConverts);
+    },
   ),
   "stockAmount": (
     getter: (data) => data.stockAmount,
@@ -35658,7 +44223,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockAmount = copyer(oldData.stockAmount);
+    },
   ),
   "stockBasicAmount": (
     getter: (data) => data.stockBasicAmount,
@@ -35670,7 +44239,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockBasicAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockBasicAmount = copyer(oldData.stockBasicAmount);
+    },
   ),
   "stockInitialAmount": (
     getter: (data) => data.stockInitialAmount,
@@ -35682,7 +44255,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockInitialAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockInitialAmount = copyer(oldData.stockInitialAmount);
+    },
   ),
   "stockInitialPrice": (
     getter: (data) => data.stockInitialPrice,
@@ -35694,7 +44271,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockInitialPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockInitialPrice = copyer(oldData.stockInitialPrice);
+    },
   ),
   "stockInitialTotal": (
     getter: (data) => data.stockInitialTotal,
@@ -35706,7 +44287,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockInitialTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockInitialTotal = copyer(oldData.stockInitialTotal);
+    },
   ),
   "stockInitialUnit": (
     getter: (data) => data.stockInitialUnit,
@@ -35718,7 +44303,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = TypeAutoInjectLiteUnit.fromDynamic;
       data.stockInitialUnit = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeAutoInjectLiteUnit.deepCopy;
+      newData.stockInitialUnit = copyer(oldData.stockInitialUnit);
+    },
   ),
   "stockInitialUnitId": (
     getter: (data) => data.stockInitialUnitId,
@@ -35730,7 +44319,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.stockInitialUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.stockInitialUnitId = copyer(oldData.stockInitialUnitId);
+    },
   ),
   "stockLocations": (
     getter: (data) => data.stockLocations,
@@ -35748,7 +44341,14 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
         return handler(single)!;
       });
       data.stockLocations = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeStockLocationDTO>((single){
+        final handler = TypeStockLocationDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.stockLocations = copyer(oldData.stockLocations);
+    },
   ),
   "stockPrice": (
     getter: (data) => data.stockPrice,
@@ -35760,7 +44360,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockPrice = copyer(oldData.stockPrice);
+    },
   ),
   "stockPurchaseTransitAmount": (
     getter: (data) => data.stockPurchaseTransitAmount,
@@ -35772,7 +44376,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockPurchaseTransitAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockPurchaseTransitAmount = copyer(oldData.stockPurchaseTransitAmount);
+    },
   ),
   "stockPurchaseTransitRemark": (
     getter: (data) => data.stockPurchaseTransitRemark,
@@ -35784,7 +44392,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockPurchaseTransitRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockPurchaseTransitRemark = copyer(oldData.stockPurchaseTransitRemark);
+    },
   ),
   "stockRemainAge": (
     getter: (data) => data.stockRemainAge,
@@ -35796,7 +44408,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainAge = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainAge = copyer(oldData.stockRemainAge);
+    },
   ),
   "stockTotal": (
     getter: (data) => data.stockTotal,
@@ -35808,7 +44424,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockTotal = copyer(oldData.stockTotal);
+    },
   ),
   "storeId": (
     getter: (data) => data.storeId,
@@ -35820,7 +44440,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.storeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.storeId = copyer(oldData.storeId);
+    },
   ),
   "storeName": (
     getter: (data) => data.storeName,
@@ -35832,7 +44456,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.storeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.storeName = copyer(oldData.storeName);
+    },
   ),
   "storeNumber": (
     getter: (data) => data.storeNumber,
@@ -35844,7 +44472,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.storeNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.storeNumber = copyer(oldData.storeNumber);
+    },
   ),
   "waitingInAmount": (
     getter: (data) => data.waitingInAmount,
@@ -35856,7 +44488,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.waitingInAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.waitingInAmount = copyer(oldData.waitingInAmount);
+    },
   ),
   "waitingOutAmount": (
     getter: (data) => data.waitingOutAmount,
@@ -35868,7 +44504,11 @@ final FieldReflectInfo<TypeStockQueryDataDTO> _TypeStockQueryDataDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.waitingOutAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.waitingOutAmount = copyer(oldData.waitingOutAmount);
+    },
   ),
 };
 
@@ -35954,6 +44594,24 @@ class TypeStockQueryDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockQueryDataDTO? deepCopy(TypeStockQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -36084,7 +44742,11 @@ final FieldReflectInfo<TypeStockQuerySumDTO> _TypeStockQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.availableAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.availableAmount = copyer(oldData.availableAmount);
+    },
   ),
   "count": (
     getter: (data) => data.count,
@@ -36096,7 +44758,11 @@ final FieldReflectInfo<TypeStockQuerySumDTO> _TypeStockQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "stockAmount": (
     getter: (data) => data.stockAmount,
@@ -36108,7 +44774,11 @@ final FieldReflectInfo<TypeStockQuerySumDTO> _TypeStockQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockAmount = copyer(oldData.stockAmount);
+    },
   ),
   "stockInitialAmount": (
     getter: (data) => data.stockInitialAmount,
@@ -36120,7 +44790,11 @@ final FieldReflectInfo<TypeStockQuerySumDTO> _TypeStockQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockInitialAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockInitialAmount = copyer(oldData.stockInitialAmount);
+    },
   ),
   "stockInitialTotal": (
     getter: (data) => data.stockInitialTotal,
@@ -36132,7 +44806,11 @@ final FieldReflectInfo<TypeStockQuerySumDTO> _TypeStockQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockInitialTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockInitialTotal = copyer(oldData.stockInitialTotal);
+    },
   ),
   "stockPrice": (
     getter: (data) => data.stockPrice,
@@ -36144,7 +44822,11 @@ final FieldReflectInfo<TypeStockQuerySumDTO> _TypeStockQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockPrice = copyer(oldData.stockPrice);
+    },
   ),
   "stockTotal": (
     getter: (data) => data.stockTotal,
@@ -36156,7 +44838,11 @@ final FieldReflectInfo<TypeStockQuerySumDTO> _TypeStockQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockTotal = copyer(oldData.stockTotal);
+    },
   ),
   "validAmount": (
     getter: (data) => data.validAmount,
@@ -36168,7 +44854,11 @@ final FieldReflectInfo<TypeStockQuerySumDTO> _TypeStockQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.validAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.validAmount = copyer(oldData.validAmount);
+    },
   ),
   "validTotal": (
     getter: (data) => data.validTotal,
@@ -36180,7 +44870,11 @@ final FieldReflectInfo<TypeStockQuerySumDTO> _TypeStockQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.validTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.validTotal = copyer(oldData.validTotal);
+    },
   ),
   "waitingInAmount": (
     getter: (data) => data.waitingInAmount,
@@ -36192,7 +44886,11 @@ final FieldReflectInfo<TypeStockQuerySumDTO> _TypeStockQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.waitingInAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.waitingInAmount = copyer(oldData.waitingInAmount);
+    },
   ),
   "waitingOutAmount": (
     getter: (data) => data.waitingOutAmount,
@@ -36204,7 +44902,11 @@ final FieldReflectInfo<TypeStockQuerySumDTO> _TypeStockQuerySumDTO_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.waitingOutAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.waitingOutAmount = copyer(oldData.waitingOutAmount);
+    },
   ),
 };
 
@@ -36263,6 +44965,24 @@ class TypeStockQuerySumDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockQuerySumDTO? deepCopy(TypeStockQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -36338,7 +45058,14 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDTO> _TypeStockRemainFlowQueryDTO
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeStockRemainFlowQueryDataDTO>((single){
+        final handler = TypeStockRemainFlowQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -36350,7 +45077,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDTO> _TypeStockRemainFlowQueryDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -36362,7 +45093,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDTO> _TypeStockRemainFlowQueryDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -36374,7 +45109,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDTO> _TypeStockRemainFlowQueryDTO
     fromDynamic: (data, value) {
       final parser = TypeStockRemainFlowQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeStockRemainFlowQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -36426,6 +45165,24 @@ class TypeStockRemainFlowQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockRemainFlowQueryDTO? deepCopy(TypeStockRemainFlowQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockRemainFlowQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockRemainFlowQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockRemainFlowQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -36511,7 +45268,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.commonUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.commonUnitId = copyer(oldData.commonUnitId);
+    },
   ),
   "commonUnitName": (
     getter: (data) => data.commonUnitName,
@@ -36523,7 +45284,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.commonUnitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.commonUnitName = copyer(oldData.commonUnitName);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -36535,7 +45300,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "inboundCommonAmount": (
     getter: (data) => data.inboundCommonAmount,
@@ -36547,7 +45316,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.inboundCommonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.inboundCommonAmount = copyer(oldData.inboundCommonAmount);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -36559,7 +45332,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "itemModelRemark": (
     getter: (data) => data.itemModelRemark,
@@ -36571,7 +45348,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemModelRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemModelRemark = copyer(oldData.itemModelRemark);
+    },
   ),
   "itemName": (
     getter: (data) => data.itemName,
@@ -36583,7 +45364,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemName = copyer(oldData.itemName);
+    },
   ),
   "itemSpecsRemark": (
     getter: (data) => data.itemSpecsRemark,
@@ -36595,7 +45380,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemSpecsRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemSpecsRemark = copyer(oldData.itemSpecsRemark);
+    },
   ),
   "orderContactId": (
     getter: (data) => data.orderContactId,
@@ -36607,7 +45396,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderContactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderContactId = copyer(oldData.orderContactId);
+    },
   ),
   "orderContactName": (
     getter: (data) => data.orderContactName,
@@ -36619,7 +45412,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderContactName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderContactName = copyer(oldData.orderContactName);
+    },
   ),
   "orderDate": (
     getter: (data) => data.orderDate,
@@ -36631,7 +45428,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDate = copyer(oldData.orderDate);
+    },
   ),
   "orderDrawEmployeeId": (
     getter: (data) => data.orderDrawEmployeeId,
@@ -36643,7 +45444,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderDrawEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderDrawEmployeeId = copyer(oldData.orderDrawEmployeeId);
+    },
   ),
   "orderDrawEmployeeName": (
     getter: (data) => data.orderDrawEmployeeName,
@@ -36655,7 +45460,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDrawEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDrawEmployeeName = copyer(oldData.orderDrawEmployeeName);
+    },
   ),
   "orderDrawTime": (
     getter: (data) => data.orderDrawTime,
@@ -36667,7 +45476,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDrawTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDrawTime = copyer(oldData.orderDrawTime);
+    },
   ),
   "orderEntryAccountEmployeeId": (
     getter: (data) => data.orderEntryAccountEmployeeId,
@@ -36679,7 +45492,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderEntryAccountEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderEntryAccountEmployeeId = copyer(oldData.orderEntryAccountEmployeeId);
+    },
   ),
   "orderEntryAccountEmployeeName": (
     getter: (data) => data.orderEntryAccountEmployeeName,
@@ -36691,7 +45508,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderEntryAccountEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderEntryAccountEmployeeName = copyer(oldData.orderEntryAccountEmployeeName);
+    },
   ),
   "orderEntryAccountTime": (
     getter: (data) => data.orderEntryAccountTime,
@@ -36703,7 +45524,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderEntryAccountTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderEntryAccountTime = copyer(oldData.orderEntryAccountTime);
+    },
   ),
   "orderId": (
     getter: (data) => data.orderId,
@@ -36715,7 +45540,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderId = copyer(oldData.orderId);
+    },
   ),
   "orderManageEmployeeId": (
     getter: (data) => data.orderManageEmployeeId,
@@ -36727,7 +45556,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderManageEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderManageEmployeeId = copyer(oldData.orderManageEmployeeId);
+    },
   ),
   "orderManageEmployeeName": (
     getter: (data) => data.orderManageEmployeeName,
@@ -36739,7 +45572,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderManageEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderManageEmployeeName = copyer(oldData.orderManageEmployeeName);
+    },
   ),
   "orderNumber": (
     getter: (data) => data.orderNumber,
@@ -36751,7 +45588,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderNumber = copyer(oldData.orderNumber);
+    },
   ),
   "orderRedState": (
     getter: (data) => data.orderRedState,
@@ -36763,7 +45604,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderRedState.fromDynamic;
       data.orderRedState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderRedState.deepCopy;
+      newData.orderRedState = copyer(oldData.orderRedState);
+    },
   ),
   "orderState": (
     getter: (data) => data.orderState,
@@ -36775,7 +45620,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderState.fromDynamic;
       data.orderState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderState.deepCopy;
+      newData.orderState = copyer(oldData.orderState);
+    },
   ),
   "orderStockType": (
     getter: (data) => data.orderStockType,
@@ -36787,7 +45636,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderStockType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderStockType = copyer(oldData.orderStockType);
+    },
   ),
   "orderType": (
     getter: (data) => data.orderType,
@@ -36799,7 +45652,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.orderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.orderType = copyer(oldData.orderType);
+    },
   ),
   "outboundCommonAmount": (
     getter: (data) => data.outboundCommonAmount,
@@ -36811,7 +45668,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.outboundCommonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.outboundCommonAmount = copyer(oldData.outboundCommonAmount);
+    },
   ),
   "previousCommonAmount": (
     getter: (data) => data.previousCommonAmount,
@@ -36823,7 +45684,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.previousCommonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.previousCommonAmount = copyer(oldData.previousCommonAmount);
+    },
   ),
   "previousPrice": (
     getter: (data) => data.previousPrice,
@@ -36835,7 +45700,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.previousPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.previousPrice = copyer(oldData.previousPrice);
+    },
   ),
   "previousTotal": (
     getter: (data) => data.previousTotal,
@@ -36847,7 +45716,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.previousTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.previousTotal = copyer(oldData.previousTotal);
+    },
   ),
   "price": (
     getter: (data) => data.price,
@@ -36859,7 +45732,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.price = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.price = copyer(oldData.price);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -36871,7 +45748,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "storeId": (
     getter: (data) => data.storeId,
@@ -36883,7 +45764,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.storeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.storeId = copyer(oldData.storeId);
+    },
   ),
   "storeName": (
     getter: (data) => data.storeName,
@@ -36895,7 +45780,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.storeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.storeName = copyer(oldData.storeName);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -36907,7 +45796,11 @@ final FieldReflectInfo<TypeStockRemainFlowQueryDataDTO> _TypeStockRemainFlowQuer
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
 };
 
@@ -36989,6 +45882,24 @@ class TypeStockRemainFlowQueryDataDTO extends IDataBasic implements IDataDynamic
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockRemainFlowQueryDataDTO? deepCopy(TypeStockRemainFlowQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockRemainFlowQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockRemainFlowQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockRemainFlowQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -37104,7 +46015,11 @@ final FieldReflectInfo<TypeStockRemainFlowQuerySumDTO> _TypeStockRemainFlowQuery
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "inboundCommonAmount": (
     getter: (data) => data.inboundCommonAmount,
@@ -37116,7 +46031,11 @@ final FieldReflectInfo<TypeStockRemainFlowQuerySumDTO> _TypeStockRemainFlowQuery
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.inboundCommonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.inboundCommonAmount = copyer(oldData.inboundCommonAmount);
+    },
   ),
   "outboundCommonAmount": (
     getter: (data) => data.outboundCommonAmount,
@@ -37128,7 +46047,11 @@ final FieldReflectInfo<TypeStockRemainFlowQuerySumDTO> _TypeStockRemainFlowQuery
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.outboundCommonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.outboundCommonAmount = copyer(oldData.outboundCommonAmount);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -37140,7 +46063,11 @@ final FieldReflectInfo<TypeStockRemainFlowQuerySumDTO> _TypeStockRemainFlowQuery
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
 };
 
@@ -37192,6 +46119,24 @@ class TypeStockRemainFlowQuerySumDTO extends IDataBasic implements IDataDynamic 
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockRemainFlowQuerySumDTO? deepCopy(TypeStockRemainFlowQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockRemainFlowQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockRemainFlowQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockRemainFlowQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -37253,7 +46198,14 @@ final FieldReflectInfo<TypeStockRemainQueryDTO> _TypeStockRemainQueryDTO_fields 
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeStockRemainQueryDataDTO>((single){
+        final handler = TypeStockRemainQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -37265,7 +46217,11 @@ final FieldReflectInfo<TypeStockRemainQueryDTO> _TypeStockRemainQueryDTO_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -37277,7 +46233,11 @@ final FieldReflectInfo<TypeStockRemainQueryDTO> _TypeStockRemainQueryDTO_fields 
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -37289,7 +46249,11 @@ final FieldReflectInfo<TypeStockRemainQueryDTO> _TypeStockRemainQueryDTO_fields 
     fromDynamic: (data, value) {
       final parser = TypeStockRemainQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeStockRemainQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -37341,6 +46305,24 @@ class TypeStockRemainQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockRemainQueryDTO? deepCopy(TypeStockRemainQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockRemainQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockRemainQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockRemainQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -37419,7 +46401,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "itemBasicUnitId": (
     getter: (data) => data.itemBasicUnitId,
@@ -37431,7 +46417,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemBasicUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemBasicUnitId = copyer(oldData.itemBasicUnitId);
+    },
   ),
   "itemBasicUnitName": (
     getter: (data) => data.itemBasicUnitName,
@@ -37443,7 +46433,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemBasicUnitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemBasicUnitName = copyer(oldData.itemBasicUnitName);
+    },
   ),
   "itemCommonUnitConvert": (
     getter: (data) => data.itemCommonUnitConvert,
@@ -37455,7 +46449,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemCommonUnitConvert = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemCommonUnitConvert = copyer(oldData.itemCommonUnitConvert);
+    },
   ),
   "itemCommonUnitId": (
     getter: (data) => data.itemCommonUnitId,
@@ -37467,7 +46465,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemCommonUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemCommonUnitId = copyer(oldData.itemCommonUnitId);
+    },
   ),
   "itemCommonUnitName": (
     getter: (data) => data.itemCommonUnitName,
@@ -37479,7 +46481,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemCommonUnitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemCommonUnitName = copyer(oldData.itemCommonUnitName);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -37491,7 +46497,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "itemIsEnabled": (
     getter: (data) => data.itemIsEnabled,
@@ -37503,7 +46513,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemIsEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemIsEnabled = copyer(oldData.itemIsEnabled);
+    },
   ),
   "itemModelRemark": (
     getter: (data) => data.itemModelRemark,
@@ -37515,7 +46529,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemModelRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemModelRemark = copyer(oldData.itemModelRemark);
+    },
   ),
   "itemName": (
     getter: (data) => data.itemName,
@@ -37527,7 +46545,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemName = copyer(oldData.itemName);
+    },
   ),
   "itemNumber": (
     getter: (data) => data.itemNumber,
@@ -37539,7 +46561,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemNumber = copyer(oldData.itemNumber);
+    },
   ),
   "itemRemark": (
     getter: (data) => data.itemRemark,
@@ -37551,7 +46577,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemRemark = copyer(oldData.itemRemark);
+    },
   ),
   "itemSpecsRemark": (
     getter: (data) => data.itemSpecsRemark,
@@ -37563,7 +46593,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemSpecsRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemSpecsRemark = copyer(oldData.itemSpecsRemark);
+    },
   ),
   "itemUnitConvertDesc": (
     getter: (data) => data.itemUnitConvertDesc,
@@ -37575,7 +46609,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemUnitConvertDesc = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemUnitConvertDesc = copyer(oldData.itemUnitConvertDesc);
+    },
   ),
   "itemUnitConverts": (
     getter: (data) => data.itemUnitConverts,
@@ -37593,7 +46631,14 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
         return handler(single)!;
       });
       data.itemUnitConverts = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeAutoInjectLiteItemUnitConvert>((single){
+        final handler = TypeAutoInjectLiteItemUnitConvert.deepCopy;
+        return handler(single)!;
+      });
+      newData.itemUnitConverts = copyer(oldData.itemUnitConverts);
+    },
   ),
   "sourceOrderId": (
     getter: (data) => data.sourceOrderId,
@@ -37605,7 +46650,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.sourceOrderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.sourceOrderId = copyer(oldData.sourceOrderId);
+    },
   ),
   "sourceOrderNumber": (
     getter: (data) => data.sourceOrderNumber,
@@ -37617,7 +46666,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.sourceOrderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.sourceOrderNumber = copyer(oldData.sourceOrderNumber);
+    },
   ),
   "sourceOrderType": (
     getter: (data) => data.sourceOrderType,
@@ -37629,7 +46682,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.sourceOrderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.sourceOrderType = copyer(oldData.sourceOrderType);
+    },
   ),
   "stockId": (
     getter: (data) => data.stockId,
@@ -37641,7 +46698,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockId = copyer(oldData.stockId);
+    },
   ),
   "stockRemainAmount": (
     getter: (data) => data.stockRemainAmount,
@@ -37653,7 +46714,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainAmount = copyer(oldData.stockRemainAmount);
+    },
   ),
   "stockRemainBasicAmount": (
     getter: (data) => data.stockRemainBasicAmount,
@@ -37665,7 +46730,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainBasicAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainBasicAmount = copyer(oldData.stockRemainBasicAmount);
+    },
   ),
   "stockRemainPrice": (
     getter: (data) => data.stockRemainPrice,
@@ -37677,7 +46746,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainPrice = copyer(oldData.stockRemainPrice);
+    },
   ),
   "stockRemainPutOnShelfTime": (
     getter: (data) => data.stockRemainPutOnShelfTime,
@@ -37689,7 +46762,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainPutOnShelfTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainPutOnShelfTime = copyer(oldData.stockRemainPutOnShelfTime);
+    },
   ),
   "stockRemainRemark": (
     getter: (data) => data.stockRemainRemark,
@@ -37701,7 +46778,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainRemark = copyer(oldData.stockRemainRemark);
+    },
   ),
   "stockRemainTotal": (
     getter: (data) => data.stockRemainTotal,
@@ -37713,7 +46794,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainTotal = copyer(oldData.stockRemainTotal);
+    },
   ),
   "storeId": (
     getter: (data) => data.storeId,
@@ -37725,7 +46810,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.storeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.storeId = copyer(oldData.storeId);
+    },
   ),
   "storeName": (
     getter: (data) => data.storeName,
@@ -37737,7 +46826,11 @@ final FieldReflectInfo<TypeStockRemainQueryDataDTO> _TypeStockRemainQueryDataDTO
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.storeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.storeName = copyer(oldData.storeName);
+    },
   ),
 };
 
@@ -37812,6 +46905,24 @@ class TypeStockRemainQueryDataDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockRemainQueryDataDTO? deepCopy(TypeStockRemainQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockRemainQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockRemainQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockRemainQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -37913,7 +47024,11 @@ final FieldReflectInfo<TypeStockRemainQuerySumDTO> _TypeStockRemainQuerySumDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "stockRemainAmount": (
     getter: (data) => data.stockRemainAmount,
@@ -37925,7 +47040,11 @@ final FieldReflectInfo<TypeStockRemainQuerySumDTO> _TypeStockRemainQuerySumDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainAmount = copyer(oldData.stockRemainAmount);
+    },
   ),
   "stockRemainPrice": (
     getter: (data) => data.stockRemainPrice,
@@ -37937,7 +47056,11 @@ final FieldReflectInfo<TypeStockRemainQuerySumDTO> _TypeStockRemainQuerySumDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainPrice = copyer(oldData.stockRemainPrice);
+    },
   ),
   "stockRemainTotal": (
     getter: (data) => data.stockRemainTotal,
@@ -37949,7 +47072,11 @@ final FieldReflectInfo<TypeStockRemainQuerySumDTO> _TypeStockRemainQuerySumDTO_f
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainTotal = copyer(oldData.stockRemainTotal);
+    },
   ),
 };
 
@@ -38001,6 +47128,24 @@ class TypeStockRemainQuerySumDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockRemainQuerySumDTO? deepCopy(TypeStockRemainQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockRemainQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockRemainQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockRemainQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -38062,7 +47207,14 @@ final FieldReflectInfo<TypeStockReplenishQueryDTO> _TypeStockReplenishQueryDTO_f
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeStockReplenishQueryDataDTO>((single){
+        final handler = TypeStockReplenishQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -38074,7 +47226,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDTO> _TypeStockReplenishQueryDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -38086,7 +47242,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDTO> _TypeStockReplenishQueryDTO_f
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -38098,7 +47258,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDTO> _TypeStockReplenishQueryDTO_f
     fromDynamic: (data, value) {
       final parser = TypeStockReplenishQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeStockReplenishQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -38150,6 +47314,24 @@ class TypeStockReplenishQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockReplenishQueryDTO? deepCopy(TypeStockReplenishQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockReplenishQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockReplenishQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockReplenishQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -38232,7 +47414,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.availableStockAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.availableStockAmount = copyer(oldData.availableStockAmount);
+    },
   ),
   "availableStockDay": (
     getter: (data) => data.availableStockDay,
@@ -38244,7 +47430,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.availableStockDay = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.availableStockDay = copyer(oldData.availableStockDay);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -38256,7 +47446,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "isRegularType": (
     getter: (data) => data.isRegularType,
@@ -38268,7 +47462,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isRegularType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isRegularType = copyer(oldData.isRegularType);
+    },
   ),
   "itemCommonUnitConvert": (
     getter: (data) => data.itemCommonUnitConvert,
@@ -38280,7 +47478,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemCommonUnitConvert = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemCommonUnitConvert = copyer(oldData.itemCommonUnitConvert);
+    },
   ),
   "itemCommonUnitId": (
     getter: (data) => data.itemCommonUnitId,
@@ -38292,7 +47494,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemCommonUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemCommonUnitId = copyer(oldData.itemCommonUnitId);
+    },
   ),
   "itemCommonUnitName": (
     getter: (data) => data.itemCommonUnitName,
@@ -38304,7 +47510,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemCommonUnitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemCommonUnitName = copyer(oldData.itemCommonUnitName);
+    },
   ),
   "itemIsEnabled": (
     getter: (data) => data.itemIsEnabled,
@@ -38316,7 +47526,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemIsEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemIsEnabled = copyer(oldData.itemIsEnabled);
+    },
   ),
   "itemModelRemark": (
     getter: (data) => data.itemModelRemark,
@@ -38328,7 +47542,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemModelRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemModelRemark = copyer(oldData.itemModelRemark);
+    },
   ),
   "itemName": (
     getter: (data) => data.itemName,
@@ -38340,7 +47558,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemName = copyer(oldData.itemName);
+    },
   ),
   "itemNumber": (
     getter: (data) => data.itemNumber,
@@ -38352,7 +47574,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemNumber = copyer(oldData.itemNumber);
+    },
   ),
   "itemParentId": (
     getter: (data) => data.itemParentId,
@@ -38364,7 +47590,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemParentId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemParentId = copyer(oldData.itemParentId);
+    },
   ),
   "itemParentName": (
     getter: (data) => data.itemParentName,
@@ -38376,7 +47606,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemParentName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemParentName = copyer(oldData.itemParentName);
+    },
   ),
   "itemRemark": (
     getter: (data) => data.itemRemark,
@@ -38388,7 +47622,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemRemark = copyer(oldData.itemRemark);
+    },
   ),
   "itemSpecsRemark": (
     getter: (data) => data.itemSpecsRemark,
@@ -38400,7 +47638,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemSpecsRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemSpecsRemark = copyer(oldData.itemSpecsRemark);
+    },
   ),
   "itemTreePath": (
     getter: (data) => data.itemTreePath,
@@ -38412,7 +47654,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemTreePath = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemTreePath = copyer(oldData.itemTreePath);
+    },
   ),
   "itemUnitConvertDesc": (
     getter: (data) => data.itemUnitConvertDesc,
@@ -38424,7 +47670,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemUnitConvertDesc = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemUnitConvertDesc = copyer(oldData.itemUnitConvertDesc);
+    },
   ),
   "orderSalesAmount": (
     getter: (data) => data.orderSalesAmount,
@@ -38436,7 +47686,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderSalesAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderSalesAmount = copyer(oldData.orderSalesAmount);
+    },
   ),
   "orderSalesAmountPerDay": (
     getter: (data) => data.orderSalesAmountPerDay,
@@ -38448,7 +47702,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderSalesAmountPerDay = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderSalesAmountPerDay = copyer(oldData.orderSalesAmountPerDay);
+    },
   ),
   "orderSalesTotal": (
     getter: (data) => data.orderSalesTotal,
@@ -38460,7 +47718,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderSalesTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderSalesTotal = copyer(oldData.orderSalesTotal);
+    },
   ),
   "planPurchaseAmount": (
     getter: (data) => data.planPurchaseAmount,
@@ -38472,7 +47734,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.planPurchaseAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.planPurchaseAmount = copyer(oldData.planPurchaseAmount);
+    },
   ),
   "planPurchaseBasicAmount": (
     getter: (data) => data.planPurchaseBasicAmount,
@@ -38484,7 +47750,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.planPurchaseBasicAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.planPurchaseBasicAmount = copyer(oldData.planPurchaseBasicAmount);
+    },
   ),
   "planPurchaseUnitConvertAmount": (
     getter: (data) => data.planPurchaseUnitConvertAmount,
@@ -38496,7 +47766,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.planPurchaseUnitConvertAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.planPurchaseUnitConvertAmount = copyer(oldData.planPurchaseUnitConvertAmount);
+    },
   ),
   "purchaseTransitStockAmount": (
     getter: (data) => data.purchaseTransitStockAmount,
@@ -38508,7 +47782,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.purchaseTransitStockAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.purchaseTransitStockAmount = copyer(oldData.purchaseTransitStockAmount);
+    },
   ),
   "purchaseTransitStockBasicAmount": (
     getter: (data) => data.purchaseTransitStockBasicAmount,
@@ -38520,7 +47798,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.purchaseTransitStockBasicAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.purchaseTransitStockBasicAmount = copyer(oldData.purchaseTransitStockBasicAmount);
+    },
   ),
   "purchaseTransitStockRemark": (
     getter: (data) => data.purchaseTransitStockRemark,
@@ -38532,7 +47814,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.purchaseTransitStockRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.purchaseTransitStockRemark = copyer(oldData.purchaseTransitStockRemark);
+    },
   ),
   "purchaseTransitStockUnitConvertAmount": (
     getter: (data) => data.purchaseTransitStockUnitConvertAmount,
@@ -38544,7 +47830,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.purchaseTransitStockUnitConvertAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.purchaseTransitStockUnitConvertAmount = copyer(oldData.purchaseTransitStockUnitConvertAmount);
+    },
   ),
   "stockAmount": (
     getter: (data) => data.stockAmount,
@@ -38556,7 +47846,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockAmount = copyer(oldData.stockAmount);
+    },
   ),
   "stockId": (
     getter: (data) => data.stockId,
@@ -38568,7 +47862,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockId = copyer(oldData.stockId);
+    },
   ),
   "stockWaitingInAmount": (
     getter: (data) => data.stockWaitingInAmount,
@@ -38580,7 +47878,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockWaitingInAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockWaitingInAmount = copyer(oldData.stockWaitingInAmount);
+    },
   ),
   "stockWaitingOutAmount": (
     getter: (data) => data.stockWaitingOutAmount,
@@ -38592,7 +47894,11 @@ final FieldReflectInfo<TypeStockReplenishQueryDataDTO> _TypeStockReplenishQueryD
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockWaitingOutAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockWaitingOutAmount = copyer(oldData.stockWaitingOutAmount);
+    },
   ),
 };
 
@@ -38671,6 +47977,24 @@ class TypeStockReplenishQueryDataDTO extends IDataBasic implements IDataDynamic 
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockReplenishQueryDataDTO? deepCopy(TypeStockReplenishQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockReplenishQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockReplenishQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockReplenishQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -38785,7 +48109,11 @@ final FieldReflectInfo<TypeStockReplenishQuerySumDTO> _TypeStockReplenishQuerySu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.availableStockAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.availableStockAmount = copyer(oldData.availableStockAmount);
+    },
   ),
   "availableStockDay": (
     getter: (data) => data.availableStockDay,
@@ -38797,7 +48125,11 @@ final FieldReflectInfo<TypeStockReplenishQuerySumDTO> _TypeStockReplenishQuerySu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.availableStockDay = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.availableStockDay = copyer(oldData.availableStockDay);
+    },
   ),
   "count": (
     getter: (data) => data.count,
@@ -38809,7 +48141,11 @@ final FieldReflectInfo<TypeStockReplenishQuerySumDTO> _TypeStockReplenishQuerySu
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "orderSalesAmount": (
     getter: (data) => data.orderSalesAmount,
@@ -38821,7 +48157,11 @@ final FieldReflectInfo<TypeStockReplenishQuerySumDTO> _TypeStockReplenishQuerySu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderSalesAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderSalesAmount = copyer(oldData.orderSalesAmount);
+    },
   ),
   "orderSalesCostTotalPerDay": (
     getter: (data) => data.orderSalesCostTotalPerDay,
@@ -38833,7 +48173,11 @@ final FieldReflectInfo<TypeStockReplenishQuerySumDTO> _TypeStockReplenishQuerySu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderSalesCostTotalPerDay = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderSalesCostTotalPerDay = copyer(oldData.orderSalesCostTotalPerDay);
+    },
   ),
   "orderSalesTotal": (
     getter: (data) => data.orderSalesTotal,
@@ -38845,7 +48189,11 @@ final FieldReflectInfo<TypeStockReplenishQuerySumDTO> _TypeStockReplenishQuerySu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderSalesTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderSalesTotal = copyer(oldData.orderSalesTotal);
+    },
   ),
   "purchaseTransitStockTotal": (
     getter: (data) => data.purchaseTransitStockTotal,
@@ -38857,7 +48205,11 @@ final FieldReflectInfo<TypeStockReplenishQuerySumDTO> _TypeStockReplenishQuerySu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.purchaseTransitStockTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.purchaseTransitStockTotal = copyer(oldData.purchaseTransitStockTotal);
+    },
   ),
   "stockAmount": (
     getter: (data) => data.stockAmount,
@@ -38869,7 +48221,11 @@ final FieldReflectInfo<TypeStockReplenishQuerySumDTO> _TypeStockReplenishQuerySu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockAmount = copyer(oldData.stockAmount);
+    },
   ),
   "stockTotal": (
     getter: (data) => data.stockTotal,
@@ -38881,7 +48237,11 @@ final FieldReflectInfo<TypeStockReplenishQuerySumDTO> _TypeStockReplenishQuerySu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockTotal = copyer(oldData.stockTotal);
+    },
   ),
 };
 
@@ -38938,6 +48298,24 @@ class TypeStockReplenishQuerySumDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStockReplenishQuerySumDTO? deepCopy(TypeStockReplenishQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStockReplenishQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStockReplenishQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStockReplenishQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -39021,7 +48399,14 @@ final FieldReflectInfo<TypeStore> _TypeStore_fields = {
         return handler(single)!;
       });
       data.children = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeStore>((single){
+        final handler = TypeStore.deepCopy;
+        return handler(single)!;
+      });
+      newData.children = copyer(oldData.children);
+    },
   ),
   "createTime": (
     getter: (data) => data.createTime,
@@ -39033,7 +48418,11 @@ final FieldReflectInfo<TypeStore> _TypeStore_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "hasBusinessLink": (
     getter: (data) => data.hasBusinessLink,
@@ -39045,7 +48434,11 @@ final FieldReflectInfo<TypeStore> _TypeStore_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasBusinessLink = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasBusinessLink = copyer(oldData.hasBusinessLink);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -39057,7 +48450,11 @@ final FieldReflectInfo<TypeStore> _TypeStore_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "isCategory": (
     getter: (data) => data.isCategory,
@@ -39069,7 +48466,11 @@ final FieldReflectInfo<TypeStore> _TypeStore_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isCategory = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isCategory = copyer(oldData.isCategory);
+    },
   ),
   "isEnabled": (
     getter: (data) => data.isEnabled,
@@ -39081,7 +48482,11 @@ final FieldReflectInfo<TypeStore> _TypeStore_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumSoftEnableIsEnable.fromDynamic;
       data.isEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumSoftEnableIsEnable.deepCopy;
+      newData.isEnabled = copyer(oldData.isEnabled);
+    },
   ),
   "isSystem": (
     getter: (data) => data.isSystem,
@@ -39093,7 +48498,11 @@ final FieldReflectInfo<TypeStore> _TypeStore_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.isSystem = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.isSystem = copyer(oldData.isSystem);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -39105,7 +48514,11 @@ final FieldReflectInfo<TypeStore> _TypeStore_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -39117,7 +48530,11 @@ final FieldReflectInfo<TypeStore> _TypeStore_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "number": (
     getter: (data) => data.number,
@@ -39129,7 +48546,11 @@ final FieldReflectInfo<TypeStore> _TypeStore_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.number = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.number = copyer(oldData.number);
+    },
   ),
   "parentId": (
     getter: (data) => data.parentId,
@@ -39141,7 +48562,11 @@ final FieldReflectInfo<TypeStore> _TypeStore_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.parentId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.parentId = copyer(oldData.parentId);
+    },
   ),
   "parentInfo": (
     getter: (data) => data.parentInfo,
@@ -39153,7 +48578,11 @@ final FieldReflectInfo<TypeStore> _TypeStore_fields = {
     fromDynamic: (data, value) {
       final parser = TypeStore.fromDynamic;
       data.parentInfo = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeStore.deepCopy;
+      newData.parentInfo = copyer(oldData.parentInfo);
+    },
   ),
   "phone": (
     getter: (data) => data.phone,
@@ -39165,7 +48594,11 @@ final FieldReflectInfo<TypeStore> _TypeStore_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.phone = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.phone = copyer(oldData.phone);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -39177,7 +48610,11 @@ final FieldReflectInfo<TypeStore> _TypeStore_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "treeLevel": (
     getter: (data) => data.treeLevel,
@@ -39189,7 +48626,11 @@ final FieldReflectInfo<TypeStore> _TypeStore_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.treeLevel = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.treeLevel = copyer(oldData.treeLevel);
+    },
   ),
   "treePath": (
     getter: (data) => data.treePath,
@@ -39201,7 +48642,11 @@ final FieldReflectInfo<TypeStore> _TypeStore_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.treePath = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.treePath = copyer(oldData.treePath);
+    },
   ),
 };
 
@@ -39265,6 +48710,24 @@ class TypeStore extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeStore? deepCopy(TypeStore? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeStore();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeStore_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeStore copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -39353,7 +48816,11 @@ final FieldReflectInfo<TypeSubContractStock> _TypeSubContractStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.bookAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.bookAmount = copyer(oldData.bookAmount);
+    },
   ),
   "bookTotal": (
     getter: (data) => data.bookTotal,
@@ -39365,7 +48832,11 @@ final FieldReflectInfo<TypeSubContractStock> _TypeSubContractStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.bookTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.bookTotal = copyer(oldData.bookTotal);
+    },
   ),
   "contactId": (
     getter: (data) => data.contactId,
@@ -39377,7 +48848,11 @@ final FieldReflectInfo<TypeSubContractStock> _TypeSubContractStock_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactId = copyer(oldData.contactId);
+    },
   ),
   "createTime": (
     getter: (data) => data.createTime,
@@ -39389,7 +48864,11 @@ final FieldReflectInfo<TypeSubContractStock> _TypeSubContractStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "hasBusinessLink": (
     getter: (data) => data.hasBusinessLink,
@@ -39401,7 +48880,11 @@ final FieldReflectInfo<TypeSubContractStock> _TypeSubContractStock_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasBusinessLink = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasBusinessLink = copyer(oldData.hasBusinessLink);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -39413,7 +48896,11 @@ final FieldReflectInfo<TypeSubContractStock> _TypeSubContractStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -39425,7 +48912,11 @@ final FieldReflectInfo<TypeSubContractStock> _TypeSubContractStock_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -39437,7 +48928,11 @@ final FieldReflectInfo<TypeSubContractStock> _TypeSubContractStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "price": (
     getter: (data) => data.price,
@@ -39449,7 +48944,11 @@ final FieldReflectInfo<TypeSubContractStock> _TypeSubContractStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.price = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.price = copyer(oldData.price);
+    },
   ),
   "remainAge": (
     getter: (data) => data.remainAge,
@@ -39461,7 +48960,11 @@ final FieldReflectInfo<TypeSubContractStock> _TypeSubContractStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remainAge = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remainAge = copyer(oldData.remainAge);
+    },
   ),
   "remainAgeSum": (
     getter: (data) => data.remainAgeSum,
@@ -39473,7 +48976,11 @@ final FieldReflectInfo<TypeSubContractStock> _TypeSubContractStock_fields = {
     fromDynamic: (data, value) {
       final parser = DoubleHelper.fromDynamic;
       data.remainAgeSum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = DoubleHelper.deepCopy;
+      newData.remainAgeSum = copyer(oldData.remainAgeSum);
+    },
   ),
   "waitingInAmount": (
     getter: (data) => data.waitingInAmount,
@@ -39485,7 +48992,11 @@ final FieldReflectInfo<TypeSubContractStock> _TypeSubContractStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.waitingInAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.waitingInAmount = copyer(oldData.waitingInAmount);
+    },
   ),
   "waitingOutAmount": (
     getter: (data) => data.waitingOutAmount,
@@ -39497,7 +49008,11 @@ final FieldReflectInfo<TypeSubContractStock> _TypeSubContractStock_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.waitingOutAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.waitingOutAmount = copyer(oldData.waitingOutAmount);
+    },
   ),
 };
 
@@ -39558,6 +49073,24 @@ class TypeSubContractStock extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeSubContractStock? deepCopy(TypeSubContractStock? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeSubContractStock();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeSubContractStock_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeSubContractStock copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -39637,7 +49170,14 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDTO> _TypeSubContractStockFl
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeSubContractStockFlowQueryDataDTO>((single){
+        final handler = TypeSubContractStockFlowQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -39649,7 +49189,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDTO> _TypeSubContractStockFl
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -39661,7 +49205,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDTO> _TypeSubContractStockFl
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -39673,7 +49221,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDTO> _TypeSubContractStockFl
     fromDynamic: (data, value) {
       final parser = TypeSubContractStockFlowQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeSubContractStockFlowQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -39725,6 +49277,24 @@ class TypeSubContractStockFlowQueryDTO extends IDataBasic implements IDataDynami
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeSubContractStockFlowQueryDTO? deepCopy(TypeSubContractStockFlowQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeSubContractStockFlowQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeSubContractStockFlowQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeSubContractStockFlowQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -39808,7 +49378,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.commonUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.commonUnitId = copyer(oldData.commonUnitId);
+    },
   ),
   "commonUnitName": (
     getter: (data) => data.commonUnitName,
@@ -39820,7 +49394,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.commonUnitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.commonUnitName = copyer(oldData.commonUnitName);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -39832,7 +49410,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "inboundCommonAmount": (
     getter: (data) => data.inboundCommonAmount,
@@ -39844,7 +49426,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.inboundCommonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.inboundCommonAmount = copyer(oldData.inboundCommonAmount);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -39856,7 +49442,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "itemName": (
     getter: (data) => data.itemName,
@@ -39868,7 +49458,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemName = copyer(oldData.itemName);
+    },
   ),
   "orderContactId": (
     getter: (data) => data.orderContactId,
@@ -39880,7 +49474,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderContactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderContactId = copyer(oldData.orderContactId);
+    },
   ),
   "orderContactName": (
     getter: (data) => data.orderContactName,
@@ -39892,7 +49490,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderContactName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderContactName = copyer(oldData.orderContactName);
+    },
   ),
   "orderDate": (
     getter: (data) => data.orderDate,
@@ -39904,7 +49506,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDate = copyer(oldData.orderDate);
+    },
   ),
   "orderDrawEmployeeId": (
     getter: (data) => data.orderDrawEmployeeId,
@@ -39916,7 +49522,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderDrawEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderDrawEmployeeId = copyer(oldData.orderDrawEmployeeId);
+    },
   ),
   "orderDrawEmployeeName": (
     getter: (data) => data.orderDrawEmployeeName,
@@ -39928,7 +49538,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDrawEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDrawEmployeeName = copyer(oldData.orderDrawEmployeeName);
+    },
   ),
   "orderDrawTime": (
     getter: (data) => data.orderDrawTime,
@@ -39940,7 +49554,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderDrawTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderDrawTime = copyer(oldData.orderDrawTime);
+    },
   ),
   "orderEntryAccountEmployeeId": (
     getter: (data) => data.orderEntryAccountEmployeeId,
@@ -39952,7 +49570,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderEntryAccountEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderEntryAccountEmployeeId = copyer(oldData.orderEntryAccountEmployeeId);
+    },
   ),
   "orderEntryAccountEmployeeName": (
     getter: (data) => data.orderEntryAccountEmployeeName,
@@ -39964,7 +49586,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderEntryAccountEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderEntryAccountEmployeeName = copyer(oldData.orderEntryAccountEmployeeName);
+    },
   ),
   "orderEntryAccountTime": (
     getter: (data) => data.orderEntryAccountTime,
@@ -39976,7 +49602,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderEntryAccountTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderEntryAccountTime = copyer(oldData.orderEntryAccountTime);
+    },
   ),
   "orderId": (
     getter: (data) => data.orderId,
@@ -39988,7 +49618,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderId = copyer(oldData.orderId);
+    },
   ),
   "orderManageEmployeeId": (
     getter: (data) => data.orderManageEmployeeId,
@@ -40000,7 +49634,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderManageEmployeeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderManageEmployeeId = copyer(oldData.orderManageEmployeeId);
+    },
   ),
   "orderManageEmployeeName": (
     getter: (data) => data.orderManageEmployeeName,
@@ -40012,7 +49650,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderManageEmployeeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderManageEmployeeName = copyer(oldData.orderManageEmployeeName);
+    },
   ),
   "orderNumber": (
     getter: (data) => data.orderNumber,
@@ -40024,7 +49666,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.orderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.orderNumber = copyer(oldData.orderNumber);
+    },
   ),
   "orderRedState": (
     getter: (data) => data.orderRedState,
@@ -40036,7 +49682,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderRedState.fromDynamic;
       data.orderRedState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderRedState.deepCopy;
+      newData.orderRedState = copyer(oldData.orderRedState);
+    },
   ),
   "orderState": (
     getter: (data) => data.orderState,
@@ -40048,7 +49698,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderState.fromDynamic;
       data.orderState = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderState.deepCopy;
+      newData.orderState = copyer(oldData.orderState);
+    },
   ),
   "orderSubContractStockType": (
     getter: (data) => data.orderSubContractStockType,
@@ -40060,7 +49714,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.orderSubContractStockType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.orderSubContractStockType = copyer(oldData.orderSubContractStockType);
+    },
   ),
   "orderType": (
     getter: (data) => data.orderType,
@@ -40072,7 +49730,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.orderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.orderType = copyer(oldData.orderType);
+    },
   ),
   "outboundCommonAmount": (
     getter: (data) => data.outboundCommonAmount,
@@ -40084,7 +49746,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.outboundCommonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.outboundCommonAmount = copyer(oldData.outboundCommonAmount);
+    },
   ),
   "previousCommonAmount": (
     getter: (data) => data.previousCommonAmount,
@@ -40096,7 +49762,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.previousCommonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.previousCommonAmount = copyer(oldData.previousCommonAmount);
+    },
   ),
   "previousPrice": (
     getter: (data) => data.previousPrice,
@@ -40108,7 +49778,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.previousPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.previousPrice = copyer(oldData.previousPrice);
+    },
   ),
   "previousTotal": (
     getter: (data) => data.previousTotal,
@@ -40120,7 +49794,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.previousTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.previousTotal = copyer(oldData.previousTotal);
+    },
   ),
   "price": (
     getter: (data) => data.price,
@@ -40132,7 +49810,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.price = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.price = copyer(oldData.price);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -40144,7 +49826,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
   "storeId": (
     getter: (data) => data.storeId,
@@ -40156,7 +49842,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.storeId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.storeId = copyer(oldData.storeId);
+    },
   ),
   "storeName": (
     getter: (data) => data.storeName,
@@ -40168,7 +49858,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.storeName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.storeName = copyer(oldData.storeName);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -40180,7 +49874,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQueryDataDTO> _TypeSubContractSto
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
 };
 
@@ -40260,6 +49958,24 @@ class TypeSubContractStockFlowQueryDataDTO extends IDataBasic implements IDataDy
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeSubContractStockFlowQueryDataDTO? deepCopy(TypeSubContractStockFlowQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeSubContractStockFlowQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeSubContractStockFlowQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeSubContractStockFlowQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -40371,7 +50087,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQuerySumDTO> _TypeSubContractStoc
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "inboundCommonAmount": (
     getter: (data) => data.inboundCommonAmount,
@@ -40383,7 +50103,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQuerySumDTO> _TypeSubContractStoc
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.inboundCommonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.inboundCommonAmount = copyer(oldData.inboundCommonAmount);
+    },
   ),
   "outboundCommonAmount": (
     getter: (data) => data.outboundCommonAmount,
@@ -40395,7 +50119,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQuerySumDTO> _TypeSubContractStoc
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.outboundCommonAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.outboundCommonAmount = copyer(oldData.outboundCommonAmount);
+    },
   ),
   "total": (
     getter: (data) => data.total,
@@ -40407,7 +50135,11 @@ final FieldReflectInfo<TypeSubContractStockFlowQuerySumDTO> _TypeSubContractStoc
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.total = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.total = copyer(oldData.total);
+    },
   ),
 };
 
@@ -40459,6 +50191,24 @@ class TypeSubContractStockFlowQuerySumDTO extends IDataBasic implements IDataDyn
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeSubContractStockFlowQuerySumDTO? deepCopy(TypeSubContractStockFlowQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeSubContractStockFlowQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeSubContractStockFlowQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeSubContractStockFlowQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -40520,7 +50270,14 @@ final FieldReflectInfo<TypeSubContractStockQueryDTO> _TypeSubContractStockQueryD
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeSubContractStockQueryDataDTO>((single){
+        final handler = TypeSubContractStockQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -40532,7 +50289,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDTO> _TypeSubContractStockQueryD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -40544,7 +50305,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDTO> _TypeSubContractStockQueryD
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -40556,7 +50321,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDTO> _TypeSubContractStockQueryD
     fromDynamic: (data, value) {
       final parser = TypeSubContractStockQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeSubContractStockQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -40608,6 +50377,24 @@ class TypeSubContractStockQueryDTO extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeSubContractStockQueryDTO? deepCopy(TypeSubContractStockQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeSubContractStockQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeSubContractStockQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeSubContractStockQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -40685,7 +50472,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactId = copyer(oldData.contactId);
+    },
   ),
   "contactName": (
     getter: (data) => data.contactName,
@@ -40697,7 +50488,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactName = copyer(oldData.contactName);
+    },
   ),
   "contactNumber": (
     getter: (data) => data.contactNumber,
@@ -40709,7 +50504,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactNumber = copyer(oldData.contactNumber);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -40721,7 +50520,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "itemBasicUnitId": (
     getter: (data) => data.itemBasicUnitId,
@@ -40733,7 +50536,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemBasicUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemBasicUnitId = copyer(oldData.itemBasicUnitId);
+    },
   ),
   "itemBasicUnitName": (
     getter: (data) => data.itemBasicUnitName,
@@ -40745,7 +50552,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemBasicUnitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemBasicUnitName = copyer(oldData.itemBasicUnitName);
+    },
   ),
   "itemCommonUnitConvert": (
     getter: (data) => data.itemCommonUnitConvert,
@@ -40757,7 +50568,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemCommonUnitConvert = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemCommonUnitConvert = copyer(oldData.itemCommonUnitConvert);
+    },
   ),
   "itemCommonUnitId": (
     getter: (data) => data.itemCommonUnitId,
@@ -40769,7 +50584,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemCommonUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemCommonUnitId = copyer(oldData.itemCommonUnitId);
+    },
   ),
   "itemCommonUnitName": (
     getter: (data) => data.itemCommonUnitName,
@@ -40781,7 +50600,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemCommonUnitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemCommonUnitName = copyer(oldData.itemCommonUnitName);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -40793,7 +50616,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "itemIsEnabled": (
     getter: (data) => data.itemIsEnabled,
@@ -40805,7 +50632,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemIsEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemIsEnabled = copyer(oldData.itemIsEnabled);
+    },
   ),
   "itemModelRemark": (
     getter: (data) => data.itemModelRemark,
@@ -40817,7 +50648,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemModelRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemModelRemark = copyer(oldData.itemModelRemark);
+    },
   ),
   "itemName": (
     getter: (data) => data.itemName,
@@ -40829,7 +50664,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemName = copyer(oldData.itemName);
+    },
   ),
   "itemNumber": (
     getter: (data) => data.itemNumber,
@@ -40841,7 +50680,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemNumber = copyer(oldData.itemNumber);
+    },
   ),
   "itemParentId": (
     getter: (data) => data.itemParentId,
@@ -40853,7 +50696,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemParentId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemParentId = copyer(oldData.itemParentId);
+    },
   ),
   "itemParentName": (
     getter: (data) => data.itemParentName,
@@ -40865,7 +50712,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemParentName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemParentName = copyer(oldData.itemParentName);
+    },
   ),
   "itemRemark": (
     getter: (data) => data.itemRemark,
@@ -40877,7 +50728,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemRemark = copyer(oldData.itemRemark);
+    },
   ),
   "itemSpecsRemark": (
     getter: (data) => data.itemSpecsRemark,
@@ -40889,7 +50744,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemSpecsRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemSpecsRemark = copyer(oldData.itemSpecsRemark);
+    },
   ),
   "itemTreePath": (
     getter: (data) => data.itemTreePath,
@@ -40901,7 +50760,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemTreePath = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemTreePath = copyer(oldData.itemTreePath);
+    },
   ),
   "itemUnitConvertDesc": (
     getter: (data) => data.itemUnitConvertDesc,
@@ -40913,7 +50776,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemUnitConvertDesc = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemUnitConvertDesc = copyer(oldData.itemUnitConvertDesc);
+    },
   ),
   "itemUnitConverts": (
     getter: (data) => data.itemUnitConverts,
@@ -40931,7 +50798,14 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
         return handler(single)!;
       });
       data.itemUnitConverts = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeAutoInjectLiteItemUnitConvert>((single){
+        final handler = TypeAutoInjectLiteItemUnitConvert.deepCopy;
+        return handler(single)!;
+      });
+      newData.itemUnitConverts = copyer(oldData.itemUnitConverts);
+    },
   ),
   "stockAmount": (
     getter: (data) => data.stockAmount,
@@ -40943,7 +50817,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockAmount = copyer(oldData.stockAmount);
+    },
   ),
   "stockBasicAmount": (
     getter: (data) => data.stockBasicAmount,
@@ -40955,7 +50833,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockBasicAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockBasicAmount = copyer(oldData.stockBasicAmount);
+    },
   ),
   "stockPrice": (
     getter: (data) => data.stockPrice,
@@ -40967,7 +50849,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockPrice = copyer(oldData.stockPrice);
+    },
   ),
   "stockRemainAge": (
     getter: (data) => data.stockRemainAge,
@@ -40979,7 +50865,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainAge = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainAge = copyer(oldData.stockRemainAge);
+    },
   ),
   "stockTotal": (
     getter: (data) => data.stockTotal,
@@ -40991,7 +50881,11 @@ final FieldReflectInfo<TypeSubContractStockQueryDataDTO> _TypeSubContractStockQu
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockTotal = copyer(oldData.stockTotal);
+    },
   ),
 };
 
@@ -41065,6 +50959,24 @@ class TypeSubContractStockQueryDataDTO extends IDataBasic implements IDataDynami
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeSubContractStockQueryDataDTO? deepCopy(TypeSubContractStockQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeSubContractStockQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeSubContractStockQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeSubContractStockQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -41166,7 +51078,11 @@ final FieldReflectInfo<TypeSubContractStockQuerySumDTO> _TypeSubContractStockQue
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "stockAmount": (
     getter: (data) => data.stockAmount,
@@ -41178,7 +51094,11 @@ final FieldReflectInfo<TypeSubContractStockQuerySumDTO> _TypeSubContractStockQue
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockAmount = copyer(oldData.stockAmount);
+    },
   ),
   "stockPrice": (
     getter: (data) => data.stockPrice,
@@ -41190,7 +51110,11 @@ final FieldReflectInfo<TypeSubContractStockQuerySumDTO> _TypeSubContractStockQue
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockPrice = copyer(oldData.stockPrice);
+    },
   ),
   "stockTotal": (
     getter: (data) => data.stockTotal,
@@ -41202,7 +51126,11 @@ final FieldReflectInfo<TypeSubContractStockQuerySumDTO> _TypeSubContractStockQue
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockTotal = copyer(oldData.stockTotal);
+    },
   ),
   "validAmount": (
     getter: (data) => data.validAmount,
@@ -41214,7 +51142,11 @@ final FieldReflectInfo<TypeSubContractStockQuerySumDTO> _TypeSubContractStockQue
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.validAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.validAmount = copyer(oldData.validAmount);
+    },
   ),
   "validTotal": (
     getter: (data) => data.validTotal,
@@ -41226,7 +51158,11 @@ final FieldReflectInfo<TypeSubContractStockQuerySumDTO> _TypeSubContractStockQue
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.validTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.validTotal = copyer(oldData.validTotal);
+    },
   ),
 };
 
@@ -41280,6 +51216,24 @@ class TypeSubContractStockQuerySumDTO extends IDataBasic implements IDataDynamic
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeSubContractStockQuerySumDTO? deepCopy(TypeSubContractStockQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeSubContractStockQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeSubContractStockQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeSubContractStockQuerySumDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -41345,7 +51299,14 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDTO> _TypeSubContractStock
         return handler(single)!;
       });
       data.data = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeSubContractStockRemainQueryDataDTO>((single){
+        final handler = TypeSubContractStockRemainQueryDataDTO.deepCopy;
+        return handler(single)!;
+      });
+      newData.data = copyer(oldData.data);
+    },
   ),
   "pageIndex": (
     getter: (data) => data.pageIndex,
@@ -41357,7 +51318,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDTO> _TypeSubContractStock
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageIndex = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageIndex = copyer(oldData.pageIndex);
+    },
   ),
   "pageSize": (
     getter: (data) => data.pageSize,
@@ -41369,7 +51334,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDTO> _TypeSubContractStock
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.pageSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.pageSize = copyer(oldData.pageSize);
+    },
   ),
   "sum": (
     getter: (data) => data.sum,
@@ -41381,7 +51350,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDTO> _TypeSubContractStock
     fromDynamic: (data, value) {
       final parser = TypeSubContractStockRemainQuerySumDTO.fromDynamic;
       data.sum = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeSubContractStockRemainQuerySumDTO.deepCopy;
+      newData.sum = copyer(oldData.sum);
+    },
   ),
 };
 
@@ -41433,6 +51406,24 @@ class TypeSubContractStockRemainQueryDTO extends IDataBasic implements IDataDyna
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeSubContractStockRemainQueryDTO? deepCopy(TypeSubContractStockRemainQueryDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeSubContractStockRemainQueryDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeSubContractStockRemainQueryDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeSubContractStockRemainQueryDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -41511,7 +51502,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.contactId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.contactId = copyer(oldData.contactId);
+    },
   ),
   "contactName": (
     getter: (data) => data.contactName,
@@ -41523,7 +51518,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.contactName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.contactName = copyer(oldData.contactName);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -41535,7 +51534,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "itemBasicUnitId": (
     getter: (data) => data.itemBasicUnitId,
@@ -41547,7 +51550,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemBasicUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemBasicUnitId = copyer(oldData.itemBasicUnitId);
+    },
   ),
   "itemBasicUnitName": (
     getter: (data) => data.itemBasicUnitName,
@@ -41559,7 +51566,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemBasicUnitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemBasicUnitName = copyer(oldData.itemBasicUnitName);
+    },
   ),
   "itemCommonUnitConvert": (
     getter: (data) => data.itemCommonUnitConvert,
@@ -41571,7 +51582,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemCommonUnitConvert = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemCommonUnitConvert = copyer(oldData.itemCommonUnitConvert);
+    },
   ),
   "itemCommonUnitId": (
     getter: (data) => data.itemCommonUnitId,
@@ -41583,7 +51598,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemCommonUnitId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemCommonUnitId = copyer(oldData.itemCommonUnitId);
+    },
   ),
   "itemCommonUnitName": (
     getter: (data) => data.itemCommonUnitName,
@@ -41595,7 +51614,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemCommonUnitName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemCommonUnitName = copyer(oldData.itemCommonUnitName);
+    },
   ),
   "itemId": (
     getter: (data) => data.itemId,
@@ -41607,7 +51630,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.itemId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.itemId = copyer(oldData.itemId);
+    },
   ),
   "itemIsEnabled": (
     getter: (data) => data.itemIsEnabled,
@@ -41619,7 +51646,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemIsEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemIsEnabled = copyer(oldData.itemIsEnabled);
+    },
   ),
   "itemModelRemark": (
     getter: (data) => data.itemModelRemark,
@@ -41631,7 +51662,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemModelRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemModelRemark = copyer(oldData.itemModelRemark);
+    },
   ),
   "itemName": (
     getter: (data) => data.itemName,
@@ -41643,7 +51678,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemName = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemName = copyer(oldData.itemName);
+    },
   ),
   "itemNumber": (
     getter: (data) => data.itemNumber,
@@ -41655,7 +51694,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemNumber = copyer(oldData.itemNumber);
+    },
   ),
   "itemRemark": (
     getter: (data) => data.itemRemark,
@@ -41667,7 +51710,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemRemark = copyer(oldData.itemRemark);
+    },
   ),
   "itemSpecsRemark": (
     getter: (data) => data.itemSpecsRemark,
@@ -41679,7 +51726,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemSpecsRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemSpecsRemark = copyer(oldData.itemSpecsRemark);
+    },
   ),
   "itemUnitConvertDesc": (
     getter: (data) => data.itemUnitConvertDesc,
@@ -41691,7 +51742,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.itemUnitConvertDesc = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.itemUnitConvertDesc = copyer(oldData.itemUnitConvertDesc);
+    },
   ),
   "itemUnitConverts": (
     getter: (data) => data.itemUnitConverts,
@@ -41709,7 +51764,14 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
         return handler(single)!;
       });
       data.itemUnitConverts = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = ListHelper.wrapDeepCopy<TypeAutoInjectLiteItemUnitConvert>((single){
+        final handler = TypeAutoInjectLiteItemUnitConvert.deepCopy;
+        return handler(single)!;
+      });
+      newData.itemUnitConverts = copyer(oldData.itemUnitConverts);
+    },
   ),
   "sourceOrderId": (
     getter: (data) => data.sourceOrderId,
@@ -41721,7 +51783,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.sourceOrderId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.sourceOrderId = copyer(oldData.sourceOrderId);
+    },
   ),
   "sourceOrderNumber": (
     getter: (data) => data.sourceOrderNumber,
@@ -41733,7 +51799,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.sourceOrderNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.sourceOrderNumber = copyer(oldData.sourceOrderNumber);
+    },
   ),
   "sourceOrderType": (
     getter: (data) => data.sourceOrderType,
@@ -41745,7 +51815,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderType.fromDynamic;
       data.sourceOrderType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderType.deepCopy;
+      newData.sourceOrderType = copyer(oldData.sourceOrderType);
+    },
   ),
   "stockId": (
     getter: (data) => data.stockId,
@@ -41757,7 +51831,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockId = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockId = copyer(oldData.stockId);
+    },
   ),
   "stockRemainAmount": (
     getter: (data) => data.stockRemainAmount,
@@ -41769,7 +51847,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainAmount = copyer(oldData.stockRemainAmount);
+    },
   ),
   "stockRemainBasicAmount": (
     getter: (data) => data.stockRemainBasicAmount,
@@ -41781,7 +51863,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainBasicAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainBasicAmount = copyer(oldData.stockRemainBasicAmount);
+    },
   ),
   "stockRemainPrice": (
     getter: (data) => data.stockRemainPrice,
@@ -41793,7 +51879,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainPrice = copyer(oldData.stockRemainPrice);
+    },
   ),
   "stockRemainPutOnShelfTime": (
     getter: (data) => data.stockRemainPutOnShelfTime,
@@ -41805,7 +51895,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainPutOnShelfTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainPutOnShelfTime = copyer(oldData.stockRemainPutOnShelfTime);
+    },
   ),
   "stockRemainRemark": (
     getter: (data) => data.stockRemainRemark,
@@ -41817,7 +51911,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainRemark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainRemark = copyer(oldData.stockRemainRemark);
+    },
   ),
   "stockRemainTotal": (
     getter: (data) => data.stockRemainTotal,
@@ -41829,7 +51927,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQueryDataDTO> _TypeSubContractS
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainTotal = copyer(oldData.stockRemainTotal);
+    },
   ),
 };
 
@@ -41904,6 +52006,24 @@ class TypeSubContractStockRemainQueryDataDTO extends IDataBasic implements IData
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeSubContractStockRemainQueryDataDTO? deepCopy(TypeSubContractStockRemainQueryDataDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeSubContractStockRemainQueryDataDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeSubContractStockRemainQueryDataDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeSubContractStockRemainQueryDataDTO copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -42005,7 +52125,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQuerySumDTO> _TypeSubContractSt
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.count = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.count = copyer(oldData.count);
+    },
   ),
   "stockRemainAmount": (
     getter: (data) => data.stockRemainAmount,
@@ -42017,7 +52141,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQuerySumDTO> _TypeSubContractSt
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainAmount = copyer(oldData.stockRemainAmount);
+    },
   ),
   "stockRemainPrice": (
     getter: (data) => data.stockRemainPrice,
@@ -42029,7 +52157,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQuerySumDTO> _TypeSubContractSt
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainPrice = copyer(oldData.stockRemainPrice);
+    },
   ),
   "stockRemainTotal": (
     getter: (data) => data.stockRemainTotal,
@@ -42041,7 +52173,11 @@ final FieldReflectInfo<TypeSubContractStockRemainQuerySumDTO> _TypeSubContractSt
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.stockRemainTotal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.stockRemainTotal = copyer(oldData.stockRemainTotal);
+    },
   ),
 };
 
@@ -42095,6 +52231,24 @@ class TypeSubContractStockRemainQuerySumDTO extends IDataBasic implements IDataD
     return toDynamic(this)!;
   }
 
+  static TypeSubContractStockRemainQuerySumDTO? deepCopy(TypeSubContractStockRemainQuerySumDTO? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeSubContractStockRemainQuerySumDTO();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeSubContractStockRemainQuerySumDTO_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeSubContractStockRemainQuerySumDTO copy() {
+    return deepCopy(this)!;
+  }
+
   @override
   String toString() {
     return encodeDynamic().toString();
@@ -42146,7 +52300,11 @@ final FieldReflectInfo<TypeSystemConfigAccountData> _TypeSystemConfigAccountData
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.hasOpenAccount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.hasOpenAccount = copyer(oldData.hasOpenAccount);
+    },
   ),
   "openAccountDate": (
     getter: (data) => data.openAccountDate,
@@ -42158,7 +52316,11 @@ final FieldReflectInfo<TypeSystemConfigAccountData> _TypeSystemConfigAccountData
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.openAccountDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.openAccountDate = copyer(oldData.openAccountDate);
+    },
   ),
 };
 
@@ -42210,6 +52372,24 @@ class TypeSystemConfigAccountData extends IDataBasic implements IDataDynamic {
     return toDynamic(this)!;
   }
 
+  static TypeSystemConfigAccountData? deepCopy(TypeSystemConfigAccountData? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeSystemConfigAccountData();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeSystemConfigAccountData_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeSystemConfigAccountData copy() {
+    return deepCopy(this)!;
+  }
+
   @override
   String toString() {
     return encodeDynamic().toString();
@@ -42256,7 +52436,11 @@ final FieldReflectInfo<TypeSystemConfigIndustrySetting> _TypeSystemConfigIndustr
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.isItemDefaultRegularType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.isItemDefaultRegularType = copyer(oldData.isItemDefaultRegularType);
+    },
   ),
 };
 
@@ -42305,6 +52489,24 @@ class TypeSystemConfigIndustrySetting extends IDataBasic implements IDataDynamic
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeSystemConfigIndustrySetting? deepCopy(TypeSystemConfigIndustrySetting? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeSystemConfigIndustrySetting();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeSystemConfigIndustrySetting_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeSystemConfigIndustrySetting copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -42375,7 +52577,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.importOrderBatchSize = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.importOrderBatchSize = copyer(oldData.importOrderBatchSize);
+    },
   ),
   "importOrderIsAutoNumber": (
     getter: (data) => data.importOrderIsAutoNumber,
@@ -42387,7 +52593,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.importOrderIsAutoNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.importOrderIsAutoNumber = copyer(oldData.importOrderIsAutoNumber);
+    },
   ),
   "isAllowEditNumber": (
     getter: (data) => data.isAllowEditNumber,
@@ -42399,7 +52609,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.isAllowEditNumber = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.isAllowEditNumber = copyer(oldData.isAllowEditNumber);
+    },
   ),
   "isAllowExcessiveInAmount": (
     getter: (data) => data.isAllowExcessiveInAmount,
@@ -42411,7 +52625,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.isAllowExcessiveInAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.isAllowExcessiveInAmount = copyer(oldData.isAllowExcessiveInAmount);
+    },
   ),
   "isAllowExcessiveOutAmount": (
     getter: (data) => data.isAllowExcessiveOutAmount,
@@ -42423,7 +52641,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.isAllowExcessiveOutAmount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.isAllowExcessiveOutAmount = copyer(oldData.isAllowExcessiveOutAmount);
+    },
   ),
   "isDisableExportWhenSalesItemQueryHasDraft": (
     getter: (data) => data.isDisableExportWhenSalesItemQueryHasDraft,
@@ -42435,7 +52657,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.isDisableExportWhenSalesItemQueryHasDraft = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.isDisableExportWhenSalesItemQueryHasDraft = copyer(oldData.isDisableExportWhenSalesItemQueryHasDraft);
+    },
   ),
   "isEnablePurchaseDefaultTaxRate": (
     getter: (data) => data.isEnablePurchaseDefaultTaxRate,
@@ -42447,7 +52673,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.isEnablePurchaseDefaultTaxRate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.isEnablePurchaseDefaultTaxRate = copyer(oldData.isEnablePurchaseDefaultTaxRate);
+    },
   ),
   "isEnablePurchaseDiscount": (
     getter: (data) => data.isEnablePurchaseDiscount,
@@ -42459,7 +52689,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.isEnablePurchaseDiscount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.isEnablePurchaseDiscount = copyer(oldData.isEnablePurchaseDiscount);
+    },
   ),
   "isEnablePurchaseInPriceGreaterThanStockPrice": (
     getter: (data) => data.isEnablePurchaseInPriceGreaterThanStockPrice,
@@ -42471,7 +52705,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.isEnablePurchaseInPriceGreaterThanStockPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.isEnablePurchaseInPriceGreaterThanStockPrice = copyer(oldData.isEnablePurchaseInPriceGreaterThanStockPrice);
+    },
   ),
   "isEnablePurchaseInPriceLowerThanStockPrice": (
     getter: (data) => data.isEnablePurchaseInPriceLowerThanStockPrice,
@@ -42483,7 +52721,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.isEnablePurchaseInPriceLowerThanStockPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.isEnablePurchaseInPriceLowerThanStockPrice = copyer(oldData.isEnablePurchaseInPriceLowerThanStockPrice);
+    },
   ),
   "isEnableSalesDefaultTaxRate": (
     getter: (data) => data.isEnableSalesDefaultTaxRate,
@@ -42495,7 +52737,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.isEnableSalesDefaultTaxRate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.isEnableSalesDefaultTaxRate = copyer(oldData.isEnableSalesDefaultTaxRate);
+    },
   ),
   "isEnableSalesDiscount": (
     getter: (data) => data.isEnableSalesDiscount,
@@ -42507,7 +52753,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.isEnableSalesDiscount = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.isEnableSalesDiscount = copyer(oldData.isEnableSalesDiscount);
+    },
   ),
   "isEnableSalesOutPriceGreaterThanStockPrice": (
     getter: (data) => data.isEnableSalesOutPriceGreaterThanStockPrice,
@@ -42519,7 +52769,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.isEnableSalesOutPriceGreaterThanStockPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.isEnableSalesOutPriceGreaterThanStockPrice = copyer(oldData.isEnableSalesOutPriceGreaterThanStockPrice);
+    },
   ),
   "isEnableSalesOutPriceLowerThanStockPrice": (
     getter: (data) => data.isEnableSalesOutPriceLowerThanStockPrice,
@@ -42531,7 +52785,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.isEnableSalesOutPriceLowerThanStockPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.isEnableSalesOutPriceLowerThanStockPrice = copyer(oldData.isEnableSalesOutPriceLowerThanStockPrice);
+    },
   ),
   "numberDateType": (
     getter: (data) => data.numberDateType,
@@ -42543,7 +52801,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = TypeEnumOrderNumberDateType.fromDynamic;
       data.numberDateType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumOrderNumberDateType.deepCopy;
+      newData.numberDateType = copyer(oldData.numberDateType);
+    },
   ),
   "numberIdLength": (
     getter: (data) => data.numberIdLength,
@@ -42555,7 +52817,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.numberIdLength = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.numberIdLength = copyer(oldData.numberIdLength);
+    },
   ),
   "orderItemDuplicateIdStrategy": (
     getter: (data) => data.orderItemDuplicateIdStrategy,
@@ -42567,7 +52833,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = TypeEnumResourceDuplicateNameStrategy.fromDynamic;
       data.orderItemDuplicateIdStrategy = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumResourceDuplicateNameStrategy.deepCopy;
+      newData.orderItemDuplicateIdStrategy = copyer(oldData.orderItemDuplicateIdStrategy);
+    },
   ),
   "priceRoundScale": (
     getter: (data) => data.priceRoundScale,
@@ -42579,7 +52849,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.priceRoundScale = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.priceRoundScale = copyer(oldData.priceRoundScale);
+    },
   ),
   "purchaseDefaultTaxRate": (
     getter: (data) => data.purchaseDefaultTaxRate,
@@ -42591,7 +52865,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.purchaseDefaultTaxRate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.purchaseDefaultTaxRate = copyer(oldData.purchaseDefaultTaxRate);
+    },
   ),
   "purchaseInPriceGreaterThanStockPrice": (
     getter: (data) => data.purchaseInPriceGreaterThanStockPrice,
@@ -42603,7 +52881,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.purchaseInPriceGreaterThanStockPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.purchaseInPriceGreaterThanStockPrice = copyer(oldData.purchaseInPriceGreaterThanStockPrice);
+    },
   ),
   "purchaseInPriceLowerThanStockPrice": (
     getter: (data) => data.purchaseInPriceLowerThanStockPrice,
@@ -42615,7 +52897,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.purchaseInPriceLowerThanStockPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.purchaseInPriceLowerThanStockPrice = copyer(oldData.purchaseInPriceLowerThanStockPrice);
+    },
   ),
   "salesDefaultTaxRate": (
     getter: (data) => data.salesDefaultTaxRate,
@@ -42627,7 +52913,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.salesDefaultTaxRate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.salesDefaultTaxRate = copyer(oldData.salesDefaultTaxRate);
+    },
   ),
   "salesOutPriceGreaterThanStockPrice": (
     getter: (data) => data.salesOutPriceGreaterThanStockPrice,
@@ -42639,7 +52929,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.salesOutPriceGreaterThanStockPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.salesOutPriceGreaterThanStockPrice = copyer(oldData.salesOutPriceGreaterThanStockPrice);
+    },
   ),
   "salesOutPriceLowerThanStockPrice": (
     getter: (data) => data.salesOutPriceLowerThanStockPrice,
@@ -42651,7 +52945,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.salesOutPriceLowerThanStockPrice = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.salesOutPriceLowerThanStockPrice = copyer(oldData.salesOutPriceLowerThanStockPrice);
+    },
   ),
   "totalRoundScale": (
     getter: (data) => data.totalRoundScale,
@@ -42663,7 +52961,11 @@ final FieldReflectInfo<TypeSystemConfigOrderSetting> _TypeSystemConfigOrderSetti
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.totalRoundScale = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.totalRoundScale = copyer(oldData.totalRoundScale);
+    },
   ),
 };
 
@@ -42736,6 +53038,24 @@ class TypeSystemConfigOrderSetting extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeSystemConfigOrderSetting? deepCopy(TypeSystemConfigOrderSetting? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeSystemConfigOrderSetting();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeSystemConfigOrderSetting_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeSystemConfigOrderSetting copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -42837,7 +53157,11 @@ final FieldReflectInfo<TypeSystemConfigResourceSetting> _TypeSystemConfigResourc
     fromDynamic: (data, value) {
       final parser = TypeEnumResourceDuplicateNameStrategy.fromDynamic;
       data.contactDuplicateNameStrategy = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumResourceDuplicateNameStrategy.deepCopy;
+      newData.contactDuplicateNameStrategy = copyer(oldData.contactDuplicateNameStrategy);
+    },
   ),
   "contactSortStrategy": (
     getter: (data) => data.contactSortStrategy,
@@ -42849,7 +53173,11 @@ final FieldReflectInfo<TypeSystemConfigResourceSetting> _TypeSystemConfigResourc
     fromDynamic: (data, value) {
       final parser = TypeEnumResourceSortStrategy.fromDynamic;
       data.contactSortStrategy = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumResourceSortStrategy.deepCopy;
+      newData.contactSortStrategy = copyer(oldData.contactSortStrategy);
+    },
   ),
   "isEnableItemCustom": (
     getter: (data) => data.isEnableItemCustom,
@@ -42861,7 +53189,11 @@ final FieldReflectInfo<TypeSystemConfigResourceSetting> _TypeSystemConfigResourc
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.isEnableItemCustom = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.isEnableItemCustom = copyer(oldData.isEnableItemCustom);
+    },
   ),
   "isEnableSelectContactByModal": (
     getter: (data) => data.isEnableSelectContactByModal,
@@ -42873,7 +53205,11 @@ final FieldReflectInfo<TypeSystemConfigResourceSetting> _TypeSystemConfigResourc
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.isEnableSelectContactByModal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.isEnableSelectContactByModal = copyer(oldData.isEnableSelectContactByModal);
+    },
   ),
   "isEnableSelectItemByModal": (
     getter: (data) => data.isEnableSelectItemByModal,
@@ -42885,7 +53221,11 @@ final FieldReflectInfo<TypeSystemConfigResourceSetting> _TypeSystemConfigResourc
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.isEnableSelectItemByModal = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.isEnableSelectItemByModal = copyer(oldData.isEnableSelectItemByModal);
+    },
   ),
   "isEnableShowCategoryWhenFilterContact": (
     getter: (data) => data.isEnableShowCategoryWhenFilterContact,
@@ -42897,7 +53237,11 @@ final FieldReflectInfo<TypeSystemConfigResourceSetting> _TypeSystemConfigResourc
     fromDynamic: (data, value) {
       final parser = BoolHelper.fromDynamic;
       data.isEnableShowCategoryWhenFilterContact = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = BoolHelper.deepCopy;
+      newData.isEnableShowCategoryWhenFilterContact = copyer(oldData.isEnableShowCategoryWhenFilterContact);
+    },
   ),
   "itemDuplicateNameStrategy": (
     getter: (data) => data.itemDuplicateNameStrategy,
@@ -42909,7 +53253,11 @@ final FieldReflectInfo<TypeSystemConfigResourceSetting> _TypeSystemConfigResourc
     fromDynamic: (data, value) {
       final parser = TypeEnumResourceDuplicateNameStrategy.fromDynamic;
       data.itemDuplicateNameStrategy = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumResourceDuplicateNameStrategy.deepCopy;
+      newData.itemDuplicateNameStrategy = copyer(oldData.itemDuplicateNameStrategy);
+    },
   ),
   "itemSortStrategy": (
     getter: (data) => data.itemSortStrategy,
@@ -42921,7 +53269,11 @@ final FieldReflectInfo<TypeSystemConfigResourceSetting> _TypeSystemConfigResourc
     fromDynamic: (data, value) {
       final parser = TypeEnumResourceSortStrategy.fromDynamic;
       data.itemSortStrategy = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumResourceSortStrategy.deepCopy;
+      newData.itemSortStrategy = copyer(oldData.itemSortStrategy);
+    },
   ),
 };
 
@@ -42977,6 +53329,24 @@ class TypeSystemConfigResourceSetting extends IDataBasic implements IDataDynamic
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeSystemConfigResourceSetting? deepCopy(TypeSystemConfigResourceSetting? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeSystemConfigResourceSetting();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeSystemConfigResourceSetting_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeSystemConfigResourceSetting copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -43040,7 +53410,11 @@ final FieldReflectInfo<TypeSystemConfigSettingData> _TypeSystemConfigSettingData
     fromDynamic: (data, value) {
       final parser = TypeSystemConfigIndustrySetting.fromDynamic;
       data.industrySetting = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeSystemConfigIndustrySetting.deepCopy;
+      newData.industrySetting = copyer(oldData.industrySetting);
+    },
   ),
   "orderSetting": (
     getter: (data) => data.orderSetting,
@@ -43052,7 +53426,11 @@ final FieldReflectInfo<TypeSystemConfigSettingData> _TypeSystemConfigSettingData
     fromDynamic: (data, value) {
       final parser = TypeSystemConfigOrderSetting.fromDynamic;
       data.orderSetting = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeSystemConfigOrderSetting.deepCopy;
+      newData.orderSetting = copyer(oldData.orderSetting);
+    },
   ),
   "resourceSetting": (
     getter: (data) => data.resourceSetting,
@@ -43064,7 +53442,11 @@ final FieldReflectInfo<TypeSystemConfigSettingData> _TypeSystemConfigSettingData
     fromDynamic: (data, value) {
       final parser = TypeSystemConfigResourceSetting.fromDynamic;
       data.resourceSetting = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeSystemConfigResourceSetting.deepCopy;
+      newData.resourceSetting = copyer(oldData.resourceSetting);
+    },
   ),
   "stockSetting": (
     getter: (data) => data.stockSetting,
@@ -43076,7 +53458,11 @@ final FieldReflectInfo<TypeSystemConfigSettingData> _TypeSystemConfigSettingData
     fromDynamic: (data, value) {
       final parser = TypeSystemConfigStockSetting.fromDynamic;
       data.stockSetting = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeSystemConfigStockSetting.deepCopy;
+      newData.stockSetting = copyer(oldData.stockSetting);
+    },
   ),
 };
 
@@ -43130,6 +53516,24 @@ class TypeSystemConfigSettingData extends IDataBasic implements IDataDynamic {
     return toDynamic(this)!;
   }
 
+  static TypeSystemConfigSettingData? deepCopy(TypeSystemConfigSettingData? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeSystemConfigSettingData();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeSystemConfigSettingData_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeSystemConfigSettingData copy() {
+    return deepCopy(this)!;
+  }
+
   @override
   String toString() {
     return encodeDynamic().toString();
@@ -43180,7 +53584,11 @@ final FieldReflectInfo<TypeSystemConfigStockSetting> _TypeSystemConfigStockSetti
     fromDynamic: (data, value) {
       final parser = TypeEnumAvailableStockType.fromDynamic;
       data.availableStockType = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumAvailableStockType.deepCopy;
+      newData.availableStockType = copyer(oldData.availableStockType);
+    },
   ),
 };
 
@@ -43231,6 +53639,24 @@ class TypeSystemConfigStockSetting extends IDataBasic implements IDataDynamic {
     return toDynamic(this)!;
   }
 
+  static TypeSystemConfigStockSetting? deepCopy(TypeSystemConfigStockSetting? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeSystemConfigStockSetting();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeSystemConfigStockSetting_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeSystemConfigStockSetting copy() {
+    return deepCopy(this)!;
+  }
+
   @override
   String toString() {
     return encodeDynamic().toString();
@@ -43279,7 +53705,11 @@ final FieldReflectInfo<TypeTenantInfo> _TypeTenantInfo_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.expireDate = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.expireDate = copyer(oldData.expireDate);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -43291,7 +53721,11 @@ final FieldReflectInfo<TypeTenantInfo> _TypeTenantInfo_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -43303,7 +53737,11 @@ final FieldReflectInfo<TypeTenantInfo> _TypeTenantInfo_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "operatorCountDesc": (
     getter: (data) => data.operatorCountDesc,
@@ -43315,7 +53753,11 @@ final FieldReflectInfo<TypeTenantInfo> _TypeTenantInfo_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.operatorCountDesc = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.operatorCountDesc = copyer(oldData.operatorCountDesc);
+    },
   ),
   "state": (
     getter: (data) => data.state,
@@ -43327,7 +53769,11 @@ final FieldReflectInfo<TypeTenantInfo> _TypeTenantInfo_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumTenantStatePO.fromDynamic;
       data.state = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumTenantStatePO.deepCopy;
+      newData.state = copyer(oldData.state);
+    },
   ),
 };
 
@@ -43380,6 +53826,24 @@ class TypeTenantInfo extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeTenantInfo? deepCopy(TypeTenantInfo? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeTenantInfo();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeTenantInfo_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeTenantInfo copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -43439,7 +53903,11 @@ final FieldReflectInfo<TypeUnit> _TypeUnit_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.createTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.createTime = copyer(oldData.createTime);
+    },
   ),
   "id": (
     getter: (data) => data.id,
@@ -43451,7 +53919,11 @@ final FieldReflectInfo<TypeUnit> _TypeUnit_fields = {
     fromDynamic: (data, value) {
       final parser = IntHelper.fromDynamic;
       data.id = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = IntHelper.deepCopy;
+      newData.id = copyer(oldData.id);
+    },
   ),
   "isEnabled": (
     getter: (data) => data.isEnabled,
@@ -43463,7 +53935,11 @@ final FieldReflectInfo<TypeUnit> _TypeUnit_fields = {
     fromDynamic: (data, value) {
       final parser = TypeEnumSoftEnableIsEnable.fromDynamic;
       data.isEnabled = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = TypeEnumSoftEnableIsEnable.deepCopy;
+      newData.isEnabled = copyer(oldData.isEnabled);
+    },
   ),
   "modifyTime": (
     getter: (data) => data.modifyTime,
@@ -43475,7 +53951,11 @@ final FieldReflectInfo<TypeUnit> _TypeUnit_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.modifyTime = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.modifyTime = copyer(oldData.modifyTime);
+    },
   ),
   "name": (
     getter: (data) => data.name,
@@ -43487,7 +53967,11 @@ final FieldReflectInfo<TypeUnit> _TypeUnit_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.name = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.name = copyer(oldData.name);
+    },
   ),
   "remark": (
     getter: (data) => data.remark,
@@ -43499,7 +53983,11 @@ final FieldReflectInfo<TypeUnit> _TypeUnit_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.remark = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.remark = copyer(oldData.remark);
+    },
   ),
 };
 
@@ -43553,6 +54041,24 @@ class TypeUnit extends IDataBasic implements IDataDynamic {
   @override
   Map<String, dynamic> encodeDynamic() {
     return toDynamic(this)!;
+  }
+
+  static TypeUnit? deepCopy(TypeUnit? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeUnit();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeUnit_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeUnit copy() {
+    return deepCopy(this)!;
   }
 
   @override
@@ -43610,7 +54116,11 @@ final FieldReflectInfo<TypeUploadToken> _TypeUploadToken_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.fileKey = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.fileKey = copyer(oldData.fileKey);
+    },
   ),
   "uploadToken": (
     getter: (data) => data.uploadToken,
@@ -43622,7 +54132,11 @@ final FieldReflectInfo<TypeUploadToken> _TypeUploadToken_fields = {
     fromDynamic: (data, value) {
       final parser = StringHelper.fromDynamic;
       data.uploadToken = parser(value);
-    }
+    },
+    deepCopy: (newData, oldData) {
+      final copyer = StringHelper.deepCopy;
+      newData.uploadToken = copyer(oldData.uploadToken);
+    },
   ),
 };
 
@@ -43674,6 +54188,24 @@ class TypeUploadToken extends IDataBasic implements IDataDynamic {
     return toDynamic(this)!;
   }
 
+  static TypeUploadToken? deepCopy(TypeUploadToken? data) {
+    if (data == null) {
+      return null;
+    }
+    final newData = TypeUploadToken();
+    newData._externalFields.clear();
+    newData._externalFields.addAll(data._copyExternalFields());
+    _TypeUploadToken_fields.forEach((key, fieldInfo) {
+      fieldInfo.deepCopy(newData, data);
+    });
+    return newData;
+  }
+
+  @override
+  TypeUploadToken copy() {
+    return deepCopy(this)!;
+  }
+
   @override
   String toString() {
     return encodeDynamic().toString();
@@ -43705,6 +54237,37 @@ class TypeUploadToken extends IDataBasic implements IDataDynamic {
 }
 
 
+T DeepCopy<T>(T info) {
+  if (info == null) {
+    return info;
+  } else if (info is IDataDynamic) {
+    return info.copy() as T;
+  } else if (info is bool) {
+    return BoolHelper.deepCopy(info) as T;
+  } else if (info is int) {
+    return IntHelper.deepCopy(info) as T;
+  } else if (info is double) {
+    return DoubleHelper.deepCopy(info) as T;
+  } else if (info is String) {
+    return StringHelper.deepCopy(info) as T;
+  } else if (info is List) {
+    return info.map((single) => DeepCopy(single)).toList() as T;
+  } else if (info is Map) {
+    final data = {};
+    info.forEach((key, value) {
+      data[DeepCopy(key)] = DeepCopy(value);
+    });
+    return data as T;
+  } else if (info is Set) {
+    final data = <dynamic>{};
+    for (final value in info) {
+      data.add(value);
+    }
+    return data as T;
+  } else {
+    throw FormatException('can not deepCopy dynamic: ${info.runtimeType}');
+  }
+}
 
 Object? DynamicEncode(Object? info) {
   if (info == null) {
